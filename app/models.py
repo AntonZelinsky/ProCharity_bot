@@ -22,11 +22,11 @@ class User(Base):
     email = Column(String(48), unique=True, nullable=False)
     password = Column(String(128), nullable=False)
     telegram_id = Column(Integer())
-    first_name = Column(String(32))
-    last_name = Column(String(32))
-    is_superuser = Column(Boolean)
-    archive = Column(Boolean)
-    mailing = Column(Boolean)
+    first_name = Column(String(32), nullable=True)
+    last_name = Column(String(32), nullable=True)
+    is_superuser = Column(Boolean, default=False)
+    archive = Column(Boolean, default=True)
+    mailing = Column(Boolean, default=True)
     last_logon = Column(DateTime)
     task = relationship('Task', backref='user')
 
@@ -38,6 +38,19 @@ class User(Base):
 
     def check_password(self, password):
         return check_password_hash(self.password, password)
+
+    def get_user_information(self):
+        return {
+            'username': self.username,
+            'email': self.email,
+            'is_superuser': self.is_superuser,
+            'first_name': self.first_name,
+            'laast_name': self.last_name,
+            'telegram_id': self.telegram_id,
+            'mailing': self.mailing,
+            'last_logon': self.last_logon
+
+        }
 
 
 class Task(Base):

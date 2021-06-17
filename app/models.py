@@ -20,10 +20,10 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     username = Column(String(32), unique=True, nullable=False)
     email = Column(String(48), unique=True, nullable=False)
-    password_hash = Column(String(128), nullable=False)
+    password = Column(String(128), nullable=False)
     telegram_id = Column(Integer())
-    first_name = Column(String(32), nullable=True)
-    last_name = Column(String(32), nullable=True)
+    first_name = Column(String(32))
+    last_name = Column(String(32))
     is_superuser = Column(Boolean)
     archive = Column(Boolean)
     mailing = Column(Boolean)
@@ -34,10 +34,10 @@ class User(Base):
         return f'<User {self.username}>'
 
     def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
+        self.password = generate_password_hash(password)
 
     def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
+        return check_password_hash(self.password, password)
 
 
 class Task(Base):

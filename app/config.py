@@ -7,6 +7,16 @@ dotenv_path = os.path.join(BASE_DIR, '.env')
 load_dotenv(dotenv_path)
 
 
+PROJECT_NAME = "ProCharrity bot"
+
+PASSWORD_POLICY = {
+    "min_length": 8,
+    "uppercase": 1,
+    "max_length": 32,
+
+}
+
+
 class Config:
     # Flask Settings:
     DEBUG = True

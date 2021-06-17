@@ -1,27 +1,37 @@
-from flask import request, jsonify
+from flask import jsonify
 from app.models import User
 from app.database import db_session
 from flask_jwt_extended import jwt_required, create_access_token, create_refresh_token, get_jwt_identity
 from werkzeug.security import generate_password_hash
 from flask_restful import Resource
+from flask_apispec.views import MethodResource
+from flask_apispec import doc, use_kwargs
 from email_validator import validate_email, EmailNotValidError
+from marshmallow import fields
+from app import password_policy
 
 
-class Register(Resource):
-    """This endpoint provide registering option for users.
-        Requires:
-            username: str
-            password: str
-            email: str
-    """
+class Register(MethodResource, Resource):
 
-    def post(self):
-        if not request.get_json():
-            return jsonify(message="Registration data is required")
+    @doc(description='This endpoint provide registering option for users.', tags=['User Registration'])
+    @use_kwargs({'username': fields.Str(), 'password': fields.Str(), 'email': fields.Email()})
+    def post(self, **kwargs):
 
-        username = request.get_json()["username"]
-        password = request.get_json()["password"]
-        email = request.get_json()["email"]
+        if not kwargs:
+            return jsonify(message="Registration request requires 'username', 'password' and 'email address'.")
+
+        username = kwargs.get("username")
+        password = kwargs.get("password")
+        email = kwargs.get("email")
+
+        if not username:
+            return jsonify(message="Username is required")
+
+        if not password:
+            return jsonify(message="Password is required")
+
+        if not email:
+            return jsonify(message="Email is required")
 
         try:
             validate_email(email)
@@ -33,11 +43,14 @@ class Register(Resource):
                                        User.query.filter_by(username=username).first())
 
         if check_email or check_username:
-            return jsonify(message="User Already Exist")
+            return jsonify(message="The user or the email already Exist")
+
+        if not password_policy.validate(password):
+            return jsonify(message="The password does not comply with the password policy.")
 
         user = User(username=username,
                     email=email,
-                    password_hash=generate_password_hash(password),
+                    password=generate_password_hash(password),
                     is_superuser=False
                     )
 
@@ -45,17 +58,24 @@ class Register(Resource):
         db_session.commit()
         return jsonify(message="User added successfully")
 
+class Login(MethodResource, Resource):
 
-class Login(Resource):
-    """This endpoint provides jwt token for authorized users.
-        Required:
-            username: str
-            password: str
-    """
+    @doc(description='This endpoint provides jwt token for authorized users',
+         tags=['User Login'], )
+    @use_kwargs({'username': fields.Str(), 'password': fields.Str()})
+    def post(self, **kwargs):
 
-    def post(self):
-        username = request.get_json()["username"]
-        password = request.get_json()["password"]
+        if not kwargs:
+            return jsonify(message="This request requires 'username' and 'password'")
+
+        username = kwargs.get("username")
+        password = kwargs.get("password")
+
+        if not username:
+            return jsonify(message="Username is required")
+
+        if not password:
+            return jsonify(message="Password is required")
 
         user = User.query.filter_by(username=username).first()
 
@@ -69,9 +89,20 @@ class Login(Resource):
                        refresh_token=refresh_token)
 
 
-class Refresh(Resource):
-    """JWT token Refresh"""
+class Refresh(MethodResource, Resource):
 
+    @doc(description='JWT token Refresh API',
+         tags=['JWT Refresh'],
+         params={
+             'Authorization': {
+                 'description':
+                     'HTTP header with JWT refresh token, like: Authorization: Bearer asdf.qwer.zxcv',
+                 'in': 'header',
+                 'type': 'string',
+                 'required': True
+             }
+         }
+         )
     @jwt_required(refresh=True)
     def post(self):
         identity = get_jwt_identity()
@@ -80,9 +111,21 @@ class Refresh(Resource):
         return jsonify(access_token=access_token, refresh_token=refresh_token)
 
 
-class Users(Resource):
+class UsersList(MethodResource, Resource):
     """Users api"""
 
+    @doc(description='List of all users',
+         tags=['Users list'],
+         params={
+             'Authorization': {
+                 'description':
+                     'HTTP header with JWT access token, like: Authorization: Bearer asdf.qwer.zxcv',
+                 'in': 'header',
+                 'type': 'string',
+                 'required': True
+             }
+         }
+         )
     @jwt_required()
     def get(self):
         users = User.query.all()
@@ -94,4 +137,76 @@ class Users(Resource):
             users['email'] = u.email
             users['is_superuser'] = u.is_superuser
             result.append(users)
+
         return jsonify(message=result)
+
+    @doc(description="Add a new user's record in the database",
+         tags=['Add a new user'],
+         params={
+             'Authorization': {
+                 'description':
+                     'HTTP header with JWT access token, like: Authorization: Bearer asdf.qwer.zxcv',
+                 'in': 'header',
+                 'type': 'string',
+                 'required': True
+             }
+         }
+         )
+    @jwt_required()
+    @use_kwargs({
+        'username': fields.Str(),
+        'password': fields.Str(),
+        "email": fields.Email(),
+        'telegram_id': fields.Int(),
+        'first_name': fields.Str(),
+        'last_name': fields.Str(),
+        'is_superuser': fields.Bool(),
+        'mailing': fields.Bool(),
+    }
+    )
+    def post(self, **kwargs):
+
+        if not kwargs:
+            return jsonify(message="The user's data not entered.")
+
+        email = kwargs.get('email')
+        username = kwargs.get('username')
+        password = kwargs.get('password')
+
+        if not username:
+            return jsonify(message="Username is required")
+
+        if not password:
+            return jsonify(message="Password is required")
+
+        if not email:
+            return jsonify(message="Email is required")
+
+        check_email, check_username = (User.query.filter_by(email=email).first(),
+                                       User.query.filter_by(username=username).first())
+
+        if check_email or check_username:
+            return jsonify(message="The user or the email already Exist")
+
+        # Password check for password policy compliance
+        if not password_policy.validate(password):
+            return jsonify(message="The password does not comply with the password policy.")
+
+        # Create a new user
+        kwargs['password'] = generate_password_hash(password)
+        user = User(**kwargs)
+        db_session.add(user)
+        db_session.commit()
+
+        return jsonify(message='User has been created successfully')
+
+
+class User_item(MethodResource, Resource):
+
+    @jwt_required()
+    def get(self, username):
+        pass
+
+    @jwt_required()
+    def put(self, username):
+        pass

@@ -12,3 +12,7 @@
 - alembic upgrade head
 ### Для информации:
 - Создание новой миграции в случае изменения базы: alembic revision --autogenerate -m "message"
+
+### Документация API:
+- <http://127.0.0.1:5000/api/doc/swagger-ui/>
+

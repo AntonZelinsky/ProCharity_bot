@@ -19,16 +19,7 @@ jwt = JWTManager(app)
 api = Api(app)
 password_policy = PasswordPolicy(**PASSWORD_POLICY)
 
-app.config.update(
-    {'APISPEC_SPEC':
-         APISpec(title=config.PROJECT_NAME,
-                 version='v1',
-                 plugins=[MarshmallowPlugin()],
-                 openapi_version='2.0.0'
-                 ),
-     'APISPEC_SWAGGER_URL': '/api/swagger/',
-     'APISPEC_SWAGGER_UI_URL': '/api/swagger-ui/',
-     })
+app.config.update(**Config.APISPEC_SPEC)
 
 docs = FlaskApiSpec(app)
 

@@ -1,8 +1,8 @@
-"""initial migrate
+"""Updated user's model
 
-Revision ID: b0862ed3a573
+Revision ID: 7e739e2ed16b
 Revises: 
-Create Date: 2021-06-16 18:26:40.536761
+Create Date: 2021-06-18 14:11:46.266906
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'b0862ed3a573'
+revision = '7e739e2ed16b'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -28,12 +28,11 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('username', sa.String(length=32), nullable=False),
     sa.Column('email', sa.String(length=48), nullable=False),
-    sa.Column('password_hash', sa.String(length=128), nullable=False),
+    sa.Column('password', sa.String(length=128), nullable=False),
     sa.Column('telegram_id', sa.Integer(), nullable=True),
     sa.Column('first_name', sa.String(length=32), nullable=True),
     sa.Column('last_name', sa.String(length=32), nullable=True),
     sa.Column('is_superuser', sa.Boolean(), nullable=True),
-    sa.Column('archive', sa.Boolean(), nullable=True),
     sa.Column('mailing', sa.Boolean(), nullable=True),
     sa.Column('last_logon', sa.DateTime(), nullable=True),
     sa.PrimaryKeyConstraint('id'),

@@ -25,7 +25,6 @@ class User(Base):
     first_name = Column(String(32), nullable=True)
     last_name = Column(String(32), nullable=True)
     is_superuser = Column(Boolean, default=False)
-    archive = Column(Boolean, default=True)
     mailing = Column(Boolean, default=True)
     last_logon = Column(DateTime)
     task = relationship('Task', backref='user')

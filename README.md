@@ -5,8 +5,13 @@
 - source venv/bin/activate
 - pip install -r requirements.txt
 
-### Создать файл .env и указать в нем используемую базу. Тестовая: 
-- DATABASE_URL=sqlite:///db.db
+### Создать файл .env и указать в нем
+- Используемую базу. Тестовая:
+  
+`DATABASE_URL=sqlite:///db.db`
+
+- токен бота:
+`TOKEN=<TOKEN_BOT>`
 
 ### Создать базу и применить миграции:
 - alembic upgrade head

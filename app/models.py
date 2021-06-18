@@ -40,6 +40,7 @@ class User(Base):
 
     def get_user_information(self):
         return {
+            'id': self.id,
             'username': self.username,
             'email': self.email,
             'is_superuser': self.is_superuser,

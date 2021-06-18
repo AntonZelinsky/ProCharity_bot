@@ -13,7 +13,7 @@ from marshmallow import fields
 import datetime
 
 
-USER_CHEMA = {
+USER_SCHEMA = {
     'username': fields.Str(),
     'password': fields.Str(),
     "email": fields.Email(),
@@ -93,7 +93,7 @@ class UsersList(MethodResource, Resource, UserOperation):
          params=config.PARAM_HEADER_AUTH
          )
     @jwt_required()
-    @use_kwargs(USER_CHEMA)
+    @use_kwargs(USER_SCHEMA)
     def post(self, **kwargs):
         if not kwargs:
             return jsonify(message="The user's data not entered.")
@@ -144,7 +144,7 @@ class User_item(MethodResource, Resource, UserOperation):
          params=config.PARAM_HEADER_AUTH
          )
     @jwt_required()
-    @use_kwargs(USER_CHEMA)
+    @use_kwargs(USER_SCHEMA)
     def put(self, id, **kwargs):
         username = kwargs.get('username')
         password = kwargs.get('password')

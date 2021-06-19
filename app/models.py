@@ -52,11 +52,10 @@ class User(Base):
             'id': self.id,
             'username': self.username,
             'email': self.email,
-            'is_superuser': self.is_superuser,
             'first_name': self.first_name,
-            'laast_name': self.last_name,
+            'last_name': self.last_name,
             'telegram_id': self.telegram_id,
-            'mailing': self.mailing,
+            'has_mailing': self.has_mailing,
             'last_logon': self.last_logon
 
         }

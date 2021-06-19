@@ -15,16 +15,17 @@ class Register(MethodResource, Resource, UserOperation):
     """Provides api for register new users"""
 
     @doc(description='This endpoint provide registering option for users.', tags=['User Registration'])
-    @use_kwargs({'username': fields.Str(), 'password': fields.Str(), 'email': fields.Email()})
+    @use_kwargs({'password': fields.Str(), 'email': fields.Email()})
     def post(self, **kwargs):
-        username = kwargs.get("username")
         password = kwargs.get("password")
         email = kwargs.get("email")
 
-        if not self.check_input_credentials(username=username,
-                                            email=email,
+        if not self.check_input_credentials(email=email,
                                             password=password):
             return jsonify("Registration request requires 'username', 'password' and 'email address'.")
+
+        if self.exist_email(email=email):
+            return jsonify(message="The user or the email already Exist")
 
         # email validation
         try:
@@ -33,16 +34,11 @@ class Register(MethodResource, Resource, UserOperation):
         except EmailNotValidError as ex:
             return jsonify(message=str(ex))
 
-        if self.exist_user(username=username, email=email):
-            return jsonify(message="The user or the email already Exist")
-
         if not self.validate_password(password=password):
             return jsonify(message="The password does not comply with the password policy.")
 
-        self.create_user(username=username,
-                         email=email,
-                         password=generate_password_hash(password),
-                         is_superuser=False)
+        self.create_user(email=email,
+                         password=generate_password_hash(password))
 
         return jsonify(message="User added successfully")
 
@@ -56,28 +52,28 @@ class Login(MethodResource, Resource, UserOperation):
 
     @doc(description='This endpoint provides jwt token for authorized users',
          tags=['User Login'], )
-    @use_kwargs({'username': fields.Str(), 'password': fields.Str()})
+    @use_kwargs({'email': fields.Str(), 'password': fields.Str()})
     def post(self, **kwargs):
 
         if not kwargs:
-            return jsonify(message="This request requires 'username' and 'password'")
+            return jsonify(message="This request requires 'email' and 'password'")
 
-        username = kwargs.get("username")
+        email = kwargs.get("email")
         password = kwargs.get("password")
 
-        if not username:
-            return jsonify(message="Username is required")
+        if not email:
+            return jsonify(message="email is required")
 
         if not password:
             return jsonify(message="Password is required")
 
-        user = User.query.filter_by(username=username).first()
+        user = User.query.filter_by(email=email).first()
 
         if not user or not user.check_password(password):
-            return jsonify(message="Bad username or Password")
+            return jsonify(message="Bad email or Password")
 
-        access_token = create_access_token(identity=username)
-        refresh_token = create_refresh_token(identity=username)
+        access_token = create_access_token(identity=email)
+        refresh_token = create_refresh_token(identity=email)
 
         self.update_last_logon(id=user.id)
 

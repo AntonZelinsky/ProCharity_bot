@@ -21,7 +21,6 @@ USER_SCHEMA = {
     'last_name': fields.Str(),
     'telegram_id': fields.Int(),
     'is_superuser': fields.Bool(),
-    'mailing': fields.Bool(),
 }
 
 
@@ -43,8 +42,8 @@ class UserOperation:
         if User.query.filter_by(email=email).first():
             return True
 
-    def check_input_credentials(self, username, password, email):
-        if all((username, password, email)):
+    def check_input_credentials(self, password, email):
+        if all((password, email)):
             return True
 
     def create_user(self, **kwargs):

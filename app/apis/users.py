@@ -12,7 +12,6 @@ from email_validator import validate_email, EmailNotValidError
 from marshmallow import fields
 import datetime
 
-
 USER_SCHEMA = {
     'username': fields.Str(),
     'password': fields.Str(),
@@ -98,14 +97,17 @@ class UsersList(MethodResource, Resource, UserOperation):
             return jsonify(message="The user's data not entered.")
 
         email = kwargs.get('email')
-        username = kwargs.get('username')
         password = kwargs.get('password')
+        username = kwargs.get('username')
 
-        if not self.check_input_credentials(username=username, email=email, password=password):
+        if not self.check_input_credentials(email=email, password=password):
             return jsonify("Registration request requires 'username', 'password' and 'email address'.")
 
-        if self.exist_user(username=username, email=email):
-            return jsonify(message="The user or the email already Exist")
+        if self.exist_username(username=username):
+            return jsonify(message="The username already Exist")
+
+        if self.exist_email(email=email):
+            return jsonify(message="The email already Exist")
 
         # email validation
         try:

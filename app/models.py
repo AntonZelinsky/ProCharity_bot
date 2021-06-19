@@ -17,7 +17,7 @@ Base = declarative_base()
 class UserAdmin(Base):
     __tablename__ = 'admin_user'
     id = Column(Integer, primary_key=True)
-    email = Column(String(48))
+    email = Column(String(48), unique=True, nullable=False)
     first_name = Column(String(32), nullable=True)
     last_name = Column(String(32), nullable=True)
 

@@ -67,7 +67,7 @@ class Task(Base):
     link = Column(String)
     description = Column(String)
     user_id = Column(Integer, ForeignKey('user.id'))
-
+    archive = Column(Boolean)
     def __repr__(self):
         return f'<Task {self.title}>'
 
@@ -79,6 +79,6 @@ class Category(Base):
     category_api_id = Column(Integer)
     name = Column(String(100))
     task = relationship('Task', backref='category')
-
+    archive = Column(Boolean())
     def __repr__(self):
         return f'<Category {self.name}>'

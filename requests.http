@@ -1,0 +1,62 @@
+# пример GET запроса
+GET https://jsonplaceholder.typicode.com/posts/1 
+
+###
+
+POST http://localhost:5000/api/v1/categories/
+Content-Type: application/json
+
+###
+
+POST http://localhost:5000/api/v1/tasks/
+Content-Type: application/json
+
+{
+    "tasks": [
+        {
+      "id":"11",
+      "title":"Создание семантического ядра111",
+      "name_organization":"фонд СеллСтандарт",
+      "deadline":"25.06.2021",
+      "category":"Маркетинг и коммуникации",
+      "category_id":"2",
+      "bonus":"4",
+      "location":"Санкт-Петербург",
+      "link":"<https://procharity.ru/tasks/detail.php?ID=32539>",
+      "description":""
+   }, 
+   {
+      "id":"22",
+      "title":"Видеосъемка фильма о проекте22",
+      "name_organization":"БФ «Гольфстрим»",
+      "deadline":"21.06.2021",
+      "category":"Фото и видео",
+      "category_id":"12",
+      "bonus":"5",
+      "location":"Москва",
+      "link":"<https://procharity.ru/tasks/detail.php?ID=33098>",
+      "description":""
+   }
+    ],
+
+    "categories":[
+    {
+      "id":"1",
+      "name":"Дизайн и верстка"
+   },
+   {
+       "id":"2",
+      "name":"Маркетинг и коммуникации"
+
+   },
+   {
+       "id":"3",
+      "name":"Всего понемногу"
+   },
+   {
+       "id":"4",
+      "name":"Всякая всячина"
+   }
+    ]
+}
+

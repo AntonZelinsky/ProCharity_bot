@@ -2,7 +2,6 @@ from app import api
 from app.apis.users import UsersList, User_item
 from app.apis.auth import Refresh, Register, Login, PasswordReset
 from app.apis.messages import SendMessage
-from app.api import Login, Register, Users, Refresh
 from app.webhook import Create_categories, Create_tasks
 
 api.add_resource(UsersList, '/api/users/')

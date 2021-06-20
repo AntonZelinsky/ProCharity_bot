@@ -20,9 +20,38 @@ class UserAdmin(Base):
     email = Column(String(48), unique=True, nullable=False)
     first_name = Column(String(32), nullable=True)
     last_name = Column(String(32), nullable=True)
+    password = Column(String(128), nullable=False)
+    last_logon = Column(DateTime)
 
     def __repr__(self):
-        return f'<User {self.first_name} {self.last_name}>'
+        return f'<Admin User {self.first_name} {self.last_name}>'
+
+    def set_password(self, password):
+        self.password = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password, password)
+
+    def get_user_information(self):
+        return {
+            'id': self.id,
+            'email': self.email,
+            'first_name': self.first_name,
+            'last_name': self.last_name,
+            'last_logon': self.last_logon
+        }
+
+
+class Register(Base):
+    __tablename__ = 'register'
+
+    id = Column(Integer, primary_key=True)
+    email = Column(String(48), unique=True, nullable=False)
+    token = Column(String(128), nullable=False)
+    inv_created_date = Column(DateTime, nullable=False)
+
+    def __repr__(self):
+        return f'<Register {self.email}>'
 
 
 class User(Base):
@@ -31,7 +60,6 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     username = Column(String(32), unique=True, nullable=True)
     email = Column(String(48), unique=True, nullable=True)
-    password = Column(String(128), unique=True, nullable=True)
     telegram_id = Column(Integer())
     first_name = Column(String(32), nullable=True)
     last_name = Column(String(32), nullable=True)
@@ -40,12 +68,6 @@ class User(Base):
 
     def __repr__(self):
         return f'<User {self.username}>'
-
-    def set_password(self, password):
-        self.password = generate_password_hash(password)
-
-    def check_password(self, password):
-        return check_password_hash(self.password, password)
 
     def get_user_information(self):
         return {

@@ -1,4 +1,5 @@
 import os
+from flask import request
 from dotenv import load_dotenv
 from apispec import APISpec
 from apispec.ext.marshmallow import MarshmallowPlugin
@@ -11,7 +12,7 @@ load_dotenv(dotenv_path)
 # -----------------------
 # Basic project settings
 PROJECT_NAME = "ProCharrity bot"
-
+HOST_NAME = 'host'
 PASSWORD_POLICY = {
     "min_length": 8,
     "uppercase": 1,
@@ -22,8 +23,9 @@ PASSWORD_POLICY = {
 # Registration settings
 SUBJECT = 'Registration'
 INVITATION_TEMPLATE = 'email_templates/invitation_email.html'
-# Token expiration date for registering a new user in the admin panel
-INV_TOKEN_EXPIRATION = 24
+# Token expiration for registering a new user in the admin panel
+INV_TOKEN_EXPIRATION = 24  # hours
+PUSH_TEMPLATE = 'email_templates/push_message.html'
 # ------------------------------
 # swagger api documentation url
 SWAGGER_JSON = '/api/doc/swagger/'
@@ -49,8 +51,8 @@ class Config:
     SECRET_KEY = 'ASDfasdQW4)(83099498&$^%2ewf'
 
     # Token settings
-    JWT_ACCESS_TOKEN_EXPIRES = 180000  # 30 minutes
-    JWT_REFRESH_TOKEN_EXPIRES = 180000  # 30 minutes
+    JWT_ACCESS_TOKEN_EXPIRES = 1800  # 30 minutes
+    JWT_REFRESH_TOKEN_EXPIRES = 1800  # 30 minutes
     JWT_SECRET_KEY = 'Ad3ewrf#$wqA24&2W24-0)*&)@43'
 
     # DataBase settings:

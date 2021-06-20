@@ -4,7 +4,6 @@ from app import password_policy
 from app.models import User
 from app import config
 from app.database import db_session
-from werkzeug.security import generate_password_hash
 from flask_restful import Resource
 from flask_apispec.views import MethodResource
 from flask_apispec import doc, use_kwargs
@@ -14,53 +13,51 @@ import datetime
 
 USER_SCHEMA = {
     'username': fields.Str(),
-    'password': fields.Str(),
     "email": fields.Email(),
     'first_name': fields.Str(),
     'last_name': fields.Str(),
     'telegram_id': fields.Int(),
-    'is_superuser': fields.Bool(),
 }
 
 
 class UserOperation:
     """The class provides an interface for working with requests to user model.  """
 
-    def exist_user(self, username, email):
-        check_email, check_username = (User.query.filter_by(email=email).first(),
-                                       User.query.filter_by(username=username).first())
+    def exist_user(self, user_obj, username, email):
+        check_email, check_username = (user_obj.query.filter_by(email=email).first(),
+                                       user_obj.query.filter_by(username=username).first())
 
         if check_email or check_username:
             return True
 
-    def exist_username(self, username):
-        if User.query.filter_by(username=username).first():
+    def exist_username(self, user_obj, username):
+        if user_obj.query.filter_by(username=username).first():
             return True
 
-    def exist_email(self, email):
-        if User.query.filter_by(email=email).first():
+    def exist_email(self, user_obj, email):
+        if user_obj.query.filter_by(email=email).first():
             return True
 
     def check_input_credentials(self, password, email):
         if all((password, email)):
             return True
 
-    def create_user(self, **kwargs):
-        user = User(**kwargs)
+    def create_user(self, user_obj, **kwargs):
+        user = user_obj(**kwargs)
         db_session.add(user)
         db_session.commit()
 
-    def update_user(self, id, **kwargs):
-        User.query.filter_by(id=id).update(kwargs)
+    def update_user(self, user_obj, id, **kwargs):
+        user_obj.query.filter_by(id=id).update(kwargs)
         db_session.commit()
 
-    def delete_user(self, id):
-        user = User.query.get(id)
+    def delete_user(self, user_obj, id):
+        user = user_obj.query.get(id)
         db_session.delete(user)
         db_session.commit()
 
-    def update_last_logon(self, id):
-        user = User.query.get(id)
+    def update_last_logon(self, user_obj, id):
+        user = user_obj.query.get(id)
         user.last_logon = datetime.datetime.now()
         db_session.commit()
 
@@ -97,16 +94,12 @@ class UsersList(MethodResource, Resource, UserOperation):
             return jsonify(message="The user's data not entered.")
 
         email = kwargs.get('email')
-        password = kwargs.get('password')
         username = kwargs.get('username')
 
-        if not self.check_input_credentials(email=email, password=password):
-            return jsonify("Registration request requires 'username', 'password' and 'email address'.")
-
-        if self.exist_username(username=username):
+        if self.exist_username(user_obj=User, username=username):
             return jsonify(message="The username already Exist")
 
-        if self.exist_email(email=email):
+        if self.exist_email(user_obj=User, email=email):
             return jsonify(message="The email already Exist")
 
         # email validation
@@ -116,13 +109,7 @@ class UsersList(MethodResource, Resource, UserOperation):
         except EmailNotValidError as ex:
             return jsonify(message=str(ex))
 
-        # Password check for password policy compliance
-        if not self.validate_password(password=password):
-            return jsonify(message="The password does not comply with the password policy.")
-
-        # Create a new user
-        kwargs['password'] = generate_password_hash(password)
-        self.create_user(**kwargs)
+        self.create_user(user_obj=User, **kwargs)
 
         return jsonify(message='User has been created successfully')
 
@@ -137,8 +124,9 @@ class User_item(MethodResource, Resource, UserOperation):
     @jwt_required()
     def get(self, id):
         user = User.query.get(id)
-        if user:
-            return jsonify(user.get_user_information())
+        if not user:
+            return jsonify(message='This user was not found.')
+        return jsonify(user.get_user_information())
 
     @doc(description="Update user's database information.",
          tags=['Users Control'],
@@ -148,13 +136,12 @@ class User_item(MethodResource, Resource, UserOperation):
     @use_kwargs(USER_SCHEMA)
     def put(self, id, **kwargs):
         username = kwargs.get('username')
-        password = kwargs.get('password')
         email = kwargs.get('email')
 
-        if self.exist_username(username=username):
+        if self.exist_username(user_obj=User, username=username):
             return jsonify(message='The user already exist.')
 
-        if self.exist_email(email=email):
+        if self.exist_email(user_obj=User, email=email):
             return jsonify(message='The email already exist.')
 
         # validate of an email if one included in the request.
@@ -166,14 +153,9 @@ class User_item(MethodResource, Resource, UserOperation):
                 return jsonify(message=str(ex))
 
         # validate of a password if one included in the request.
-        if password:
-            if not self.validate_password(password=password):
-                return jsonify(message="The password does not comply with the password policy.")
-            kwargs['password'] = generate_password_hash(password)
 
         # update request to DB
-
-        self.update_user(id, **kwargs)
+        self.update_user(user_obj=User, id=id, **kwargs)
         return jsonify(message='The user has been updated')
 
     @doc(description="Delete user record.",

@@ -17,6 +17,13 @@ PASSWORD_POLICY = {
     "uppercase": 1,
     "max_length": 32,
 }
+
+# ------------------------
+# Registration settings
+SUBJECT = 'Registration'
+INVITATION_TEMPLATE = 'email_templates/invitation_email.html'
+# Token expiration date for registering a new user in the admin panel
+INV_TOKEN_EXPIRATION = 24
 # ------------------------------
 # swagger api documentation url
 SWAGGER_JSON = '/api/doc/swagger/'
@@ -42,8 +49,8 @@ class Config:
     SECRET_KEY = 'ASDfasdQW4)(83099498&$^%2ewf'
 
     # Token settings
-    JWT_ACCESS_TOKEN_EXPIRES = 1800  # 30 minutes
-    JWT_REFRESH_TOKEN_EXPIRES = 1800  # 30 minutes
+    JWT_ACCESS_TOKEN_EXPIRES = 180000  # 30 minutes
+    JWT_REFRESH_TOKEN_EXPIRES = 180000  # 30 minutes
     JWT_SECRET_KEY = 'Ad3ewrf#$wqA24&2W24-0)*&)@43'
 
     # DataBase settings:
@@ -59,3 +66,11 @@ class Config:
                     'APISPEC_SWAGGER_URL': SWAGGER_JSON,
                     'APISPEC_SWAGGER_UI_URL': SWAGGER_UI,
                     }
+
+    # Mail settings
+    MAIL_SERVER = 'smtp.gmail.com'
+    MAIL_PORT = 587
+    MAIL_USE_TLS = True
+    MAIL_USERNAME = 'tt265323@gmail.com'
+    MAIL_DEFAULT_SENDER = 'tt265323@gmail.com'
+    MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')

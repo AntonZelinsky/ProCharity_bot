@@ -128,3 +128,14 @@ dmypy.json
 # Pyre type checker
 .pyre/
 /db.db
+
+# Pycharm
+.idea
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+@@ -131,5 +128,3 @@ dmypy.json
+
+.vscode

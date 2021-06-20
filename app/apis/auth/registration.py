@@ -1,6 +1,5 @@
 from flask import jsonify, make_response
 from app.models import UserAdmin, Register
-from app.apis.users import UserOperation
 from werkzeug.security import generate_password_hash
 from flask_restful import Resource
 from flask_apispec.views import MethodResource
@@ -8,6 +7,7 @@ from flask_apispec import doc, use_kwargs
 from marshmallow import fields
 from datetime import datetime
 from app.database import db_session
+from app import password_policy
 
 USER_ADMIN_REGISTRATION_SCHEMA = {
     'token': fields.Str(),
@@ -18,7 +18,7 @@ USER_ADMIN_REGISTRATION_SCHEMA = {
 }
 
 
-class UserRegister(MethodResource, Resource, UserOperation):
+class UserRegister(MethodResource, Resource):
     """Provides api for register a new Admin Users"""
 
     @doc(description='This endpoint provide registering option for admin users.', tags=['User Registration'])
@@ -42,7 +42,7 @@ class UserRegister(MethodResource, Resource, UserOperation):
         kwargs['email'] = registration_record.email
         kwargs['password'] = generate_password_hash(password)
 
-        if not self.validate_password(password=password):
+        if not password_policy.validate(password):
             return make_response(jsonify(message="The password does not comply with the password policy."), 400)
 
         # Create a new Admin user

@@ -1,16 +1,15 @@
 from flask import jsonify, make_response
 from flask_jwt_extended import create_access_token, create_refresh_token
 from app.models import UserAdmin
-from app.apis.users import UserOperation
-
+from app.database import db_session
 from flask_restful import Resource
 from flask_apispec.views import MethodResource
 from flask_apispec import doc, use_kwargs
-
+import datetime
 from marshmallow import fields
 
 
-class Login(MethodResource, Resource, UserOperation):
+class Login(MethodResource, Resource):
     """
     Authorization of existing users by username and password.
     After authorization, the auth user receives a JWT token.
@@ -42,7 +41,10 @@ class Login(MethodResource, Resource, UserOperation):
         access_token = create_access_token(identity=email)
         refresh_token = create_refresh_token(identity=email)
 
-        self.update_last_logon(user_obj=UserAdmin, id=user.id)
+        # update last logon
+        user = UserAdmin.query.get(user.id)
+        user.last_logon = datetime.datetime.now()
+        db_session.commit()
 
         return jsonify(access_token=access_token,
                        refresh_token=refresh_token)

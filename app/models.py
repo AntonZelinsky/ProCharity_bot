@@ -48,7 +48,7 @@ class Register(Base):
     id = Column(Integer, primary_key=True)
     email = Column(String(48), unique=True, nullable=False)
     token = Column(String(128), nullable=False)
-    inv_created_date = Column(DateTime, nullable=False)
+    token_expiration_date = Column(DateTime, nullable=False)
 
     def __repr__(self):
         return f'<Register {self.email}>'

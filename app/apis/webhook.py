@@ -35,7 +35,7 @@ class Create_tasks(MethodResource, Resource):
         if not request.json:
             jsonify(result='is not json')
         try:
-            tasks = request.json['tasks']
+            tasks = request.json
             tasks_db = Task.query.filter_by(archive=False).all()
             task_id_json = [int(member['id']) for member in tasks]
             task_id_db = [member.id for member in tasks_db]
@@ -75,11 +75,8 @@ class Create_categories(MethodResource, Resource):
         if not request.json:
             jsonify(result='is not json')
         try:
-            print('OK')
-            categories = request.json['categories']
-            print(2222)
+            categories = request.json
             categories_db = Category.query.filter_by(archive=False).all()
-            print(333)
             category_id_json = [int(member['id']) for member in categories]
             category_id_db = [member.id for member in categories_db]
             category_for_adding_db = list(set(category_id_json) - set(category_id_db))

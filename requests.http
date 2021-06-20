@@ -4,9 +4,7 @@
 POST http://localhost:5000/api/webhook/categories/
 Content-Type: application/json
 
-
-{
-   "categories": [
+ [
   {
       "id":"111",
       "name":"Дизайн и верстка"
@@ -41,7 +39,7 @@ Content-Type: application/json
       "name":"Фото и видео"
    }
     ]
-}
+
 
 
 ###
@@ -49,8 +47,7 @@ Content-Type: application/json
 POST http://localhost:5000/api/webhook/tasks/
 Content-Type: application/json
 
-{
-    "tasks": [
+[
         {
       "id":"11123456",
       "title":"Создание семантического ядра111",
@@ -78,5 +75,5 @@ Content-Type: application/json
     ]
 
    
-}
+
 

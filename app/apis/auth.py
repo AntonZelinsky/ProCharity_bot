@@ -1,46 +1,14 @@
 from flask import jsonify
 from flask_jwt_extended import jwt_required, create_access_token, create_refresh_token, get_jwt_identity
-from app.models import User
+from app.models import User, UserAdmin
 from app import config
 from app.apis.users import UserOperation
-from werkzeug.security import generate_password_hash
+
 from flask_restful import Resource
 from flask_apispec.views import MethodResource
 from flask_apispec import doc, use_kwargs
-from email_validator import validate_email, EmailNotValidError
+
 from marshmallow import fields
-
-
-class Register(MethodResource, Resource, UserOperation):
-    """Provides api for register new users"""
-
-    @doc(description='This endpoint provide registering option for users.', tags=['User Registration'])
-    @use_kwargs({'password': fields.Str(), 'email': fields.Email()})
-    def post(self, **kwargs):
-        password = kwargs.get("password")
-        email = kwargs.get("email")
-
-        if not self.check_input_credentials(email=email,
-                                            password=password):
-            return jsonify("Registration request requires 'username', 'password' and 'email address'.")
-
-        if self.exist_email(email=email):
-            return jsonify(message="The user or the email already Exist")
-
-        # email validation
-        try:
-            validate_email(email)
-
-        except EmailNotValidError as ex:
-            return jsonify(message=str(ex))
-
-        if not self.validate_password(password=password):
-            return jsonify(message="The password does not comply with the password policy.")
-
-        self.create_user(email=email,
-                         password=generate_password_hash(password))
-
-        return jsonify(message="User added successfully")
 
 
 class Login(MethodResource, Resource, UserOperation):
@@ -67,7 +35,7 @@ class Login(MethodResource, Resource, UserOperation):
         if not password:
             return jsonify(message="Password is required")
 
-        user = User.query.filter_by(email=email).first()
+        user = UserAdmin.query.filter_by(email=email).first()
 
         if not user or not user.check_password(password):
             return jsonify(message="Bad email or Password")
@@ -75,7 +43,7 @@ class Login(MethodResource, Resource, UserOperation):
         access_token = create_access_token(identity=email)
         refresh_token = create_refresh_token(identity=email)
 
-        self.update_last_logon(id=user.id)
+        self.update_last_logon(user_obj=UserAdmin, id=user.id)
 
         return jsonify(access_token=access_token,
                        refresh_token=refresh_token)

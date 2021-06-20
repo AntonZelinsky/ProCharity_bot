@@ -37,22 +37,20 @@ class Create_tasks(MethodResource, Resource):
         try:
             tasks = request.json['tasks']
             tasks_db = Task.query.filter_by(archive=False).all()
-            task_api_id_json = [int(member['id']) for member in tasks]
-            task_api_id_db = [member.task_api_id for member in tasks_db]
-            task_for_adding_db = list(set(task_api_id_json) - set(task_api_id_db))
-            task_for_archive = list(set(task_api_id_db) - set(task_api_id_json))
+            task_id_json = [int(member['id']) for member in tasks]
+            task_id_db = [member.id for member in tasks_db]
+            task_for_adding_db = list(set(task_id_json) - set(task_id_db))
+            task_for_archive = list(set(task_id_db) - set(task_id_json))
             for task in tasks:
                 if int(task['id']) in task_for_adding_db:
                     t = Task(
-                        task_api_id=task['id'],
+                        id=task['id'],
                         title=task['title'],
                         name_organization=task['name_organization'],
                         deadline=datetime.strptime(
                             task['deadline'], '%d.%m.%Y'
                         ).date(),
-                        category_id=Category.query.filter_by(
-                            category_api_id=task['category_id']
-                        ).first().id,
+                        category_id=task['category_id'],
                         bonus=task['bonus'],
                         location=task['location'],
                         link=task['link'],
@@ -60,7 +58,7 @@ class Create_tasks(MethodResource, Resource):
                         archive=False
                     )
                     db_session.add(t)
-            archive_records = [task for task in tasks_db if task.task_api_id in task_for_archive]
+            archive_records = [task for task in tasks_db if task.id in task_for_archive]
             for task in archive_records:
                 task.archive = True
             db_session.commit()
@@ -77,23 +75,27 @@ class Create_categories(MethodResource, Resource):
         if not request.json:
             jsonify(result='is not json')
         try:
+            print('OK')
             categories = request.json['categories']
+            print(2222)
             categories_db = Category.query.filter_by(archive=False).all()
-            category_api_id_json = [int(member['id']) for member in categories]
-            category_api_id_db = [member.category_api_id for member in categories_db]
-            category_for_adding_db = list(set(category_api_id_json) - set(category_api_id_db))
-            category_for_archive = list(set(category_api_id_db) - set(category_api_id_json))
+            print(333)
+            category_id_json = [int(member['id']) for member in categories]
+            category_id_db = [member.id for member in categories_db]
+            category_for_adding_db = list(set(category_id_json) - set(category_id_db))
+            category_for_archive = list(set(category_id_db) - set(category_id_json))
             for category in categories:
-                #record = Category.query.filter(Category.category_api_id == category['id']).first()
+                print(category)
                 if int(category['id']) in category_for_adding_db:
                     c = Category(
-                        category_api_id=category['id'],
+                        id=category['id'],
                         name=category['name'],
                         archive=False
                     )
+                    print(c)
                     db_session.add(c)
                 
-            archive_records = [category for category in categories_db if category.category_api_id in category_for_archive]
+            archive_records = [category for category in categories_db if category.id in category_for_archive]
             for category in archive_records:
                 category.archive = True
             db_session.commit()

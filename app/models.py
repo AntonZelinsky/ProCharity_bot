@@ -57,7 +57,6 @@ class Task(Base):
     __tablename__ = 'task'
 
     id = Column(Integer, primary_key=True)
-    task_api_id = Column(Integer)
     title = Column(String)
     name_organization = Column(String)
     deadline = Column(Date)
@@ -77,7 +76,6 @@ class Category(Base):
     __tablename__ = 'category'
 
     id = Column(Integer, primary_key=True)
-    category_api_id = Column(Integer)
     name = Column(String(100))
     task = relationship('Task', backref='category')
     archive = Column(Boolean())

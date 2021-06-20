@@ -8,29 +8,29 @@ from flask_apispec import doc, use_kwargs
 from marshmallow import fields
 from marshmallow.schema import Schema
 
-{'message': fields.Str()}
-
-class TaskSchema(Schema):
-    id = fields.Int()
-    title = fields.Str()
-    name_organization = fields.Str()
-    deadline = fields.Str()
-    category_id = fields.Str(),
-    bonus = fields.Str()
-    location = fields.Str()
-    link = fields.Str()
-    description = fields.Str()
 
 
-TASKS_SCHEMA = {"tasks": fields.List(
-    fields.Nested(TaskSchema())
-)}
+# class Task_schema(Schema):
+#     id = fields.Int()
+#     title = fields.Str()
+#     name_organization = fields.Str()
+#     deadline = fields.Str()
+#     category_id = fields.Str(),
+#     bonus = fields.Str()
+#     location = fields.Str()
+#     link = fields.Str()
+#     description = fields.Str()
+
+
+# TASKS_SCHEMA =  fields.List(
+#     fields.Nested(Task_schema())
+# )
 
 
 class Create_tasks(MethodResource, Resource):
     @doc(description='Сreates tasks in the database',
          tags=['Create tasks'])
-    #@use_kwargs(TASKS_SCHEMA, location=('json'))
+    #@use_kwargs(Task_schema, location=('json'))
     def post(self):
         if not request.json:
             jsonify(result='is not json')
@@ -63,39 +63,5 @@ class Create_tasks(MethodResource, Resource):
                 task.archive = True
             db_session.commit()
             return jsonify(result='ok')
-        except:
-            jsonify(result='json does not content "tasks"')
-
-
-class Create_categories(MethodResource, Resource):
-    @doc(description='Сreates Categories in the database',
-         tags=['Create categories'])
-    #@use_kwargs(CATEGORY_SCHEMA, location=('json'))
-    def post(self):
-        if not request.json:
-            jsonify(result='is not json')
-        try:
-            categories = request.json
-            categories_db = Category.query.filter_by(archive=False).all()
-            category_id_json = [int(member['id']) for member in categories]
-            category_id_db = [member.id for member in categories_db]
-            category_for_adding_db = list(set(category_id_json) - set(category_id_db))
-            category_for_archive = list(set(category_id_db) - set(category_id_json))
-            for category in categories:
-                print(category)
-                if int(category['id']) in category_for_adding_db:
-                    c = Category(
-                        id=category['id'],
-                        name=category['name'],
-                        archive=False
-                    )
-                    print(c)
-                    db_session.add(c)
-                
-            archive_records = [category for category in categories_db if category.id in category_for_archive]
-            for category in archive_records:
-                category.archive = True
-            db_session.commit()
-            return jsonify(result='ok')            
         except:
             jsonify(result='json does not content "tasks"')

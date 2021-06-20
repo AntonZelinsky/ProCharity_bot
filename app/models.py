@@ -87,9 +87,9 @@ class Category(Base):
 class Statistics(Base):
     __tablename__ = 'statistics'
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('user.id'))
+    telegram_id = Column(Integer, ForeignKey('user.telegram_id'))
     command = Column(String(100))
-    write_date = Column(Date)
+    added_date = Column(Date)
 
     def __repr__(self):
         return f'<Command {self.command}>'

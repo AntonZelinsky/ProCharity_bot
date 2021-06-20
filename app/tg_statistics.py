@@ -4,14 +4,14 @@ from app.database import db_session
 from datetime import datetime
 
 
-def statistics(telegram_id, command):
+def add_comand(telegram_id, command):
     try:
-        user_id = User.query.filter_by(
-            telegram_id=int(telegram_id),
-        ).first().id
-        statistics = Statistics(user_id=user_id,
+        # user_id = User.query.filter_by(
+        #     telegram_id=int(telegram_id),
+        # ).first().id
+        statistics = Statistics(telegram_id=telegram_id,
                                 command=command,
-                                write_date=datetime.today().date())
+                                added_date=datetime.today().date())
         db_session.add(statistics)
         db_session.commit()
     except:

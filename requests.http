@@ -1,20 +1,58 @@
-# пример GET запроса
-GET https://jsonplaceholder.typicode.com/posts/1 
 
 ###
 
-POST http://localhost:5000/api/v1/categories/
+POST http://localhost:5000/api/webhook/categories/
 Content-Type: application/json
 
+
+{
+   "categories": [
+  {
+      "id":"111",
+      "name":"Дизайн и верстка"
+   },
+   {
+       "id":"2",
+      "name":"Маркетинг и коммуникации"
+
+   },
+   {
+       "id":"333",
+      "name":"Всего понемногу"
+   },
+   {
+       "id":"4",
+      "name":"Всякая всячина"
+   },
+   {
+       "id":"5",
+      "name":"IT"
+   },
+   {
+       "id":"6",
+      "name":"Переводы"
+   },
+   {
+       "id":"7",
+      "name":"Менеджмент"
+   },
+   {
+       "id":"12",
+      "name":"Фото и видео"
+   }
+    ]
+}
+
+
 ###
 
-POST http://localhost:5000/api/v1/tasks/
+POST http://localhost:5000/api/webhook/tasks/
 Content-Type: application/json
 
 {
     "tasks": [
         {
-      "id":"11",
+      "id":"11123456",
       "title":"Создание семантического ядра111",
       "name_organization":"фонд СеллСтандарт",
       "deadline":"25.06.2021",
@@ -26,7 +64,7 @@ Content-Type: application/json
       "description":""
    }, 
    {
-      "id":"22",
+      "id":"2222345",
       "title":"Видеосъемка фильма о проекте22",
       "name_organization":"БФ «Гольфстрим»",
       "deadline":"21.06.2021",
@@ -37,26 +75,8 @@ Content-Type: application/json
       "link":"<https://procharity.ru/tasks/detail.php?ID=33098>",
       "description":""
    }
-    ],
-
-    "categories":[
-    {
-      "id":"1",
-      "name":"Дизайн и верстка"
-   },
-   {
-       "id":"2",
-      "name":"Маркетинг и коммуникации"
-
-   },
-   {
-       "id":"3",
-      "name":"Всего понемногу"
-   },
-   {
-       "id":"4",
-      "name":"Всякая всячина"
-   }
     ]
+
+   
 }
 

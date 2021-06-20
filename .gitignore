@@ -132,4 +132,5 @@ dmypy.json
 .pyre/
 /db.db
 .vscode
-
+.env
+requests.http

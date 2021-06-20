@@ -68,6 +68,7 @@ class Task(Base):
     description = Column(String)
     user_id = Column(Integer, ForeignKey('user.id'))
     archive = Column(Boolean)
+
     def __repr__(self):
         return f'<Task {self.title}>'
 
@@ -80,5 +81,17 @@ class Category(Base):
     name = Column(String(100))
     task = relationship('Task', backref='category')
     archive = Column(Boolean())
+    
     def __repr__(self):
         return f'<Category {self.name}>'
+
+
+class Statistics(Base):
+    __tablename__ = 'statistics'
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('user.id'))
+    command = Column(String(100))
+    write_date = Column(Date)
+
+    def __repr__(self):
+        return f'<Command {self.command}>'

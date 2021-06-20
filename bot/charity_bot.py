@@ -10,6 +10,16 @@ from telegram.ext import (Updater,
                           MessageHandler,
                           Filters)
 
+from bot.states import (GREETING,
+                        CATEGORY,
+                        AFTER_CATEGORY_REPLY,
+                        MENU,
+                        OPEN_TASKS,
+                        NO_CATEGORY,
+                        AFTER_ADD_CATEGORY,
+                        AFTER_NEW_QUESTION,
+                        AFTER_ADD_FEATURE)
+
 load_dotenv()
 
 logger = logging.getLogger(__name__)
@@ -18,7 +28,6 @@ logging.basicConfig(
     level=logging.DEBUG
 )
 
-GREETING, CATEGORY, AFTER_CATEGORY_REPLAY, MENU, OPEN_TASKS, NO_CATEGORY, AFTER_ADD_CATEGORY, AFTER_NEW_QUESTION, AFTER_ADD_FEATURE = range(9)
 
 category_reply_keyboard = [
     ['IT', 'Дизайн и вёрстка', 'Маректинг и коммуникация',
@@ -62,7 +71,7 @@ def after_category_choose(update: Update, context: CallbackContext):
         reply_markup=ReplyKeyboardMarkup(markup, one_time_keyboard=True)
     )
 
-    return AFTER_CATEGORY_REPLAY
+    return AFTER_CATEGORY_REPLY
 
 
 def open_menu(update: Update, context: CallbackContext):
@@ -108,7 +117,7 @@ def after_ask_question(update: Update, context: CallbackContext):
         reply_markup=ReplyKeyboardMarkup(markup, one_time_keyboard=True)
     )
 
-    return AFTER_CATEGORY_REPLAY
+    return AFTER_CATEGORY_REPLY
 
 
 def no_relevant_category(update: Update, context: CallbackContext):
@@ -143,7 +152,7 @@ def after_add_new_category(update: Update, context: CallbackContext):
         reply_markup=ReplyKeyboardMarkup(markup, one_time_keyboard=True)
     )
 
-    return AFTER_CATEGORY_REPLAY
+    return AFTER_CATEGORY_REPLY
 
 
 def add_new_feature(update: Update, context: CallbackContext):
@@ -164,7 +173,7 @@ def after_add_new_feature(update: Update, context: CallbackContext):
         reply_markup=ReplyKeyboardMarkup(markup, one_time_keyboard=True)
     )
 
-    return AFTER_CATEGORY_REPLAY
+    return AFTER_CATEGORY_REPLY
 
 
 def about(update: Update, context: CallbackContext):
@@ -234,7 +243,7 @@ def main() -> None:
                                no_relevant_category)
 
             ],
-            AFTER_CATEGORY_REPLAY: [MessageHandler(
+            AFTER_CATEGORY_REPLY: [MessageHandler(
                 Filters.regex(
                     '^Посмотреть открытые задания$'), show_open_task
                 ),

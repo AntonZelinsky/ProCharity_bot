@@ -60,7 +60,7 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     username = Column(String(32), unique=True, nullable=True)
     email = Column(String(48), unique=True, nullable=True)
-    telegram_id = Column(Integer())
+    telegram_id = Column(Integer(), unique=True, nullable=True)
     first_name = Column(String(32), nullable=True)
     last_name = Column(String(32), nullable=True)
     has_mailing = Column(Boolean, default=True)

@@ -133,4 +133,5 @@ dmypy.json
 /db.db
 .vscode
 .env
-requests.http
+/requests.http
+data/

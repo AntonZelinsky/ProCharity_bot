@@ -19,3 +19,20 @@ def get_category():
         stmt = select(category.c.name)
         res = conn.execute(stmt)
         return [i[0] for i in res]
+
+
+def get_task():
+    with engine.connect() as conn:
+        metadata = MetaData(engine)
+        tasks = Table('task', metadata, autoload=True)
+        stmt = select(tasks)
+        res = conn.execute(stmt)
+        return [i for i in res]
+
+
+def display_task(t):
+    tasks = [f'Организация: {organization}\nЗадание: {title}\nДедлайн: {deadline}\nСсылка на задание: {link}'
+             for iden, task_api_id, title, organization, deadline, category_id, bonus, location, link, desc, user_id
+             in t]
+
+    return '\n\n'.join(tasks)

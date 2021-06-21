@@ -20,7 +20,7 @@ from bot.states import (GREETING,
                         AFTER_NEW_QUESTION,
                         AFTER_ADD_FEATURE)
 
-from utils import get_category
+from utils import get_category, get_task, display_task
 
 load_dotenv()
 
@@ -79,8 +79,9 @@ def open_menu(update: Update, context: CallbackContext):
 
 
 def show_open_task(update: Update, context: CallbackContext):
+    tasks = get_task()
     markup = [['Посмотреть ещё', 'Переслать задание другу', 'Открыть меню']]
-    update.message.reply_text('ЭТО ТВОЁ ЗАДАНИЕ',
+    update.message.reply_text(display_task(tasks),
                               reply_markup=ReplyKeyboardMarkup(
                                   markup, one_time_keyboard=True
                               ))

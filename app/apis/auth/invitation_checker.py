@@ -8,6 +8,8 @@ from datetime import datetime
 
 
 class InvitationChecker(MethodResource, Resource):
+    """Checker of invitation token"""
+
     @doc(description='Checking invitation token.', tags=['User Registration'])
     @use_kwargs({'token': fields.Str()})
     def post(self, **kwargs):

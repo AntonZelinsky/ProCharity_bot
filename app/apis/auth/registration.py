@@ -29,7 +29,7 @@ class UserRegister(MethodResource, Resource):
         registration_record = Register.query.filter_by(token=token).first()
 
         if not registration_record:
-            return make_response(jsonify(message='The invitation did not found. Please contact site admin.'), 400)
+            return make_response(jsonify(message='No invitation found. Please contact your site administrator.'), 400)
 
         if registration_record.token_expiration_date < datetime.now():
             return make_response(jsonify(message='The invitation token has expired.'), 400)
@@ -37,7 +37,7 @@ class UserRegister(MethodResource, Resource):
         del kwargs['token']
 
         if not password:
-            return make_response(jsonify("Registration request requires 'password'."), 400)
+            return make_response(jsonify("The registration request requires a password."), 400)
 
         kwargs['email'] = registration_record.email
         kwargs['password'] = generate_password_hash(password)

@@ -46,7 +46,7 @@ class SendRegistrationInvitation(MethodResource, Resource):
             admin_user = UserAdmin.query.filter_by(email=email).first()
             if admin_user:
                 return make_response(jsonify('The user already exist in the database.'), 400)
-
+            # if the invitation request was sent before, update the token and exp. date
             register_record.token = token
             register_record.token_expiration_date = token_expiration_date
             db_session.commit()

@@ -10,8 +10,3 @@ db_session = scoped_session(sessionmaker(autocommit=False,
                                          bind=engine))
 
 Base.query = db_session.query_property()
-
-
-# TODO complete initialization of app
-def init_db():
-    pass

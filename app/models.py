@@ -14,23 +14,17 @@ from werkzeug.security import generate_password_hash, check_password_hash
 Base = declarative_base()
 
 
-class User(Base):
-    __tablename__ = 'user'
-
+class UserAdmin(Base):
+    __tablename__ = 'admin_user'
     id = Column(Integer, primary_key=True)
-    username = Column(String(32), unique=True, nullable=False)
     email = Column(String(48), unique=True, nullable=False)
-    password = Column(String(128), nullable=False)
-    telegram_id = Column(Integer())
     first_name = Column(String(32), nullable=True)
     last_name = Column(String(32), nullable=True)
-    is_superuser = Column(Boolean, default=False)
-    mailing = Column(Boolean, default=True)
+    password = Column(String(128), nullable=False)
     last_logon = Column(DateTime)
-    task = relationship('Task', backref='user')
 
     def __repr__(self):
-        return f'<User {self.username}>'
+        return f'<Admin User {self.first_name} {self.last_name}>'
 
     def set_password(self, password):
         self.password = generate_password_hash(password)
@@ -41,13 +35,49 @@ class User(Base):
     def get_user_information(self):
         return {
             'id': self.id,
+            'email': self.email,
+            'first_name': self.first_name,
+            'last_name': self.last_name,
+            'last_logon': self.last_logon
+        }
+
+
+class Register(Base):
+    __tablename__ = 'register'
+
+    id = Column(Integer, primary_key=True)
+    email = Column(String(48), unique=True, nullable=False)
+    token = Column(String(128), nullable=False)
+    token_expiration_date = Column(DateTime, nullable=False)
+
+    def __repr__(self):
+        return f'<Register {self.email}>'
+
+
+class User(Base):
+    __tablename__ = 'user'
+
+    id = Column(Integer, primary_key=True)
+    username = Column(String(32), unique=True, nullable=True)
+    email = Column(String(48), unique=True, nullable=True)
+    telegram_id = Column(Integer())
+    first_name = Column(String(32), nullable=True)
+    last_name = Column(String(32), nullable=True)
+    has_mailing = Column(Boolean, default=True)
+    last_logon = Column(DateTime)
+
+    def __repr__(self):
+        return f'<User {self.username}>'
+
+    def get_user_information(self):
+        return {
+            'id': self.id,
             'username': self.username,
             'email': self.email,
-            'is_superuser': self.is_superuser,
             'first_name': self.first_name,
-            'laast_name': self.last_name,
+            'last_name': self.last_name,
             'telegram_id': self.telegram_id,
-            'mailing': self.mailing,
+            'has_mailing': self.has_mailing,
             'last_logon': self.last_logon
 
         }
@@ -66,8 +96,8 @@ class Task(Base):
     location = Column(String)
     link = Column(String)
     description = Column(String)
-    user_id = Column(Integer, ForeignKey('user.id'))
     archive = Column(Boolean)
+
     def __repr__(self):
         return f'<Task {self.title}>'
 
@@ -80,5 +110,6 @@ class Category(Base):
     name = Column(String(100))
     task = relationship('Task', backref='category')
     archive = Column(Boolean())
+
     def __repr__(self):
         return f'<Category {self.name}>'

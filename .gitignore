@@ -102,16 +102,13 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-#.env # закомментировано для того, чтобы передать токен :)
+.env
 .venv
 env/
 venv/
 ENV/
 env.bak/
 venv.bak/
-
-# Pycharm
-.idea/
 
 # Spyder project settings
 .spyderproject
@@ -134,3 +131,15 @@ dmypy.json
 .vscode
 .env
 requests.http
+
+# Pycharm
+.idea
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+@@ -131,5 +128,3 @@ dmypy.json
+
+.vscode
+data/

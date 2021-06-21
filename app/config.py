@@ -1,4 +1,5 @@
 import os
+from flask import request
 from dotenv import load_dotenv
 from apispec import APISpec
 from apispec.ext.marshmallow import MarshmallowPlugin
@@ -11,12 +12,21 @@ load_dotenv(dotenv_path)
 # -----------------------
 # Basic project settings
 PROJECT_NAME = "ProCharrity bot"
-
+HOST_NAME = 'host'
 PASSWORD_POLICY = {
     "min_length": 8,
     "uppercase": 1,
     "max_length": 32,
 }
+
+# ------------------------
+# Registration settings
+SUBJECT = 'Registration'
+INVITATION_TEMPLATE = 'email_templates/invitation_email.html'
+PUSH_TEMPLATE = 'email_templates/push_message.html'
+PASSWORD_RESET_TEMPLATE = 'email_templates/password_reset.html'
+# Token expiration for registering a new user in the admin panel
+INV_TOKEN_EXPIRATION = 24  # hours
 # ------------------------------
 # swagger api documentation url
 SWAGGER_JSON = '/api/doc/swagger/'
@@ -59,3 +69,11 @@ class Config:
                     'APISPEC_SWAGGER_URL': SWAGGER_JSON,
                     'APISPEC_SWAGGER_UI_URL': SWAGGER_UI,
                     }
+
+    # Mail settings
+    MAIL_SERVER = 'smtp.gmail.com'
+    MAIL_PORT = 587
+    MAIL_USE_TLS = True
+    MAIL_USERNAME = 'tt265323@gmail.com'
+    MAIL_DEFAULT_SENDER = 'tt265323@gmail.com'
+    MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')

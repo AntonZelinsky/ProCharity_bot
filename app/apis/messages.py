@@ -9,10 +9,10 @@ from app.database import db_session
 from app.models import User
 
 
-# TODO Optimize
+# TODO Optimize. The endpoint should use job queue
 class SendPushEmailMessage(MethodResource, Resource):
     @doc(description='Send message to registered users',
-         tags=['Send Message'],
+         tags=["Send Push Message to users' emails"],
 
          )
     @use_kwargs({'message': fields.Str(), 'subject': fields.Str()})
@@ -24,9 +24,3 @@ class SendPushEmailMessage(MethodResource, Resource):
 
         send_email(recipients=emails, subject=subject, template=template)
         return jsonify(emails)
-
-
-
-class SendPushTelegramMessage(MethodResource, Resource):
-  def push(self):
-      telegram_ids = [x.email for x in db_session.query(User).filter(User.email.isnot(None))]

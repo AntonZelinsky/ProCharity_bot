@@ -17,7 +17,7 @@ class Login(MethodResource, Resource):
     """
 
     @doc(description='This endpoint provides jwt token for authorized users',
-         tags=['User Login'], )
+         tags=['User Login'])
     @use_kwargs({'email': fields.Str(), 'password': fields.Str()})
     def post(self, **kwargs):
 

@@ -108,11 +108,7 @@ class Category(Base):
     name = Column(String(100))
     task = relationship('Task', backref='category')
     archive = Column(Boolean())
-<<<<<<< HEAD
-    
-=======
 
->>>>>>> upstream/master
     def __repr__(self):
         return f'<Category {self.name}>'
 

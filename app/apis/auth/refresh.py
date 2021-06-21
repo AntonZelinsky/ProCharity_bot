@@ -1,5 +1,5 @@
 from app import config
-from flask import jsonify
+from flask import jsonify, make_response
 from flask_apispec import doc
 from flask_apispec.views import MethodResource
 from flask_jwt_extended import (create_access_token, create_refresh_token,
@@ -19,5 +19,5 @@ class Refresh(MethodResource, Resource):
         identity = get_jwt_identity()
         access_token = create_access_token(identity=identity, fresh=False)
         refresh_token = create_refresh_token(identity=identity)
-        return jsonify(access_token=access_token, refresh_token=refresh_token)
+        return make_response(jsonify(access_token=access_token, refresh_token=refresh_token), 200)
 

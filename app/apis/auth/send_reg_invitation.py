@@ -14,7 +14,7 @@ from flask_restful import Resource
 from marshmallow import fields
 
 
-class SendRegistrationInvitation(MethodResource, Resource):
+class SendRegistrationInvitе(MethodResource, Resource):
     @doc(description='Send email with invitation url',
          tags=['User Registration'],
          params=config.PARAM_HEADER_AUTH
@@ -61,4 +61,5 @@ class SendRegistrationInvitation(MethodResource, Resource):
         except Exception as ex:
             return make_response(jsonify(str(ex)), 400)
 
-        return jsonify('The email with the invitation url was been sent to specified email address')
+        return make_response(jsonify('The email with the invitation url'
+                                     ' was been sent to specified email address'), 200)

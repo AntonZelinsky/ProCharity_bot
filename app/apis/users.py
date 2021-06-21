@@ -8,7 +8,7 @@ from flask_apispec.views import MethodResource
 from flask_apispec import doc, use_kwargs
 from email_validator import validate_email, EmailNotValidError
 from marshmallow import fields
-import datetime
+
 
 USER_SCHEMA = {
     'username': fields.Str(),

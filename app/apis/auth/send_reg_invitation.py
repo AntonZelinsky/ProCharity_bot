@@ -1,16 +1,17 @@
-from flask_restful import Resource
-from flask_apispec.views import MethodResource
-from flask import jsonify, render_template, make_response
-from flask_apispec import doc, use_kwargs
-from flask_jwt_extended import jwt_required
-from app import config
-from marshmallow import fields
-from app.messages import send_email
 import uuid
-from app.models import Register, UserAdmin
 from datetime import datetime, timedelta
+
+from app import config
 from app.database import db_session
-from email_validator import validate_email, EmailNotValidError
+from app.messages import send_email
+from app.models import Register, UserAdmin
+from email_validator import EmailNotValidError, validate_email
+from flask import jsonify, make_response, render_template
+from flask_apispec import doc, use_kwargs
+from flask_apispec.views import MethodResource
+from flask_jwt_extended import jwt_required
+from flask_restful import Resource
+from marshmallow import fields
 
 
 class SendRegistrationInvitation(MethodResource, Resource):

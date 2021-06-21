@@ -1,13 +1,14 @@
-from flask import jsonify, make_response
-from app.models import UserAdmin, Register
-from werkzeug.security import generate_password_hash
-from flask_restful import Resource
-from flask_apispec.views import MethodResource
-from flask_apispec import doc, use_kwargs
-from marshmallow import fields
 from datetime import datetime
-from app.database import db_session
+
 from app import password_policy
+from app.database import db_session
+from app.models import Register, UserAdmin
+from flask import jsonify, make_response
+from flask_apispec import doc, use_kwargs
+from flask_apispec.views import MethodResource
+from flask_restful import Resource
+from marshmallow import fields
+from werkzeug.security import generate_password_hash
 
 USER_ADMIN_REGISTRATION_SCHEMA = {
     'token': fields.Str(),

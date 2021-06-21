@@ -1,11 +1,12 @@
-from flask import jsonify, make_response
-from flask_jwt_extended import create_access_token, create_refresh_token
-from app.models import UserAdmin
-from app.database import db_session
-from flask_restful import Resource
-from flask_apispec.views import MethodResource
-from flask_apispec import doc, use_kwargs
 import datetime
+
+from app.database import db_session
+from app.models import UserAdmin
+from flask import jsonify, make_response
+from flask_apispec import doc, use_kwargs
+from flask_apispec.views import MethodResource
+from flask_jwt_extended import create_access_token, create_refresh_token
+from flask_restful import Resource
 from marshmallow import fields
 
 

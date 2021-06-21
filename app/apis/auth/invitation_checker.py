@@ -1,10 +1,11 @@
-from flask import jsonify, make_response
-from app.models import Register
-from flask_restful import Resource
-from flask_apispec.views import MethodResource
-from flask_apispec import doc, use_kwargs
-from marshmallow import fields
 from datetime import datetime
+
+from app.models import Register
+from flask import jsonify, make_response
+from flask_apispec import doc, use_kwargs
+from flask_apispec.views import MethodResource
+from flask_restful import Resource
+from marshmallow import fields
 
 
 class InvitationChecker(MethodResource, Resource):

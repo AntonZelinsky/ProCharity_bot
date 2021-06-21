@@ -20,6 +20,8 @@ from bot.states import (GREETING,
                         AFTER_NEW_QUESTION,
                         AFTER_ADD_FEATURE)
 
+from utils import get_category
+
 load_dotenv()
 
 logger = logging.getLogger(__name__)
@@ -27,17 +29,6 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.DEBUG
 )
-
-
-category_reply_keyboard = [
-    ['IT', 'Дизайн и вёрстка', 'Маректинг и коммуникация',
-     'Переводы', 'Менеджмент'],
-    ['Фото и видео', 'Обучение и тренинги', 'Финансы и фандрайзинг',
-     'Юридический услуги', 'Стратегический консалтинг'],
-    ['Готово!', 'Моих компетенций здесь нет'],
-]
-
-markup = ReplyKeyboardMarkup(category_reply_keyboard, one_time_keyboard=True)
 
 
 def start(update: Update, context: CallbackContext) -> int:
@@ -56,10 +47,12 @@ def start(update: Update, context: CallbackContext) -> int:
 
 
 def choose_category(update: Update, context: CallbackContext):
-    update.message.reply_text('Чтобы я знал, в каких задачах ты можешь '
-                              'помогать фондам выбери свои профессиональные '
-                              'компетенции:',
-                              reply_markup=markup)
+    update.message.reply_text(
+        'Чтобы я знал, в каких задачах ты можешь помогать фондам выбери свои профессиональные компетенции:',
+        reply_markup=ReplyKeyboardMarkup([get_category(), ['Готово!', 'Моих компетенций здесь нет']],
+                                         one_time_keyboard=True)
+    )
+
     return CATEGORY
 
 
@@ -231,7 +224,7 @@ def main() -> None:
             )],
             CATEGORY: [MessageHandler(
                 Filters.regex(
-                    '^(IT|Дизайн и вёрстка|Маректинг и коммуникация|'
+                    '^(IT|Дизайн и верстка|Маркетинг и коммуникации|'
                     'Переводы|Менеджмент|Фото и видео|Обучение и тренинги|'
                     'Финансы и фандрайзинг|Юридический услуги|'
                     'Стратегический консалтинг)$'),
@@ -299,3 +292,7 @@ def main() -> None:
     updater.start_polling()
 
     updater.idle()
+
+
+if __name__ == '__main__':
+    main()

@@ -128,6 +128,9 @@ dmypy.json
 # Pyre type checker
 .pyre/
 /db.db
+.vscode
+.env
+requests.http
 
 # Pycharm
 .idea
@@ -139,3 +142,4 @@ dmypy.json
 @@ -131,5 +128,3 @@ dmypy.json
 
 .vscode
+data/

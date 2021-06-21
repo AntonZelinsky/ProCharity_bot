@@ -87,7 +87,6 @@ class Task(Base):
     __tablename__ = 'task'
 
     id = Column(Integer, primary_key=True)
-    task_api_id = Column(Integer)
     title = Column(String)
     name_organization = Column(String)
     deadline = Column(Date)
@@ -106,10 +105,20 @@ class Category(Base):
     __tablename__ = 'category'
 
     id = Column(Integer, primary_key=True)
-    category_api_id = Column(Integer)
     name = Column(String(100))
     task = relationship('Task', backref='category')
     archive = Column(Boolean())
 
     def __repr__(self):
         return f'<Category {self.name}>'
+
+
+class Statistics(Base):
+    __tablename__ = 'statistics'
+    id = Column(Integer, primary_key=True)
+    telegram_id = Column(Integer, ForeignKey('user.telegram_id'))
+    command = Column(String(100))
+    added_date = Column(Date)
+
+    def __repr__(self):
+        return f'<Command {self.command}>'

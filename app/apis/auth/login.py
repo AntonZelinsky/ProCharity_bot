@@ -23,7 +23,7 @@ class Login(MethodResource, Resource):
     def post(self, **kwargs):
 
         if not kwargs:
-            return jsonify(message="This request requires 'email' and 'password'"), 400
+            return make_response(jsonify(message="This request requires 'email' and 'password'"), 400)
 
         email = kwargs.get("email")
         password = kwargs.get("password")
@@ -47,5 +47,5 @@ class Login(MethodResource, Resource):
         user.last_logon = datetime.datetime.now()
         db_session.commit()
 
-        return jsonify(access_token=access_token,
-                       refresh_token=refresh_token)
+        return make_response(jsonify(access_token=access_token,
+                                     refresh_token=refresh_token), 200)

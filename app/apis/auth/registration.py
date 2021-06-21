@@ -52,4 +52,4 @@ class UserRegister(MethodResource, Resource):
         db_session.delete(registration_record)
         db_session.commit()
 
-        return jsonify(message="User registered successfully ")
+        return make_response(jsonify(message="User registered successfully "), 200)

@@ -34,7 +34,7 @@ class UsersList(MethodResource, Resource):
         for user in users:
             result.append(user.get_user_information())
 
-        return jsonify(result)
+        return make_response(jsonify(result), 200)
 
 
 class User_item(MethodResource, Resource):
@@ -49,7 +49,7 @@ class User_item(MethodResource, Resource):
         user = User.query.get(id)
         if not user:
             return make_response(jsonify(message='This user was not found.'), 400)
-        return jsonify(user.get_user_information())
+        return make_response(jsonify(user.get_user_information()), 200)
 
     @doc(description="Update user's database information.",
          tags=['Users Control'],
@@ -81,7 +81,7 @@ class User_item(MethodResource, Resource):
         User.query.filter_by(id=id).update(kwargs)
         db_session.commit()
 
-        return jsonify(message='The user has been updated')
+        return make_response(jsonify(message='The user has been updated'), 200)
 
     @doc(description="Delete user record.",
          tags=['Users Control'],
@@ -94,4 +94,4 @@ class User_item(MethodResource, Resource):
             return make_response(jsonify(message=f'The user did not found.'), 400)
         db_session.delete(user)
         db_session.commit()
-        return jsonify(message=f'The user ID:{id} has been deleted.')
+        return make_response(jsonify(message=f'The user ID:{id} has been deleted.'), 200)

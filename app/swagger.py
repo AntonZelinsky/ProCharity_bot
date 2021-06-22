@@ -8,6 +8,7 @@ from app.apis.auth.invitation_checker import InvitationChecker
 from app.apis.auth.send_reg_invitation import SendRegistrationInvitе
 from app.apis.create_categories import Create_categories
 from app.apis.create_tasks import Create_tasks
+from app.apis.messages import SendTelegramNotification
 
 docs.register(Login)
 docs.register(Refresh)
@@ -19,4 +20,4 @@ docs.register(SendRegistrationInvitе)
 docs.register(InvitationChecker)
 docs.register(Create_categories)
 docs.register(Create_tasks)
-
+docs.register(SendTelegramNotification)

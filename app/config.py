@@ -23,7 +23,6 @@ PASSWORD_POLICY = {
 # Registration settings
 SUBJECT = 'Registration'
 INVITATION_TEMPLATE = 'email_templates/invitation_email.html'
-PUSH_TEMPLATE = 'email_templates/push_message.html'
 PASSWORD_RESET_TEMPLATE = 'email_templates/password_reset.html'
 # Token expiration for registering a new user in the admin panel
 INV_TOKEN_EXPIRATION = 24  # hours

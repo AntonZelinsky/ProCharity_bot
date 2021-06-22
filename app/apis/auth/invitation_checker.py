@@ -22,4 +22,4 @@ class InvitationChecker(MethodResource, Resource):
 
         if record.token_expiration_date < datetime.now():
             return make_response(jsonify(message='The invitation token has expired'), 400)
-        return jsonify(message='Token is valid')
+        return make_response(jsonify(message='Token is valid'), 200)

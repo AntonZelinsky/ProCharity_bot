@@ -36,7 +36,7 @@ class PasswordReset(MethodResource, Resource):
         user.password = generate_password_hash(password=password)
         db_session.commit()
         send_email(subject=subject, template=template, recipients=[user.email])
-        return jsonify(message='New password has been sent to the registered email address.')
+        return make_response(jsonify(message='New password has been sent to the registered email address.'), 200)
 
     def random_password(self):
         length = config.PASSWORD_POLICY["min_length"]

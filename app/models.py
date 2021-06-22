@@ -1,3 +1,4 @@
+from datetime import datetime
 from sqlalchemy import (Column,
                         ForeignKey,
                         Integer,
@@ -64,7 +65,8 @@ class User(Base):
     first_name = Column(String(32), nullable=True)
     last_name = Column(String(32), nullable=True)
     has_mailing = Column(Boolean, default=True)
-    last_logon = Column(DateTime)
+    date_registration = Column(DateTime, default=datetime.today().date())
+    #date_registration = Column(DateTime, default=datetime.today().date())
 
     def __repr__(self):
         return f'<User {self.username}>'

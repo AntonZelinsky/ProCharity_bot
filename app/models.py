@@ -129,3 +129,4 @@ class Message(Base):
     id = Column(Integer, primary_key=True)
     message = Column(String(4096), nullable=False)
     was_sent = Column(Boolean, default=False)
+    sent_date = Column(DateTime)

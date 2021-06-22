@@ -17,10 +17,10 @@ from marshmallow import fields
 class SendRegistrationInvitе(MethodResource, Resource):
     @doc(description='Send email with invitation url',
          tags=['User Registration'],
-         params=config.PARAM_HEADER_AUTH
+         # params=config.PARAM_HEADER_AUTH TODO Token verification is temporarily disabled.
          )
     @use_kwargs({'email': fields.Str()})
-    @jwt_required()
+    # @jwt_required() TODO Token verification is temporarily disabled.
     def post(self, **kwargs):
         email = kwargs.get('email')
 
@@ -43,15 +43,16 @@ class SendRegistrationInvitе(MethodResource, Resource):
         register_record = Register.query.filter_by(email=email).first()
         # checks if the invitation already sent.
         if register_record:
-            # if the invitation exist, try search the user in User Admin db
-            admin_user = UserAdmin.query.filter_by(email=email).first()
-            if admin_user:
-                return make_response(jsonify('The user already exist in the database.'), 400)
             # if the invitation request was sent before, update the token and exp. date
             register_record.token = token
             register_record.token_expiration_date = token_expiration_date
             db_session.commit()
         else:
+            # if the invitation exist, try search the user in User Admin db
+            admin_user = UserAdmin.query.filter_by(email=email).first()
+            if admin_user:
+                return make_response(jsonify('The user already exist in the database.'), 400)
+
             user = Register(email=email, token=token, token_expiration_date=token_expiration_date)
             db_session.add(user)
             db_session.commit()

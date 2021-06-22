@@ -4,11 +4,8 @@ from app.database import db_session
 from datetime import datetime
 
 
-def add_comand(telegram_id, command):
+def add_command(telegram_id, command):
     try:
-        # user_id = User.query.filter_by(
-        #     telegram_id=int(telegram_id),
-        # ).first().id
         statistics = Statistics(telegram_id=telegram_id,
                                 command=command,
                                 added_date=datetime.today().date())

@@ -60,7 +60,7 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     username = Column(String(32), unique=True, nullable=True)
     email = Column(String(48), unique=True, nullable=True)
-    telegram_id = Column(Integer())
+    telegram_id = Column(String(9), unique=True, nullable=False)
     first_name = Column(String(32), nullable=True)
     last_name = Column(String(32), nullable=True)
     has_mailing = Column(Boolean, default=True)
@@ -116,7 +116,7 @@ class Category(Base):
 class Statistics(Base):
     __tablename__ = 'statistics'
     id = Column(Integer, primary_key=True)
-    telegram_id = Column(Integer, ForeignKey('user.telegram_id'))
+    telegram_id = Column(String(9), ForeignKey('user.telegram_id'))
     command = Column(String(100))
     added_date = Column(Date)
 

@@ -19,7 +19,7 @@ api.add_resource(Refresh, '/api/auth/token_refresh/')
 api.add_resource(PasswordReset, '/api/auth/password_reset/')
 api.add_resource(UserRegister, '/api/auth/register/')
 api.add_resource(SendRegistrationInvitе, '/api/auth/Invitation')
-api.add_resource(SendTelegramMessage, '/api/auth/send_telegram_message')
+api.add_resource(SendTelegramMessage, '/api/send_telegram_message/')
 
 api.add_resource(Create_tasks, '/api/v1/tasks/')
 api.add_resource(Create_categories, '/api/v1/categories/')

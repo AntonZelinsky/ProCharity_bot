@@ -5,7 +5,6 @@ from app import config
 from app.config import Config
 from app.config import PASSWORD_POLICY
 from flask_jwt_extended import JWTManager
-from flask_cors import CORS
 from flask_restful import Api
 from flask_apispec.extension import FlaskApiSpec
 from password_validation import PasswordPolicy
@@ -21,7 +20,5 @@ password_policy = PasswordPolicy(**PASSWORD_POLICY)
 app.config.update(**Config.APISPEC_SPEC)
 
 docs = FlaskApiSpec(app)
-
-CORS(app)
 
 from . import api, routers, swagger

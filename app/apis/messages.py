@@ -27,9 +27,10 @@ class SendTelegramNotification(Resource, MethodResource):
 
     @doc(description='Sends messages to the Telegram chat. Requires "message" parameter.'
                      ' Messages can be sent either to subscribed users or not.To do this,'
-                     ' specify the "has_mailing" parameter.'
+                     ' specify the "has_mailing" parameter.Default value "True"'
                      ' It is also possible to send a message to a single user.'
-                     ' To do this, use the "chat_id" parameter with "message".',
+                     ' To do this, use the "chat_id" parameter with "message".'
+                     ' When sending a message to a single user, the "has_mailing" parameter is not required.',
          summary='Send messages to the bot chat',
          tags=['Messages'],
          responses={

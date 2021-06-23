@@ -62,13 +62,14 @@ class SendTelegramNotification(Resource, MethodResource):
 
         if chat_id:
             context = {'message': message, 'chat_id': chat_id}
-            updater.job_queue.run_once(self.send_notification_to_one, 1, context=context,
-                                       name=f'Notification: {message.message[0:10]}')
+            notification_func = self.send_notification_to_one
+
         else:
             context = {'message': message, 'has_mailing': has_mailing, }
-            updater.job_queue.run_once(self.send_notification_to_all, 1, context=context,
-                                       name=f'Notification:'
-                                            f' {message.message[0:10]}')
+            notification_func = self.send_notification_to_all
+
+        updater.job_queue.run_once(notification_func, 1, context=context,
+                                   name=f'Notification: {message.message[0:10]}')
 
     def send_notification_to_all(self, context):
         job = context.job

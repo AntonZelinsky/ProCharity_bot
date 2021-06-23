@@ -9,7 +9,6 @@ from flask_apispec import doc, use_kwargs
 from email_validator import validate_email, EmailNotValidError
 from marshmallow import fields
 
-
 USER_SCHEMA = {
     'username': fields.Str(),
     "email": fields.Email(),
@@ -24,8 +23,7 @@ class UsersList(MethodResource, Resource):
 
     @doc(description='List of all users',
          tags=['Users Control'],
-         params=config.PARAM_HEADER_AUTH
-         )
+         params={'Authorization': config.PARAM_HEADER_AUTH, })
     @jwt_required()
     def get(self):
         users = User.query.all()
@@ -42,7 +40,7 @@ class User_item(MethodResource, Resource):
 
     @doc(description="Get one user's record",
          tags=['Users Control'],
-         params=config.PARAM_HEADER_AUTH
+         params={'Authorization': config.PARAM_HEADER_AUTH, }
          )
     @jwt_required()
     def get(self, id):
@@ -53,7 +51,40 @@ class User_item(MethodResource, Resource):
 
     @doc(description="Update user's database information.",
          tags=['Users Control'],
-         params=config.PARAM_HEADER_AUTH
+         params={
+             'username': {
+                 'description': 'The user\' telegram username.',
+                 'in': 'query',
+                 'type': 'string',
+                 'required': False
+             },
+             'email': {
+                 'description': 'User\'s email.',
+                 'in': 'query',
+                 'type': 'string',
+                 'required': False
+
+             },
+             'first_name': {
+                 'description': 'First Name',
+                 'in': 'query',
+                 'type': 'string',
+                 'required': False
+             },
+             'last_name': {
+                 'description': 'Last Name',
+                 'in': 'query',
+                 'type': 'string',
+                 'required': False
+             },
+             'chat_id': {
+                 'description': 'User\' chat_id.',
+                 'in': 'query',
+                 'type': 'integer',
+                 'required': False,
+             },
+             'Authorization': config.PARAM_HEADER_AUTH,  # Only if request requires authorization
+         }
          )
     @jwt_required()
     @use_kwargs(USER_SCHEMA)
@@ -85,7 +116,7 @@ class User_item(MethodResource, Resource):
 
     @doc(description="Delete user record.",
          tags=['Users Control'],
-         params=config.PARAM_HEADER_AUTH
+         params={'Authorization': config.PARAM_HEADER_AUTH, }
          )
     @jwt_required()
     def delete(self, id):

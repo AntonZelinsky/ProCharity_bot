@@ -22,8 +22,20 @@ class SendRegistrationInvitе(MethodResource, Resource):
                     400: {'description': 'The user already exist in the database.'},
                     500: {'description': "Server Error.."},
 
-                    })
-    # params=config.PARAM_HEADER_AUTH TODO Token verification is temporarily disabled.
+                    },
+         params={
+             'email': {
+                 'description': 'The address to send the link to the registration invitation.',
+                 'in': 'query',
+                 'type': 'string',
+                 'required': True
+             },
+             # TODO Authorization is temporarily disabled.
+             # 'Authorization': config.PARAM_HEADER_AUTH,  # Only if request requires authorization
+         },
+
+         )
+    # TODO Token verification is temporarily disabled.
     @use_kwargs({'email': fields.Str()})
     # @jwt_required() TODO Token verification is temporarily disabled.
     def post(self, **kwargs):

@@ -12,7 +12,7 @@ class Refresh(MethodResource, Resource):
 
     @doc(description='JWT token Refresh API',
          tags=['JWT Refresh'],
-         params=config.PARAM_HEADER_AUTH
+         params={'Authorization': config.PARAM_HEADER_AUTH,}
          )
     @jwt_required(refresh=True)
     def post(self):

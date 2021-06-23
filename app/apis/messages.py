@@ -25,7 +25,7 @@ class TelegramNotificationSchema(Schema):
 
 class SendTelegramNotification(Resource, MethodResource):
 
-    @doc(description='Sends messages to the Telegram chat. Requires "message" parameter.'
+    @doc(description='Sends message to the Telegram chat. Requires "message" parameter.'
                      ' Messages can be sent either to subscribed users or not.To do this,'
                      ' specify the "has_mailing" parameter.Default value "True"'
                      ' It is also possible to send a message to a single user.'
@@ -37,8 +37,28 @@ class SendTelegramNotification(Resource, MethodResource):
              200: {'description': 'The message has been added to a query job'},
              400: {'description': 'The message can not be empty'},
          },
-         params=config.PARAM_HEADER_AUTH,
-
+         params={
+             'message': {
+                 'description': 'Notification message. Max len 4096',
+                 'in': 'query',
+                 'type': 'string',
+                 'required': True
+             },
+             'chat_id': {
+                 'description': 'User\'s Chat ID for individual sending of message to telegram chat.',
+                 'in': 'query',
+                 'type': 'integer'
+             },
+             'has_mailing': {
+                 'description': ('Sending notifications to users by the type of permission to mailing.'
+                                 'True - user has enabled a mailing.'
+                                 ' False - user has disabled a mailing.'),
+                 'in': 'query',
+                 'type': 'boolean',
+                 'default': True,
+             },
+             'Authorization': config.PARAM_HEADER_AUTH,  # Only if request requires authorization
+         }
          )
     @use_kwargs(TelegramNotificationSchema)
     @jwt_required()

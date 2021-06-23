@@ -5,7 +5,7 @@ from flask import jsonify, make_response
 from flask_apispec import doc, use_kwargs
 from marshmallow import fields, Schema
 from app.database import db_session
-from app.models import Message, User
+from app.models import Notification, User
 from telegram import Bot, ParseMode
 from bot.charity_bot import updater
 
@@ -70,7 +70,7 @@ class SendTelegramNotification(Resource, MethodResource):
         if not message:
             return make_response(jsonify(result='The message can not be empty.'), 400)
 
-        message = Message(message=message)
+        message = Notification(message=message)
         db_session.add(message)
         db_session.commit()
         self.add_job_queue(message=message,

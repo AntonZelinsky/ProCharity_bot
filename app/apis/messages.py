@@ -10,7 +10,7 @@ from telegram import Bot, ParseMode
 from bot.charity_bot import updater
 
 import datetime
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required
 from app import config
 import time
 
@@ -25,7 +25,11 @@ class TelegramNotificationSchema(Schema):
 
 class SendTelegramNotification(Resource, MethodResource):
 
-    @doc(description="Send messages to the bot chat",
+    @doc(description='Sends messages to the Telegram chat. Requires "message" parameter.'
+                     ' Messages can be sent either to subscribed users or not.To do this,'
+                     ' specify the "has_mailing" parameter.'
+                     ' It is also possible to send a message to a single user.'
+                     ' To do this, use the "chat_id" parameter with "message".',
          summary='Send messages to the bot chat',
          tags=['Messages'],
          responses={

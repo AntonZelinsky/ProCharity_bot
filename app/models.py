@@ -5,7 +5,7 @@ from sqlalchemy import (Column,
                         String,
                         Boolean,
                         DateTime,
-                        Date
+                        Date,
                         )
 
 from sqlalchemy.orm import relationship
@@ -123,3 +123,11 @@ class Statistics(Base):
 
     def __repr__(self):
         return f'<Command {self.command}>'
+
+
+class Message(Base):
+    __tablename__ = 'message'
+    id = Column(Integer, primary_key=True)
+    message = Column(String(4096), nullable=False)
+    was_sent = Column(Boolean, default=False)
+    sent_date = Column(DateTime)

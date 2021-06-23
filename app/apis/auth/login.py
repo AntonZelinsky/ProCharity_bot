@@ -7,7 +7,12 @@ from flask_apispec import doc, use_kwargs
 from flask_apispec.views import MethodResource
 from flask_jwt_extended import create_access_token, create_refresh_token
 from flask_restful import Resource
-from marshmallow import fields
+from marshmallow import fields, Schema
+
+
+class LoginSchema(Schema):
+    email = fields.String(required=True)
+    password = fields.String(required=True)
 
 
 class Login(MethodResource, Resource):
@@ -18,26 +23,27 @@ class Login(MethodResource, Resource):
     """
 
     @doc(description='This endpoint provides jwt token for authorized users',
-         tags=['User Login'])
-    @use_kwargs({'email': fields.Str(), 'password': fields.Str()})
-    def post(self, **kwargs):
+         tags=['User Login'],
+         responses={200: {'description': 'access_token:"" refresh_token: ""'},
+                    403: {'description': "'Email and password is required.', 'Bad email or Password.'"},
 
+                    }
+         )
+    @use_kwargs(LoginSchema)
+    def post(self, **kwargs):
         if not kwargs:
-            return make_response(jsonify(message="This request requires 'email' and 'password'"), 400)
+            return make_response(jsonify(message="Email and password is required"), 403)
 
         email = kwargs.get("email")
         password = kwargs.get("password")
 
-        if not email:
-            return make_response(jsonify(message="email is required"), 400)
-
-        if not password:
-            return make_response(jsonify(message="Password is required"), 400)
+        if not email or not password:
+            return make_response(jsonify(message="Email and password is required"), 403)
 
         user = UserAdmin.query.filter_by(email=email).first()
 
         if not user or not user.check_password(password):
-            return make_response(jsonify(message="Bad email or Password"), 400)
+            return make_response(jsonify(message="Bad email or Password"), 403)
 
         access_token = create_access_token(identity=email)
         refresh_token = create_refresh_token(identity=email)

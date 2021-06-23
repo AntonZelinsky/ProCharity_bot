@@ -29,6 +29,7 @@ logging.basicConfig(
     level=logging.DEBUG
 )
 
+updater = Updater(token=os.getenv('TOKEN'))
 
 category_reply_keyboard = [
     ['IT', 'Дизайн и вёрстка', 'Маректинг и коммуникация',
@@ -221,7 +222,7 @@ def cancel(update: Update, context: CallbackContext):
 
 
 def main() -> None:
-    updater = Updater(token=os.getenv('TOKEN'))
+
     dispatcher = updater.dispatcher
 
     conv_handler = ConversationHandler(

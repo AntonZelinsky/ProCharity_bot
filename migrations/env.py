@@ -4,7 +4,7 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from alembic.config import Config
 from alembic import context
-from app.config import Config as app_conf
+from app import config as prj_config
 from app.models import Base
 
 alembic_cfg = Config()
@@ -49,7 +49,7 @@ def run_migrations_online():
     """
     ini_section = config.get_section(config.config_ini_section)
 
-    db_path = app_conf.SQL_ALCHEMY_DATABASE_URL
+    db_path = prj_config.SQL_ALCHEMY_DATABASE_URL
     if db_path:
         ini_section['sqlalchemy.url'] = db_path
 

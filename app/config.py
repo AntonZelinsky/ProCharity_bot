@@ -42,7 +42,9 @@ PARAM_HEADER_AUTH = {
         'required': True
     }
 }
-
+# ------------------------------
+# Telegram bot settings
+TELEGRAM_TOKEN = os.getenv('TOKEN')
 # ------------------------------
 # Basic application settings
 

@@ -20,7 +20,7 @@ from bot.states import (GREETING,
                         AFTER_NEW_QUESTION,
                         AFTER_ADD_FEATURE)
 
-from bot.utils import get_category, get_task, display_task
+from bot.data_to_db import get_category, get_task, display_task
 
 load_dotenv()
 

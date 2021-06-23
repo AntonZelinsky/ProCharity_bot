@@ -1,14 +1,13 @@
-from app.database import db_session
 from app.models import Category, Task
 
 
 def get_category():
-    categories = db_session.query(Category).all()
+    categories = Category.query.all()
     return [category.name for category in categories]
 
 
 def get_task():
-    return db_session.query(Task).limit(3).all()
+    return Task.query.limit(3).all()
 
 
 def display_task(t):

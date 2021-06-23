@@ -1,7 +1,7 @@
 from app import api
 from app.apis.users import UsersList, User_item
-from app.apis.create_categories import CreateCategories
-from app.apis.create_tasks import CreateTasks
+from app.apis.categories import CreateCategories
+from app.apis.tasks import CreateTasks
 from app.apis.auth.refresh import Refresh
 from app.apis.auth.login import Login
 from app.apis.auth.password_reset import PasswordReset

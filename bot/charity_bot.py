@@ -19,6 +19,7 @@ from bot.states import (GREETING,
                         AFTER_ADD_CATEGORY,
                         AFTER_NEW_QUESTION,
                         AFTER_ADD_FEATURE)
+from .data_to_db import add_user
 
 load_dotenv()
 
@@ -41,6 +42,7 @@ markup = ReplyKeyboardMarkup(category_reply_keyboard, one_time_keyboard=True)
 
 
 def start(update: Update, context: CallbackContext) -> int:
+    add_user(update.message)
     update.message.reply_text(
         'Привет! Я - бот '
         'ProCharity-онлайн-платформы интеллектуального волонтёрства!'

@@ -9,7 +9,7 @@ from marshmallow import fields
 from marshmallow.schema import Schema
 
 
-class Create_categories(MethodResource, Resource):
+class CreateCategories(MethodResource, Resource):
     @doc(description='Сreates Categories in the database',
          tags=['Create categories'])
     #@use_kwargs(CATEGORY_SCHEMA, location=('json'))

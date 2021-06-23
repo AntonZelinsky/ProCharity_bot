@@ -125,8 +125,8 @@ class Statistics(Base):
         return f'<Command {self.command}>'
 
 
-class Message(Base):
-    __tablename__ = 'message'
+class Notification(Base):
+    __tablename__ = 'notification'
     id = Column(Integer, primary_key=True)
     message = Column(String(4096), nullable=False)
     was_sent = Column(Boolean, default=False)

@@ -6,6 +6,7 @@ from apispec.ext.marshmallow import MarshmallowPlugin
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 dotenv_path = os.path.join(BASE_DIR, '.env')
+DB_PATH = os.path.join(BASE_DIR, 'db.db')
 load_dotenv(dotenv_path)
 
 # -----------------------
@@ -47,7 +48,8 @@ class Config:
     JWT_SECRET_KEY = 'Ad3ewrf#$wqA24&2W24-0)*&)@43'
 
     # DataBase settings:
-    SQL_ALCHEMY_DATABASE_URL = os.getenv('DATABASE_URL')
+    # SQL_ALCHEMY_DATABASE_URL = os.getenv('DATABASE_URL')
+    SQL_ALCHEMY_DATABASE_URL = 'sqlite:///' + DB_PATH
 
     JSON_SORT_KEYS = False
     APISPEC_SPEC = {'APISPEC_SPEC':

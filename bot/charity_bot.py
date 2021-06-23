@@ -20,7 +20,7 @@ from bot.states import (GREETING,
                         AFTER_NEW_QUESTION,
                         AFTER_ADD_FEATURE)
 
-from utils import get_category, get_task, display_task
+from bot.utils import get_category, get_task, display_task
 
 load_dotenv()
 
@@ -71,8 +71,8 @@ def open_menu(update: Update, context: CallbackContext):
     markup = [['Посмотреть открытые задания', 'Задать вопрос', 'О платформе'],
               ['Изменить компетенции', 'Хочу новый функционал бота',
                'Остановить/включить подписку на задания']]
-    update.message.reply_text('Меню',
-                              reply_markup=ReplyKeyboardMarkup(markup, one_time_keyboard=True)
+    update.message.reply_text(
+        'Меню', reply_markup=ReplyKeyboardMarkup(markup, one_time_keyboard=True)
     )
 
     return MENU
@@ -81,10 +81,10 @@ def open_menu(update: Update, context: CallbackContext):
 def show_open_task(update: Update, context: CallbackContext):
     tasks = get_task()
     markup = [['Посмотреть ещё', 'Переслать задание другу', 'Открыть меню']]
-    update.message.reply_text(display_task(tasks),
-                              reply_markup=ReplyKeyboardMarkup(
-                                  markup, one_time_keyboard=True
-                              ))
+    for task in tasks:
+        update.message.reply_text(
+            display_task(task), reply_markup=ReplyKeyboardMarkup(markup, one_time_keyboard=True)
+        )
 
     return OPEN_TASKS
 
@@ -240,7 +240,7 @@ def main() -> None:
             AFTER_CATEGORY_REPLY: [MessageHandler(
                 Filters.regex(
                     '^Посмотреть открытые задания$'), show_open_task
-                ),
+            ),
                 MessageHandler(Filters.regex('^Открыть меню$'), open_menu)
             ],
             MENU: [

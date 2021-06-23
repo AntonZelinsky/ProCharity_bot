@@ -1,8 +1,8 @@
-"""Updated user's model
+"""new
 
-Revision ID: 7e739e2ed16b
+Revision ID: 19e9c1a7506e
 Revises: 
-Create Date: 2021-06-18 14:11:46.266906
+Create Date: 2021-06-22 13:29:25.424829
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '7e739e2ed16b'
+revision = '19e9c1a7506e'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -22,6 +22,7 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('category_api_id', sa.Integer(), nullable=True),
     sa.Column('name', sa.String(length=100), nullable=True),
+    sa.Column('archive', sa.Boolean(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('user',
@@ -51,6 +52,7 @@ def upgrade():
     sa.Column('link', sa.String(), nullable=True),
     sa.Column('description', sa.String(), nullable=True),
     sa.Column('user_id', sa.Integer(), nullable=True),
+    sa.Column('archive', sa.Boolean(), nullable=True),
     sa.ForeignKeyConstraint(['category_id'], ['category.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
     sa.PrimaryKeyConstraint('id')

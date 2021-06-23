@@ -19,9 +19,9 @@ from bot.states import (GREETING,
                         AFTER_ADD_CATEGORY,
                         AFTER_NEW_QUESTION,
                         AFTER_ADD_FEATURE)
-from .data_to_db import add_user
 
-from bot.data_to_db import get_category, get_task, display_task
+from bot.data_to_db import add_user, get_category, get_task
+from bot.formatter import display_task
 
 load_dotenv()
 
@@ -32,6 +32,7 @@ logging.basicConfig(
 )
 
 updater = Updater(token=os.getenv('TOKEN'))
+
 
 def start(update: Update, context: CallbackContext) -> int:
     add_user(update.message)

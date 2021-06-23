@@ -27,7 +27,7 @@ from marshmallow.schema import Schema
 # )
 
 
-class Create_tasks(MethodResource, Resource):
+class CreateTasks(MethodResource, Resource):
     @doc(description='Сreates tasks in the database',
          tags=['Create tasks'])
     #@use_kwargs(Task_schema, location=('json'))
@@ -64,4 +64,5 @@ class Create_tasks(MethodResource, Resource):
             db_session.commit()
             return jsonify(result='ok')
         except:
-            jsonify(result='json does not content "tasks"')
+            return jsonify(result='json does not content "tasks"')
+            

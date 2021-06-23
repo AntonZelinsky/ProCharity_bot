@@ -1,3 +1,4 @@
+from datetime import datetime
 from sqlalchemy import (Column,
                         ForeignKey,
                         Integer,
@@ -60,11 +61,11 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     username = Column(String(32), unique=True, nullable=True)
     email = Column(String(48), unique=True, nullable=True)
-    telegram_id = Column(String(9), unique=True, nullable=False)
+    telegram_id = Column(String(15), unique=True, nullable=False)
     first_name = Column(String(32), nullable=True)
     last_name = Column(String(32), nullable=True)
     has_mailing = Column(Boolean, default=True)
-    last_logon = Column(DateTime)
+    date_registration = Column(DateTime, default=datetime.today().date())
 
     def __repr__(self):
         return f'<User {self.username}>'
@@ -116,7 +117,7 @@ class Category(Base):
 class Statistics(Base):
     __tablename__ = 'statistics'
     id = Column(Integer, primary_key=True)
-    telegram_id = Column(String(9), ForeignKey('user.telegram_id'))
+    telegram_id = Column(String(15), ForeignKey('user.telegram_id'))
     command = Column(String(100))
     added_date = Column(Date)
 

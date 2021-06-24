@@ -1,8 +1,8 @@
 """message
 
-Revision ID: 9a9dc480342b
+Revision ID: ec60b615b0b1
 Revises: 
-Create Date: 2021-06-22 16:38:08.938223
+Create Date: 2021-06-24 00:34:30.955286
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '9a9dc480342b'
+revision = 'ec60b615b0b1'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -34,6 +34,13 @@ def upgrade():
     sa.Column('archive', sa.Boolean(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_table('message',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('message', sa.String(length=4096), nullable=False),
+    sa.Column('was_sent', sa.Boolean(), nullable=True),
+    sa.Column('sent_date', sa.DateTime(), nullable=True),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('register',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('email', sa.String(length=48), nullable=False),
@@ -46,7 +53,7 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('username', sa.String(length=32), nullable=True),
     sa.Column('email', sa.String(length=48), nullable=True),
-    sa.Column('telegram_id', sa.String(length=9), nullable=False),
+    sa.Column('telegram_id', sa.String(length=15), nullable=False),
     sa.Column('first_name', sa.String(length=32), nullable=True),
     sa.Column('last_name', sa.String(length=32), nullable=True),
     sa.Column('has_mailing', sa.Boolean(), nullable=True),
@@ -58,7 +65,7 @@ def upgrade():
     )
     op.create_table('statistics',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('telegram_id', sa.String(length=9), nullable=True),
+    sa.Column('telegram_id', sa.String(length=15), nullable=True),
     sa.Column('command', sa.String(length=100), nullable=True),
     sa.Column('added_date', sa.Date(), nullable=True),
     sa.ForeignKeyConstraint(['telegram_id'], ['user.telegram_id'], ),
@@ -87,6 +94,7 @@ def downgrade():
     op.drop_table('statistics')
     op.drop_table('user')
     op.drop_table('register')
+    op.drop_table('message')
     op.drop_table('category')
     op.drop_table('admin_user')
     # ### end Alembic commands ###

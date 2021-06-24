@@ -191,7 +191,7 @@ def about(update: Update, context: CallbackContext):
 
     return MENU
 
-
+# TODO Переименовать функцию на change_task_subscription
 def stop_task_subscription(update: Update, context: CallbackContext):
     markup = [['Посмотреть открытые задания', 'Задать вопрос', 'О платформе'],
               ['Изменить компетенции', 'Хочу новый функционал бота',

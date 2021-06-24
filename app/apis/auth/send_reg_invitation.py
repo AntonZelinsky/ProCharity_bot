@@ -17,8 +17,13 @@ from marshmallow import fields
 class SendRegistrationInvitе(MethodResource, Resource):
     @doc(description='Send email with invitation url',
          tags=['User Registration'],
-         # params=config.PARAM_HEADER_AUTH TODO Token verification is temporarily disabled.
-         )
+         responses={200: {'description': 'The email with the invitation url'
+                                         ' was been sent to specified email address'},
+                    400: {'description': 'The user already exist in the database.'},
+                    500: {'description': "Server Error.."},
+
+                    })
+    # params=config.PARAM_HEADER_AUTH TODO Token verification is temporarily disabled.
     @use_kwargs({'email': fields.Str()})
     # @jwt_required() TODO Token verification is temporarily disabled.
     def post(self, **kwargs):
@@ -32,7 +37,7 @@ class SendRegistrationInvitе(MethodResource, Resource):
             except EmailNotValidError as ex:
                 return make_response(jsonify(message=str(ex)), 400)
 
-        subject = config.SUBJECT
+        subject = config.REGISTRATION_SUBJECT
         expiration = config.INV_TOKEN_EXPIRATION
         token_expiration_date = datetime.now() + timedelta(hours=config.INV_TOKEN_EXPIRATION)
         token = str(uuid.uuid4())
@@ -60,7 +65,7 @@ class SendRegistrationInvitе(MethodResource, Resource):
         try:
             send_email(recipients=[email], subject=subject, template=template)
         except Exception as ex:
-            return make_response(jsonify(str(ex)), 400)
+            return make_response(jsonify(str(ex)), 500)
 
         return make_response(jsonify('The email with the invitation url'
                                      ' was been sent to specified email address'), 200)

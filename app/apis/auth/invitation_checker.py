@@ -11,15 +11,20 @@ from marshmallow import fields
 class InvitationChecker(MethodResource, Resource):
     """Checker of invitation token"""
 
-    @doc(description='Checking invitation token.', tags=['User Registration'])
+    @doc(description='Checking invitation token.', tags=['User Registration'],
+         responses={200: {'description': 'Token is valid'},
+                    403: {'description': 'No invitation found or expired.'
+                                         ' Please contact your site administrator.'},
+
+                    }
+         )
     @use_kwargs({'token': fields.Str()})
     def post(self, **kwargs):
         token = kwargs.get('token')
         record = Register.query.filter_by(token=token).first()
 
-        if not record:
-            return make_response(jsonify(message='Token is valid'), 400)
+        if not record or record.token_expiration_date < datetime.now():
+            return make_response(jsonify(message='No invitation found or expired.'
+                                                 ' Please contact your site administrator.'), 403)
 
-        if record.token_expiration_date < datetime.now():
-            return make_response(jsonify(message='The invitation token has expired'), 400)
         return make_response(jsonify(message='Token is valid'), 200)

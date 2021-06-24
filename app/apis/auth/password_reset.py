@@ -30,7 +30,7 @@ class PasswordReset(MethodResource, Resource):
             return make_response(jsonify(message='New password has been sent'), 400)
         password = self.random_password()
 
-        subject = 'Password Reset'
+        subject = config.PASSWORD_RESET_SUBJECT
         template = render_template(config.PASSWORD_RESET_TEMPLATE, password=password)
 
         user.password = generate_password_hash(password=password)

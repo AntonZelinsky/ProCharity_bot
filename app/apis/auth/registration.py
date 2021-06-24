@@ -7,38 +7,44 @@ from flask import jsonify, make_response
 from flask_apispec import doc, use_kwargs
 from flask_apispec.views import MethodResource
 from flask_restful import Resource
-from marshmallow import fields
+from marshmallow import fields, Schema
 from werkzeug.security import generate_password_hash
 
-USER_ADMIN_REGISTRATION_SCHEMA = {
-    'token': fields.Str(),
-    'first_name': fields.Str(),
-    'last_name': fields.Str(),
-    'password': fields.Str(),
 
-}
+class AdminUserRegistrationSchema(Schema):
+    token = fields.String(required=True)
+    first_name = fields.String(required=False)
+    last_name = fields.String(required=False)
+    password = fields.String(required=True)
 
 
 class UserRegister(MethodResource, Resource):
     """Provides api for register a new Admin Users"""
 
-    @doc(description='This endpoint provide registering option for admin users.', tags=['User Registration'])
-    @use_kwargs(USER_ADMIN_REGISTRATION_SCHEMA)
+    @doc(description='This endpoint provide registering option for admin users.', tags=['User Registration'],
+         param={}, responses={200: {'description': 'User registered successfully'},
+                              400: {'description': "The password does not comply with the password policy."},
+                              401: {'description': "The registration request requires a password."},
+                              403: {'description': 'No invitation found or expired.'
+                                                   ' Please contact your site administrator.'},
+
+                              }
+         )
+    @use_kwargs(AdminUserRegistrationSchema)
     def post(self, **kwargs):
         token = kwargs.get("token")
         password = kwargs.get("password")
         registration_record = Register.query.filter_by(token=token).first()
 
-        if not registration_record:
-            return make_response(jsonify(message='No invitation found. Please contact your site administrator.'), 400)
-
-        if registration_record.token_expiration_date < datetime.now():
-            return make_response(jsonify(message='The invitation token has expired.'), 400)
+        if (not registration_record
+                or registration_record.token_expiration_date < datetime.now()):
+            return make_response(jsonify(message='No invitation found or expired.'
+                                                 ' Please contact your site administrator.'), 403)
         # This key is no longer required.
         del kwargs['token']
 
         if not password:
-            return make_response(jsonify("The registration request requires a password."), 400)
+            return make_response(jsonify("The registration request requires a password."), 401)
 
         kwargs['email'] = registration_record.email
         kwargs['password'] = generate_password_hash(password)

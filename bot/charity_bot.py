@@ -21,6 +21,8 @@ from bot.states import (GREETING,
                         AFTER_ADD_FEATURE)
 from .data_to_db import add_user
 
+from bot.data_to_db import get_category, get_task, display_task
+
 load_dotenv()
 
 logger = logging.getLogger(__name__)
@@ -29,17 +31,7 @@ logging.basicConfig(
     level=logging.DEBUG
 )
 
-
-category_reply_keyboard = [
-    ['IT', 'Дизайн и вёрстка', 'Маректинг и коммуникация',
-     'Переводы', 'Менеджмент'],
-    ['Фото и видео', 'Обучение и тренинги', 'Финансы и фандрайзинг',
-     'Юридический услуги', 'Стратегический консалтинг'],
-    ['Готово!', 'Моих компетенций здесь нет'],
-]
-
-markup = ReplyKeyboardMarkup(category_reply_keyboard, one_time_keyboard=True)
-
+updater = Updater(token=os.getenv('TOKEN'))
 
 def start(update: Update, context: CallbackContext) -> int:
     add_user(update.message)
@@ -58,10 +50,12 @@ def start(update: Update, context: CallbackContext) -> int:
 
 
 def choose_category(update: Update, context: CallbackContext):
-    update.message.reply_text('Чтобы я знал, в каких задачах ты можешь '
-                              'помогать фондам выбери свои профессиональные '
-                              'компетенции:',
-                              reply_markup=markup)
+    update.message.reply_text(
+        'Чтобы я знал, в каких задачах ты можешь помогать фондам выбери свои профессиональные компетенции:',
+        reply_markup=ReplyKeyboardMarkup([get_category(), ['Готово!', 'Моих компетенций здесь нет']],
+                                         one_time_keyboard=True)
+    )
+
     return CATEGORY
 
 
@@ -80,19 +74,20 @@ def open_menu(update: Update, context: CallbackContext):
     markup = [['Посмотреть открытые задания', 'Задать вопрос', 'О платформе'],
               ['Изменить компетенции', 'Хочу новый функционал бота',
                'Остановить/включить подписку на задания']]
-    update.message.reply_text('Меню',
-                              reply_markup=ReplyKeyboardMarkup(markup, one_time_keyboard=True)
+    update.message.reply_text(
+        'Меню', reply_markup=ReplyKeyboardMarkup(markup, one_time_keyboard=True)
     )
 
     return MENU
 
 
 def show_open_task(update: Update, context: CallbackContext):
+    tasks = get_task()
     markup = [['Посмотреть ещё', 'Переслать задание другу', 'Открыть меню']]
-    update.message.reply_text('ЭТО ТВОЁ ЗАДАНИЕ',
-                              reply_markup=ReplyKeyboardMarkup(
-                                  markup, one_time_keyboard=True
-                              ))
+    for task in tasks:
+        update.message.reply_text(
+            display_task(task), reply_markup=ReplyKeyboardMarkup(markup, one_time_keyboard=True)
+        )
 
     return OPEN_TASKS
 
@@ -221,7 +216,7 @@ def cancel(update: Update, context: CallbackContext):
 
 
 def main() -> None:
-    updater = Updater(token=os.getenv('TOKEN'))
+
     dispatcher = updater.dispatcher
 
     conv_handler = ConversationHandler(
@@ -233,7 +228,7 @@ def main() -> None:
             )],
             CATEGORY: [MessageHandler(
                 Filters.regex(
-                    '^(IT|Дизайн и вёрстка|Маректинг и коммуникация|'
+                    '^(IT|Дизайн и верстка|Маркетинг и коммуникации|'
                     'Переводы|Менеджмент|Фото и видео|Обучение и тренинги|'
                     'Финансы и фандрайзинг|Юридический услуги|'
                     'Стратегический консалтинг)$'),
@@ -248,7 +243,7 @@ def main() -> None:
             AFTER_CATEGORY_REPLY: [MessageHandler(
                 Filters.regex(
                     '^Посмотреть открытые задания$'), show_open_task
-                ),
+            ),
                 MessageHandler(Filters.regex('^Открыть меню$'), open_menu)
             ],
             MENU: [
@@ -301,3 +296,7 @@ def main() -> None:
     updater.start_polling()
 
     updater.idle()
+
+
+if __name__ == '__main__':
+    main()

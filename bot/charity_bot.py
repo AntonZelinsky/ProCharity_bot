@@ -65,6 +65,7 @@ def choose_category(update: Update, context: CallbackContext):
 
 
 def after_category_choose(update: Update, context: CallbackContext):
+    add_command_exec_statistic(update.message.chat_id, after_category_choose.__name__)
     markup = [['Посмотреть открытые задания', 'Открыть меню']]
     update.message.reply_text(
         'Ура! Теперь ты будешь получать новые задания по твоим компетенциям.'
@@ -119,6 +120,7 @@ def ask_question(update: Update, context: CallbackContext):
 
 
 def after_ask_question(update: Update, context: CallbackContext):
+    add_command_exec_statistic(update.message.chat_id, after_ask_question.__name__)
     markup = [['Посмотреть открытые задания', 'Открыть меню']]
     update.message.reply_text(
         'Спасибо, я уже передал информацию коллегам! '
@@ -158,6 +160,7 @@ def add_new_category(update: Update, context: CallbackContext):
 
 
 def after_add_new_category(update: Update, context: CallbackContext):
+    add_command_exec_statistic(update.message.chat_id, after_add_new_category.__name__)
     markup = [['Посмотреть открытые задания', 'Открыть меню']]
     update.message.reply_text(
         'Спасибо, я уже передал информацию коллегам! '
@@ -181,6 +184,7 @@ def add_new_feature(update: Update, context: CallbackContext):
 
 
 def after_add_new_feature(update: Update, context: CallbackContext):
+    add_command_exec_statistic(update.message.chat_id, after_add_new_feature.__name__)
     markup = [['Посмотреть открытые задания', 'Открыть меню']]
     update.message.reply_text(
         'Спасибо, я уже передал информацию коллегам! '
@@ -219,7 +223,7 @@ def stop_task_subscription(update: Update, context: CallbackContext):
     markup = [['Посмотреть открытые задания', 'Задать вопрос', 'О платформе'],
               ['Изменить компетенции', 'Хочу новый функционал бота',
                'Остановить/включить подписку на задания']]
-
+    print('1-----------', new_mailing_status)
     if new_mailing_status:
 
         answer = 'Ура! Теперь ты будешь получать новые задания по твоим компетенциям.' \
@@ -232,6 +236,7 @@ def stop_task_subscription(update: Update, context: CallbackContext):
         return AFTER_CATEGORY_REPLY
 
     else:
+        print('2-----------', new_mailing_status)
         answer = 'Теперь ты не будешь получать новые задания от фондов, но всегда ' \
                  'можешь найти их на сайте http://procharity.ru'
 

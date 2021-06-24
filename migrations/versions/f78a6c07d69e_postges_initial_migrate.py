@@ -1,7 +1,9 @@
 """postges_initial_migrate
+
 Revision ID: f78a6c07d69e
 Revises: 
 Create Date: 2021-06-24 18:38:21.592601
+
 """
 from alembic import op
 import sqlalchemy as sa

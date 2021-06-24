@@ -21,19 +21,6 @@ def add_user(message):
     return
 
 
-def add_command(telegram_id, command):
-    try:
-        if not telegram_id.isdigit():
-            return 'telegram_id consists not number'
-        statistics = Statistics(telegram_id=telegram_id,
-                                command=command,
-                                added_date=datetime.today().date())
-        db_session.add(statistics)
-        db_session.commit()
-    except:
-        return 'error write in db'
-
-
 def get_category():
     categories = Category.query.all()
     return [category.name for category in categories]

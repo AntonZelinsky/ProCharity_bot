@@ -31,12 +31,10 @@ def get_task():
 
 
 def get_tasks(telegram_id):
-    print(f'ID={telegram_id}')
     categories = User.query.filter_by(
         telegram_id=int(telegram_id)
     ).first().categories
     tasks = []
-    print(categories)
     for category in categories:
         for task in category.task:
             if not task.archive:

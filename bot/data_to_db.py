@@ -43,13 +43,6 @@ def get_task():
     return Task.query.limit(3).all()
 
 
-def display_task(t):
-    return f'{t.title}\n\n' \
-            f'От: {t.name_organization}, {t.location}\n\n' \
-            f'Категория: {Category.query.filter_by(id=t.category_id).first().name}\n' \
-            f'Срок: {t.deadline}\n\n{t.link}'
-
-
 def get_tasks(telegram_id):
     categories = User.query.filter_by(
         telegram_id=telegram_id

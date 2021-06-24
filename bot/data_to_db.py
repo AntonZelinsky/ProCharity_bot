@@ -21,7 +21,7 @@ def add_user(message):
     return
 
 
-def add_command(telegram_id, command):
+def log_command(telegram_id, command):
     try:
         if not telegram_id.isdigit():
             return 'telegram_id consists not number'
@@ -45,6 +45,18 @@ def get_task():
 
 def display_task(t):
     return f'{t.title}\n\n' \
-            f'От {t.name_organization}, {t.location}\n\n' \
-            f'Категория {t.name_organization}\n' \
+            f'От: {t.name_organization}, {t.location}\n\n' \
+            f'Категория: {Category.query.filter_by(id=t.category_id).first().name}\n' \
             f'Срок: {t.deadline}\n\n{t.link}'
+
+
+def get_tasks(telegram_id):
+    categories = User.query.filter_by(
+        telegram_id=telegram_id
+    ).first().categories
+    tasks = []
+    for category in categories:
+        for task in category.task:
+            if not task.archive:
+                tasks.append(task)
+    return tasks

@@ -21,7 +21,7 @@ from bot.states import (GREETING,
                         AFTER_ADD_FEATURE)
 from .data_to_db import add_user
 
-from bot.data_to_db import get_category, get_task, display_task
+from bot.data_to_db import get_category, get_task, display_task, get_tasks
 
 load_dotenv()
 
@@ -82,7 +82,9 @@ def open_menu(update: Update, context: CallbackContext):
 
 
 def show_open_task(update: Update, context: CallbackContext):
-    tasks = get_task()
+    tasks = get_tasks(
+        update.message.chat.id
+    )
     markup = [['Посмотреть ещё', 'Переслать задание другу', 'Открыть меню']]
     for task in tasks:
         update.message.reply_text(

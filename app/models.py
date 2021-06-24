@@ -6,10 +6,12 @@ from sqlalchemy import (Column,
                         Boolean,
                         DateTime,
                         Date,
+                        Table,
                         )
 
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.sql.functions import user
 from werkzeug.security import generate_password_hash, check_password_hash
 
 Base = declarative_base()
@@ -55,6 +57,15 @@ class Register(Base):
         return f'<Register {self.email}>'
 
 
+user_categories = Table('user_categories', Base.metadata,
+                        Column('user_id',
+                               Integer,
+                               ForeignKey('user.id')),
+                        Column('category_id',
+                               Integer,
+                               ForeignKey('category.id')))
+
+
 class User(Base):
     __tablename__ = 'user'
 
@@ -66,6 +77,9 @@ class User(Base):
     last_name = Column(String(32), nullable=True)
     has_mailing = Column(Boolean, default=True)
     date_registration = Column(DateTime, default=datetime.today().date())
+    categories = relationship('Category',
+                              secondary=user_categories,
+                              back_populates='users')
 
     def __repr__(self):
         return f'<User {self.username}>'
@@ -109,6 +123,8 @@ class Category(Base):
     name = Column(String(100))
     task = relationship('Task', backref='category')
     archive = Column(Boolean())
+    users = relationship('User', secondary=user_categories,
+                         back_populates='categories')
 
     def __repr__(self):
         return f'<Category {self.name}>'

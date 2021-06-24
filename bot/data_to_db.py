@@ -36,9 +36,10 @@ def get_tasks(telegram_id):
     ).first().categories
     tasks = []
     for category in categories:
-        for task in category.task:
+        for task in category.tasks:
             if not task.archive:
-                tasks.append(task)
+                task_lst = [task, Category.query.filter_by(id=task.category_id).first().name]
+                tasks.append(task_lst)
     return tasks
 
 

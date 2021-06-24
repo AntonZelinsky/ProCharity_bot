@@ -128,7 +128,6 @@ dmypy.json
 # Pyre type checker
 .pyre/
 /db.db
-/db_old.db
 .vscode
 .env
 requests.http

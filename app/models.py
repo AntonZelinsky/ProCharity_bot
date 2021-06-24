@@ -57,15 +57,6 @@ class Register(Base):
         return f'<Register {self.email}>'
 
 
-user_categories = Table('user_categories', Base.metadata,
-                        Column('user_id',
-                               Integer,
-                               ForeignKey('user.id')),
-                        Column('category_id',
-                               Integer,
-                               ForeignKey('category.id')))
-
-
 class User(Base):
     __tablename__ = 'user'
 
@@ -77,8 +68,7 @@ class User(Base):
     last_name = Column(String(32), nullable=True)
     has_mailing = Column(Boolean, default=True)
     categories = relationship('Category',
-                              secondary=user_categories,
-                              back_populates='users')
+                              secondary='link')
     date_registration = Column(DateTime, default=datetime.now())
 
     def __repr__(self):
@@ -122,9 +112,8 @@ class Category(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(100))
     archive = Column(Boolean())
-    users = relationship('User', secondary=user_categories,
-                         back_populates='categories')
-    task = relationship('Task', backref='category')
+    users = relationship('User', secondary='link')
+    tasks = relationship('Task', backref='category')
 
     def __repr__(self):
         return f'<Category {self.name}>'
@@ -147,3 +136,13 @@ class Notification(Base):
     message = Column(String(4096), nullable=False)
     was_sent = Column(Boolean, default=False)
     sent_date = Column(DateTime)
+
+
+class Link(Base):
+    __tablename__ = 'link'
+    user_id = Column(Integer,
+                     ForeignKey('user.id'),
+                     primary_key=True)
+    category_id = Column(Integer,
+                         ForeignKey('category.id'),
+                         primary_key=True)

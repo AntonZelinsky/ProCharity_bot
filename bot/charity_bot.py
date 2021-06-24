@@ -65,7 +65,6 @@ def choose_category(update: Update, context: CallbackContext):
 
 
 def after_category_choose(update: Update, context: CallbackContext):
-
     markup = [['Посмотреть открытые задания', 'Открыть меню']]
     update.message.reply_text(
         'Ура! Теперь ты будешь получать новые задания по твоим компетенциям.'
@@ -120,7 +119,6 @@ def ask_question(update: Update, context: CallbackContext):
 
 
 def after_ask_question(update: Update, context: CallbackContext):
-
     markup = [['Посмотреть открытые задания', 'Открыть меню']]
     update.message.reply_text(
         'Спасибо, я уже передал информацию коллегам! '
@@ -160,7 +158,6 @@ def add_new_category(update: Update, context: CallbackContext):
 
 
 def after_add_new_category(update: Update, context: CallbackContext):
-
     markup = [['Посмотреть открытые задания', 'Открыть меню']]
     update.message.reply_text(
         'Спасибо, я уже передал информацию коллегам! '
@@ -184,7 +181,6 @@ def add_new_feature(update: Update, context: CallbackContext):
 
 
 def after_add_new_feature(update: Update, context: CallbackContext):
-
     markup = [['Посмотреть открытые задания', 'Открыть меню']]
     update.message.reply_text(
         'Спасибо, я уже передал информацию коллегам! '
@@ -218,19 +214,22 @@ def about(update: Update, context: CallbackContext):
 # TODO Переименовать функцию на change_task_subscription
 def stop_task_subscription(update: Update, context: CallbackContext):
     add_command_exec_statistic(update.message.chat_id, stop_task_subscription.__name__)
+    new_mailing_status = change_subscription(update.message.chat_id)
 
     markup = [['Посмотреть открытые задания', 'Задать вопрос', 'О платформе'],
               ['Изменить компетенции', 'Хочу новый функционал бота',
                'Остановить/включить подписку на задания']]
 
-    if change_subscription(update.message.chat_id):
-        answer = 'Ура!  Теперь ты будешь получать новые задания по твоим компетенциям.' \
+    if new_mailing_status:
+
+        answer = 'Ура! Теперь ты будешь получать новые задания по твоим компетенциям.' \
                  ' А пока можешь посмотреть открытые задания.'
 
         update.message.reply_text(text=answer,
                                   reply_markup=ReplyKeyboardMarkup(markup, one_time_keyboard=True)
                                   )
-        return OPEN_TASKS
+
+        return AFTER_CATEGORY_REPLY
 
     else:
         answer = 'Теперь ты не будешь получать новые задания от фондов, но всегда ' \

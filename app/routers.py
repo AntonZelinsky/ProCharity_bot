@@ -9,7 +9,7 @@ from app.apis.auth.registration import UserRegister
 from app.apis.auth.invitation_checker import InvitationChecker
 from app.apis.auth.send_reg_invitation import SendRegistrationInvitе
 from app.apis.messages import SendTelegramNotification
-from app.tg_statistics import Analysis
+from app.apis.analysis import Analysis
 
 
 # users endpoints

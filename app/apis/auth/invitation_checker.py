@@ -12,6 +12,14 @@ class InvitationChecker(MethodResource, Resource):
     """Checker of invitation token"""
 
     @doc(description='Checking invitation token.', tags=['User Registration'],
+         params={
+             'token': {
+                 'description': 'Invitation token',
+                 'in': 'query',
+                 'type': 'string',
+                 'required': True
+             },
+         },
          responses={200: {'description': 'Token is valid'},
                     403: {'description': 'No invitation found or expired.'
                                          ' Please contact your site administrator.'},

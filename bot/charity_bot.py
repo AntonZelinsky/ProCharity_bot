@@ -20,10 +20,7 @@ from bot.states import (GREETING,
                         AFTER_NEW_QUESTION,
                         AFTER_ADD_FEATURE)
 
-from .data_to_db import add_user, change_subscription, add_command_exec_statistic, get_category, get_task
-
-
-from bot.data_to_db import add_user, 
+from bot.data_to_db import add_user, change_subscription, add_command_exec_statistic, get_category, get_task
 from bot.formatter import display_task
 
 load_dotenv()
@@ -226,9 +223,8 @@ def stop_task_subscription(update: Update, context: CallbackContext):
     markup = [['Посмотреть открытые задания', 'Задать вопрос', 'О платформе'],
               ['Изменить компетенции', 'Хочу новый функционал бота',
                'Остановить/включить подписку на задания']]
-    print('1-----------', new_mailing_status)
-    if new_mailing_status:
 
+    if new_mailing_status:
         answer = 'Ура! Теперь ты будешь получать новые задания по твоим компетенциям.' \
                  ' А пока можешь посмотреть открытые задания.'
 
@@ -239,7 +235,6 @@ def stop_task_subscription(update: Update, context: CallbackContext):
         return AFTER_CATEGORY_REPLY
 
     else:
-        print('2-----------', new_mailing_status)
         answer = 'Теперь ты не будешь получать новые задания от фондов, но всегда ' \
                  'можешь найти их на сайте http://procharity.ru'
 

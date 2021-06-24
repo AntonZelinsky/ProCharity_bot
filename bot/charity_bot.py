@@ -25,7 +25,7 @@ from bot.states import (GREETING,
                         START_OVER)
 
 
-from bot.data_to_db import add_user, change_subscription, add_command_exec_statistic, get_category, get_task
+from bot.data_to_db import add_user, change_subscription, log_command, get_category, get_task
 from bot.formatter import display_task
 
 load_dotenv()
@@ -62,7 +62,7 @@ menu_buttons = [
 
 def start(update: Update, context: CallbackContext) -> int:
     add_user(update.message)
-    add_command_exec_statistic(update.effective_user.id, start.__name__)
+    log_command(update.effective_user.id, start.__name__)
 
     button = [
         [
@@ -85,7 +85,7 @@ def start(update: Update, context: CallbackContext) -> int:
 
 
 def choose_category(update: Update, context: CallbackContext):
-    add_command_exec_statistic(update.effective_user.id, choose_category.__name__)
+    log_command(update.effective_user.id, choose_category.__name__)
 
     buttons = [
         [
@@ -116,7 +116,7 @@ def choose_category(update: Update, context: CallbackContext):
 
 
 def after_category_choose(update: Update, context: CallbackContext):
-    add_command_exec_statistic(update.effective_user.id, after_category_choose.__name__)
+    log_command(update.effective_user.id, after_category_choose.__name__)
     buttons = [
         [
             InlineKeyboardButton(text='Посмотреть открытые задания', callback_data='open_task')
@@ -136,7 +136,7 @@ def after_category_choose(update: Update, context: CallbackContext):
 
 
 def open_menu(update: Update, context: CallbackContext):
-    add_command_exec_statistic(update.effective_user.id, open_menu.__name__)
+    log_command(update.effective_user.id, open_menu.__name__)
 
     keyboard = InlineKeyboardMarkup(menu_buttons)
     text = 'Menu'
@@ -147,7 +147,7 @@ def open_menu(update: Update, context: CallbackContext):
 
 
 def show_open_task(update: Update, context: CallbackContext):
-    add_command_exec_statistic(update.effective_user.id, show_open_task.__name__)
+    log_command(update.effective_user.id, show_open_task.__name__)
 
     tasks = get_task()
     buttons = [
@@ -171,12 +171,12 @@ def show_open_task(update: Update, context: CallbackContext):
 
 
 def send_task_to_friend(update: Update, context: CallbackContext):
-    add_command_exec_statistic(update.effective_user.id, send_task_to_friend.__name__)
+    log_command(update.effective_user.id, send_task_to_friend.__name__)
     pass
 
 
 def ask_question(update: Update, context: CallbackContext):
-    add_command_exec_statistic(update.effective_user.id, ask_question.__name__)
+    log_command(update.effective_user.id, ask_question.__name__)
 
     button = [
         [InlineKeyboardButton(text='Вернуться в меню', callback_data='open_menu')]
@@ -190,7 +190,7 @@ def ask_question(update: Update, context: CallbackContext):
 
 
 def after_ask_question(update: Update, context: CallbackContext):
-    add_command_exec_statistic(update.effective_user.id, after_ask_question.__name__)
+    log_command(update.effective_user.id, after_ask_question.__name__)
 
     buttons = [
         [
@@ -211,7 +211,7 @@ def after_ask_question(update: Update, context: CallbackContext):
 
 
 def no_relevant_category(update: Update, context: CallbackContext):
-    add_command_exec_statistic(update.effective_user.id, no_relevant_category.__name__)
+    log_command(update.effective_user.id, no_relevant_category.__name__)
 
     buttons = [
         [
@@ -252,7 +252,7 @@ def email_feedback(update: Update, context: CallbackContext):
 
 
 def add_new_category(update: Update, context: CallbackContext):
-    add_command_exec_statistic(update.effective_user.id, add_new_category.__name__)
+    log_command(update.effective_user.id, add_new_category.__name__)
 
     button = [
         [InlineKeyboardButton(text='Вернуться в меню', callback_data='open_menu')]
@@ -267,7 +267,7 @@ def add_new_category(update: Update, context: CallbackContext):
 
 
 def after_add_new_category(update: Update, context: CallbackContext):
-    add_command_exec_statistic(update.effective_user.id, after_add_new_category.__name__)
+    log_command(update.effective_user.id, after_add_new_category.__name__)
 
     buttons = [
         [
@@ -288,7 +288,7 @@ def after_add_new_category(update: Update, context: CallbackContext):
 
 
 def add_new_feature(update: Update, context: CallbackContext):
-    add_command_exec_statistic(update.effective_user.id, add_new_feature.__name__)
+    log_command(update.effective_user.id, add_new_feature.__name__)
 
     update.callback_query.answer()
     update.callback_query.edit_message_text(
@@ -299,7 +299,7 @@ def add_new_feature(update: Update, context: CallbackContext):
 
 
 def after_add_new_feature(update: Update, context: CallbackContext):
-    add_command_exec_statistic(update.effective_user.id, after_add_new_feature.__name__)
+    log_command(update.effective_user.id, after_add_new_feature.__name__)
 
     buttons = [
         [
@@ -320,7 +320,7 @@ def after_add_new_feature(update: Update, context: CallbackContext):
 
 
 def about(update: Update, context: CallbackContext):
-    add_command_exec_statistic(update.effective_user.id, about.__name__)
+    log_command(update.effective_user.id, about.__name__)
 
     button = [
         [InlineKeyboardButton(text='Вернуться в меню', callback_data='open_menu')]
@@ -343,7 +343,7 @@ def about(update: Update, context: CallbackContext):
 
 # TODO Переименовать функцию на change_task_subscription
 def stop_task_subscription(update: Update, context: CallbackContext):
-    add_command_exec_statistic(update.effective_user.id, stop_task_subscription.__name__)
+    log_command(update.effective_user.id, stop_task_subscription.__name__)
     new_mailing_status = change_subscription(update.effective_user.id)
     #
     # markup = [['Посмотреть открытые задания', 'Задать вопрос', 'О платформе'],
@@ -358,10 +358,10 @@ def stop_task_subscription(update: Update, context: CallbackContext):
         answer = 'Ура! Теперь ты будешь получать новые задания по твоим компетенциям.' \
                  ' А пока можешь посмотреть открытые задания.'
 
-        update.message.reply_text(text=answer,
-                                  # reply_markup=ReplyKeyboardMarkup(markup, one_time_keyboard=True)
-                                  reply_markup=keyboard
-                                  )
+        update.callback_query.edit_message_text(text=answer,
+                                                # reply_markup=ReplyKeyboardMarkup(markup, one_time_keyboard=True)
+                                                reply_markup=keyboard
+                                                )
 
         return AFTER_CATEGORY_REPLY
 
@@ -384,7 +384,7 @@ def stop_task_subscription(update: Update, context: CallbackContext):
 
 
 def cancel(update: Update, context: CallbackContext):
-    add_command_exec_statistic(update.effective_user.id, cancel.__name__)
+    log_command(update.effective_user.id, cancel.__name__)
 
     user = update.message.from_user
     logger.info("User %s canceled the conversation.", user.first_name)

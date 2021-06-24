@@ -29,14 +29,8 @@ def get_category():
 def get_task():
     return Task.query.limit(3).all()
 
+
   
-def display_task(t):
-    return f'{t.title}\n\n' \
-           f'От {t.name_organization}, {t.location}\n\n' \
-           f'Категория {t.name_organization}\n' \
-           f'Срок: {t.deadline}\n\n{t.link}'
-
-
 def change_subscription(chat_id):
     """
     Update subscription status of user
@@ -54,7 +48,7 @@ def change_subscription(chat_id):
     return user.has_mailing
 
 
-def add_command_exec_statistic(chat_id, command):
+def log_command(telegram_id, command):
     """
     Add information of using bot commands to DB.
 
@@ -62,7 +56,7 @@ def add_command_exec_statistic(chat_id, command):
     :param command: The command clicked in the telegram chat by current user.
     :return:
     """
-    statistic = Statistics(telegram_id=chat_id,
+    statistic = Statistics(telegram_id=telegram_id,
                            command=command,
                            added_date=datetime.now())
 

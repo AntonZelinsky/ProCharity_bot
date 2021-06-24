@@ -24,6 +24,20 @@ class Login(MethodResource, Resource):
 
     @doc(description='This endpoint provides jwt token for authorized users',
          tags=['User Login'],
+         params={
+             'email': {
+                 'description': 'The registered user\' email address.',
+                 'in': 'query',
+                 'type': 'string',
+                 'required': True
+             },
+             'password': {
+                 'description': 'User\'s password.',
+                 'in': 'query',
+                 'type': 'string',
+                 'required': True
+             }
+         },
          responses={200: {'description': 'access_token:"" refresh_token: ""'},
                     403: {'description': "'Email and password is required.', 'Bad email or Password.'"},
 

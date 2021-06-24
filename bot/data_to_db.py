@@ -21,19 +21,6 @@ def add_user(message):
     return
 
 
-def log_command(telegram_id, command):
-    try:
-        if not telegram_id.isdigit():
-            return 'telegram_id consists not number'
-        statistics = Statistics(telegram_id=telegram_id,
-                                command=command,
-                                added_date=datetime.today().date())
-        db_session.add(statistics)
-        db_session.commit()
-    except:
-        return 'error write in db'
-
-
 def get_category():
     categories = Category.query.all()
     return [category.name for category in categories]
@@ -44,12 +31,47 @@ def get_task():
 
 
 def get_tasks(telegram_id):
+    print(f'ID={telegram_id}')
     categories = User.query.filter_by(
-        telegram_id=telegram_id
+        telegram_id=int(telegram_id)
     ).first().categories
     tasks = []
+    print(categories)
     for category in categories:
         for task in category.task:
             if not task.archive:
                 tasks.append(task)
     return tasks
+
+
+def change_subscription(chat_id):
+    """
+    Update subscription status of user
+    :param chat_id: Chat id of current user from the telegram update obj.
+    :return:
+    """
+    user = User.query.filter_by(telegram_id=chat_id).first()
+
+    if user.has_mailing:
+        user.has_mailing = False
+    else:
+        user.has_mailing = True
+    db_session.commit()
+
+    return user.has_mailing
+
+
+def add_command_exec_statistic(chat_id, command):
+    """
+    Add information of using bot commands to DB.
+
+    :param chat_id: Chat id of current user from the telegram update obj.
+    :param command: The command clicked in the telegram chat by current user.
+    :return:
+    """
+    statistic = Statistics(telegram_id=chat_id,
+                           command=command,
+                           added_date=datetime.now())
+
+    db_session.add(statistic)
+    db_session.commit()

@@ -20,7 +20,7 @@ from bot.states import (GREETING,
                         AFTER_NEW_QUESTION,
                         AFTER_ADD_FEATURE)
 
-from bot.data_to_db import add_user, get_category, get_task, get_tasks
+from bot.data_to_db import add_user, change_subscription, add_command_exec_statistic, get_category, get_task, get_tasks
 from bot.formatter import display_task
 
 load_dotenv()
@@ -36,6 +36,8 @@ updater = Updater(token=os.getenv('TOKEN'))
 
 def start(update: Update, context: CallbackContext) -> int:
     add_user(update.message)
+    add_command_exec_statistic(update.message.chat_id, start.__name__)
+
     update.message.reply_text(
         'Привет! Я - бот '
         'ProCharity-онлайн-платформы интеллектуального волонтёрства!'
@@ -51,6 +53,8 @@ def start(update: Update, context: CallbackContext) -> int:
 
 
 def choose_category(update: Update, context: CallbackContext):
+    add_command_exec_statistic(update.message.chat_id, choose_category.__name__)
+
     update.message.reply_text(
         'Чтобы я знал, в каких задачах ты можешь помогать фондам выбери свои профессиональные компетенции:',
         reply_markup=ReplyKeyboardMarkup([get_category(), ['Готово!', 'Моих компетенций здесь нет']],
@@ -61,6 +65,7 @@ def choose_category(update: Update, context: CallbackContext):
 
 
 def after_category_choose(update: Update, context: CallbackContext):
+    add_command_exec_statistic(update.message.chat_id, after_category_choose.__name__)
     markup = [['Посмотреть открытые задания', 'Открыть меню']]
     update.message.reply_text(
         'Ура! Теперь ты будешь получать новые задания по твоим компетенциям.'
@@ -72,6 +77,8 @@ def after_category_choose(update: Update, context: CallbackContext):
 
 
 def open_menu(update: Update, context: CallbackContext):
+    add_command_exec_statistic(update.message.chat_id, open_menu.__name__)
+
     markup = [['Посмотреть открытые задания', 'Задать вопрос', 'О платформе'],
               ['Изменить компетенции', 'Хочу новый функционал бота',
                'Остановить/включить подписку на задания']]
@@ -96,10 +103,13 @@ def show_open_task(update: Update, context: CallbackContext):
 
 
 def send_task_to_friend(update: Update, context: CallbackContext):
+    add_command_exec_statistic(update.message.chat_id, send_task_to_friend.__name__)
     pass
 
 
 def ask_question(update: Update, context: CallbackContext):
+    add_command_exec_statistic(update.message.chat_id, ask_question.__name__)
+
     markup = [['Вернуться в меню']]
     update.message.reply_text(
         'Напишите свой вопрос',
@@ -110,6 +120,7 @@ def ask_question(update: Update, context: CallbackContext):
 
 
 def after_ask_question(update: Update, context: CallbackContext):
+    add_command_exec_statistic(update.message.chat_id, after_ask_question.__name__)
     markup = [['Посмотреть открытые задания', 'Открыть меню']]
     update.message.reply_text(
         'Спасибо, я уже передал информацию коллегам! '
@@ -121,6 +132,8 @@ def after_ask_question(update: Update, context: CallbackContext):
 
 
 def no_relevant_category(update: Update, context: CallbackContext):
+    add_command_exec_statistic(update.message.chat_id, no_relevant_category.__name__)
+
     markup = [['Написать, какие компетенции добавить',
                'Посмотреть другие задания',
                'Вернуться в меню']]
@@ -135,6 +148,8 @@ def no_relevant_category(update: Update, context: CallbackContext):
 
 
 def add_new_category(update: Update, context: CallbackContext):
+    add_command_exec_statistic(update.message.chat_id, add_new_category.__name__)
+
     markup = [['Вернуться в меню']]
     update.message.reply_text(
         'Напиши, в какой профессиональной сфере ты бы хотел помогать',
@@ -145,6 +160,7 @@ def add_new_category(update: Update, context: CallbackContext):
 
 
 def after_add_new_category(update: Update, context: CallbackContext):
+    add_command_exec_statistic(update.message.chat_id, after_add_new_category.__name__)
     markup = [['Посмотреть открытые задания', 'Открыть меню']]
     update.message.reply_text(
         'Спасибо, я уже передал информацию коллегам! '
@@ -156,6 +172,8 @@ def after_add_new_category(update: Update, context: CallbackContext):
 
 
 def add_new_feature(update: Update, context: CallbackContext):
+    add_command_exec_statistic(update.message.chat_id, add_new_feature.__name__)
+
     markup = [['Вернуться в меню']]
     update.message.reply_text(
         'Напиши, какого функционала в боте тебе не хватает',
@@ -166,6 +184,7 @@ def add_new_feature(update: Update, context: CallbackContext):
 
 
 def after_add_new_feature(update: Update, context: CallbackContext):
+    add_command_exec_statistic(update.message.chat_id, after_add_new_feature.__name__)
     markup = [['Посмотреть открытые задания', 'Открыть меню']]
     update.message.reply_text(
         'Спасибо, я уже передал информацию коллегам! '
@@ -177,6 +196,8 @@ def after_add_new_feature(update: Update, context: CallbackContext):
 
 
 def about(update: Update, context: CallbackContext):
+    add_command_exec_statistic(update.message.chat_id, about.__name__)
+
     markup = [['Посмотреть открытые задания', 'Задать вопрос', 'О платформе'],
               ['Изменить компетенции', 'Хочу новый функционал бота',
                'Остановить/включить подписку на задания']]
@@ -194,20 +215,39 @@ def about(update: Update, context: CallbackContext):
     return MENU
 
 
+# TODO Переименовать функцию на change_task_subscription
 def stop_task_subscription(update: Update, context: CallbackContext):
+    add_command_exec_statistic(update.message.chat_id, stop_task_subscription.__name__)
+    new_mailing_status = change_subscription(update.message.chat_id)
+
     markup = [['Посмотреть открытые задания', 'Задать вопрос', 'О платформе'],
               ['Изменить компетенции', 'Хочу новый функционал бота',
                'Остановить/включить подписку на задания']]
-    update.message.reply_text(
-        'Теперь ты не будешь получать новые задания от фондов, но всегда '
-        'можешь найти их на сайте http://procharity.ru',
-        reply_markup=ReplyKeyboardMarkup(markup, one_time_keyboard=True)
-    )
 
-    return MENU
+    if new_mailing_status:
+        answer = 'Ура! Теперь ты будешь получать новые задания по твоим компетенциям.' \
+                 ' А пока можешь посмотреть открытые задания.'
+
+        update.message.reply_text(text=answer,
+                                  reply_markup=ReplyKeyboardMarkup(markup, one_time_keyboard=True)
+                                  )
+
+        return AFTER_CATEGORY_REPLY
+
+    else:
+        answer = 'Теперь ты не будешь получать новые задания от фондов, но всегда ' \
+                 'можешь найти их на сайте http://procharity.ru'
+
+        update.message.reply_text(text=answer,
+                                  reply_markup=ReplyKeyboardMarkup(markup, one_time_keyboard=True)
+                                  )
+
+        return MENU
 
 
 def cancel(update: Update, context: CallbackContext):
+    add_command_exec_statistic(update.message.chat_id, cancel.__name__)
+
     user = update.message.from_user
     logger.info("User %s canceled the conversation.", user.first_name)
     update.message.reply_text(
@@ -219,7 +259,6 @@ def cancel(update: Update, context: CallbackContext):
 
 
 def main() -> None:
-
     dispatcher = updater.dispatcher
 
     conv_handler = ConversationHandler(

@@ -20,7 +20,16 @@ class PasswordReset(MethodResource, Resource):
     """
 
     @doc(description="Reset user's password",
-         tags=['Password Reset'])
+         tags=['Password Reset'],
+         params={
+             'email': {
+                 'description': 'The registered user\' email address.The password will be sent to the email.',
+                 'in': 'query',
+                 'type': 'string',
+                 'required': True
+             }
+         }
+         )
     @use_kwargs({'email': fields.Email()})
     def post(self, **kwargs):
         email = kwargs.get('email')

@@ -22,13 +22,39 @@ class UserRegister(MethodResource, Resource):
     """Provides api for register a new Admin Users"""
 
     @doc(description='This endpoint provide registering option for admin users.', tags=['User Registration'],
-         param={}, responses={200: {'description': 'User registered successfully'},
-                              400: {'description': "The password does not comply with the password policy."},
-                              401: {'description': "The registration request requires a password."},
-                              403: {'description': 'No invitation found or expired.'
-                                                   ' Please contact your site administrator.'},
+         params={
+             'token': {
+                 'description': 'Invitation token',
+                 'in': 'query',
+                 'type': 'string',
+                 'required': True
+             },
+             'first_name': {
+                 'description': 'User\' First Name.',
+                 'in': 'query',
+                 'type': 'string',
+                 'required': False
+             },
+             'last_name': {
+                 'description': 'User\' Last Name.',
+                 'in': 'query',
+                 'type': 'string',
+                 'required': False
+             },
+             'password': {
+                 'description': 'Account password.',
+                 'in': 'query',
+                 'type': 'string',
+                 'required': True
+             },
+         },
+         responses={200: {'description': 'User registered successfully'},
+                    400: {'description': "The password does not comply with the password policy."},
+                    401: {'description': "The registration request requires a password."},
+                    403: {'description': 'No invitation found or expired.'
+                                         ' Please contact your site administrator.'},
 
-                              }
+                    }
          )
     @use_kwargs(AdminUserRegistrationSchema)
     def post(self, **kwargs):

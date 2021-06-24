@@ -6,6 +6,7 @@ from sqlalchemy import (Column,
                         Boolean,
                         DateTime,
                         Date,
+                        BigInteger
                         )
 
 from sqlalchemy.orm import relationship
@@ -61,11 +62,11 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     username = Column(String(32), unique=True, nullable=True)
     email = Column(String(48), unique=True, nullable=True)
-    telegram_id = Column(String(15), unique=True, nullable=False)
+    telegram_id = Column(Integer, unique=True, nullable=False)
     first_name = Column(String(32), nullable=True)
     last_name = Column(String(32), nullable=True)
     has_mailing = Column(Boolean, default=True)
-    date_registration = Column(DateTime, default=datetime.today().date())
+    date_registration = Column(DateTime, default=datetime.now())
 
     def __repr__(self):
         return f'<User {self.username}>'
@@ -107,8 +108,8 @@ class Category(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(100))
-    task = relationship('Task', backref='category')
     archive = Column(Boolean())
+    task = relationship('Task', backref='category')
 
     def __repr__(self):
         return f'<Category {self.name}>'
@@ -117,16 +118,16 @@ class Category(Base):
 class Statistics(Base):
     __tablename__ = 'statistics'
     id = Column(Integer, primary_key=True)
-    telegram_id = Column(String(15), ForeignKey('user.telegram_id'))
+    telegram_id = Column(Integer)
     command = Column(String(100))
-    added_date = Column(Date)
+    added_date = Column(DateTime)
 
     def __repr__(self):
         return f'<Command {self.command}>'
 
 
-class Message(Base):
-    __tablename__ = 'message'
+class Notification(Base):
+    __tablename__ = 'notification'
     id = Column(Integer, primary_key=True)
     message = Column(String(4096), nullable=False)
     was_sent = Column(Boolean, default=False)

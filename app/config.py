@@ -34,14 +34,12 @@ SWAGGER_JSON = '/api/doc/swagger/'
 SWAGGER_UI = '/api/doc/swagger-ui/'
 # Parameters for authorization by Header
 PARAM_HEADER_AUTH = {
-    'Authorization': {
-        'description':
-            'HTTP header with JWT access token, like: Authorization: Bearer asdf.qwer.zxcv',
-        'in': 'header',
-        'type': 'string',
-        'required': True
-    }
+    'description': 'HTTP header with JWT access token, like: Authorization: Bearer asdf.qwer.zxcv',
+    'in': 'header',
+    'type': 'string',
+    'required': True
 }
+
 # ------------------------------
 # Telegram bot settings
 TELEGRAM_TOKEN = os.getenv('TOKEN')

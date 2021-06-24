@@ -1,4 +1,4 @@
-from app.models import User
+from app.models import User, Category, Task
 from app.database import db_session
 
 
@@ -18,3 +18,19 @@ def add_user(message):
         record.first_name = first_name
         db_session.commit()
     return
+
+
+def get_category():
+    categories = Category.query.all()
+    return [category.name for category in categories]
+
+
+def get_task():
+    return Task.query.limit(3).all()
+
+
+def display_task(t):
+    return f'{t.title}\n\n' \
+            f'От {t.name_organization}, {t.location}\n\n' \
+            f'Категория {t.name_organization}\n' \
+            f'Срок: {t.deadline}\n\n{t.link}'

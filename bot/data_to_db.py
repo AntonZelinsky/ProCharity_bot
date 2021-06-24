@@ -56,7 +56,7 @@ def change_subscription(chat_id):
 
 def add_command_exec_statistic(chat_id, command):
     """
-    Adds information of using bot commands to DB.
+    Add information of using bot commands to DB.
 
     :param chat_id: Chat id of current user from the telegram update obj.
     :param command: The command clicked in the telegram chat by current user.

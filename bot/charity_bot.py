@@ -20,7 +20,7 @@ from bot.states import (GREETING,
                         AFTER_NEW_QUESTION,
                         AFTER_ADD_FEATURE)
 
-from bot.data_to_db import add_user, change_subscription, add_command_exec_statistic, get_category, get_task
+from bot.data_to_db import add_user, change_subscription, log_command, get_category, get_task
 from bot.formatter import display_task
 
 load_dotenv()
@@ -36,7 +36,7 @@ updater = Updater(token=os.getenv('TOKEN'))
 
 def start(update: Update, context: CallbackContext) -> int:
     add_user(update.message)
-    add_command_exec_statistic(update.message.chat_id, start.__name__)
+    log_command(update.message.chat_id, start.__name__)
 
     update.message.reply_text(
         'Привет! Я - бот '
@@ -53,7 +53,7 @@ def start(update: Update, context: CallbackContext) -> int:
 
 
 def choose_category(update: Update, context: CallbackContext):
-    add_command_exec_statistic(update.message.chat_id, choose_category.__name__)
+    log_command(update.message.chat_id, choose_category.__name__)
 
     update.message.reply_text(
         'Чтобы я знал, в каких задачах ты можешь помогать фондам выбери свои профессиональные компетенции:',
@@ -65,7 +65,7 @@ def choose_category(update: Update, context: CallbackContext):
 
 
 def after_category_choose(update: Update, context: CallbackContext):
-    add_command_exec_statistic(update.message.chat_id, after_category_choose.__name__)
+    log_command(update.message.chat_id, after_category_choose.__name__)
     markup = [['Посмотреть открытые задания', 'Открыть меню']]
     update.message.reply_text(
         'Ура! Теперь ты будешь получать новые задания по твоим компетенциям.'
@@ -77,7 +77,7 @@ def after_category_choose(update: Update, context: CallbackContext):
 
 
 def open_menu(update: Update, context: CallbackContext):
-    add_command_exec_statistic(update.message.chat_id, open_menu.__name__)
+    log_command(update.message.chat_id, open_menu.__name__)
 
     markup = [['Посмотреть открытые задания', 'Задать вопрос', 'О платформе'],
               ['Изменить компетенции', 'Хочу новый функционал бота',
@@ -90,7 +90,7 @@ def open_menu(update: Update, context: CallbackContext):
 
 
 def show_open_task(update: Update, context: CallbackContext):
-    add_command_exec_statistic(update.message.chat_id, show_open_task.__name__)
+    log_command(update.message.chat_id, show_open_task.__name__)
 
     tasks = get_task()
     markup = [['Посмотреть ещё', 'Переслать задание другу', 'Открыть меню']]
@@ -103,12 +103,12 @@ def show_open_task(update: Update, context: CallbackContext):
 
 
 def send_task_to_friend(update: Update, context: CallbackContext):
-    add_command_exec_statistic(update.message.chat_id, send_task_to_friend.__name__)
+    log_command(update.message.chat_id, send_task_to_friend.__name__)
     pass
 
 
 def ask_question(update: Update, context: CallbackContext):
-    add_command_exec_statistic(update.message.chat_id, ask_question.__name__)
+    log_command(update.message.chat_id, ask_question.__name__)
 
     markup = [['Вернуться в меню']]
     update.message.reply_text(
@@ -120,7 +120,7 @@ def ask_question(update: Update, context: CallbackContext):
 
 
 def after_ask_question(update: Update, context: CallbackContext):
-    add_command_exec_statistic(update.message.chat_id, after_ask_question.__name__)
+    log_command(update.message.chat_id, after_ask_question.__name__)
     markup = [['Посмотреть открытые задания', 'Открыть меню']]
     update.message.reply_text(
         'Спасибо, я уже передал информацию коллегам! '
@@ -132,7 +132,7 @@ def after_ask_question(update: Update, context: CallbackContext):
 
 
 def no_relevant_category(update: Update, context: CallbackContext):
-    add_command_exec_statistic(update.message.chat_id, no_relevant_category.__name__)
+    log_command(update.message.chat_id, no_relevant_category.__name__)
 
     markup = [['Написать, какие компетенции добавить',
                'Посмотреть другие задания',
@@ -148,7 +148,7 @@ def no_relevant_category(update: Update, context: CallbackContext):
 
 
 def add_new_category(update: Update, context: CallbackContext):
-    add_command_exec_statistic(update.message.chat_id, add_new_category.__name__)
+    log_command(update.message.chat_id, add_new_category.__name__)
 
     markup = [['Вернуться в меню']]
     update.message.reply_text(
@@ -160,7 +160,7 @@ def add_new_category(update: Update, context: CallbackContext):
 
 
 def after_add_new_category(update: Update, context: CallbackContext):
-    add_command_exec_statistic(update.message.chat_id, after_add_new_category.__name__)
+    log_command(update.message.chat_id, after_add_new_category.__name__)
     markup = [['Посмотреть открытые задания', 'Открыть меню']]
     update.message.reply_text(
         'Спасибо, я уже передал информацию коллегам! '
@@ -172,7 +172,7 @@ def after_add_new_category(update: Update, context: CallbackContext):
 
 
 def add_new_feature(update: Update, context: CallbackContext):
-    add_command_exec_statistic(update.message.chat_id, add_new_feature.__name__)
+    log_command(update.message.chat_id, add_new_feature.__name__)
 
     markup = [['Вернуться в меню']]
     update.message.reply_text(
@@ -184,7 +184,7 @@ def add_new_feature(update: Update, context: CallbackContext):
 
 
 def after_add_new_feature(update: Update, context: CallbackContext):
-    add_command_exec_statistic(update.message.chat_id, after_add_new_feature.__name__)
+    log_command(update.message.chat_id, after_add_new_feature.__name__)
     markup = [['Посмотреть открытые задания', 'Открыть меню']]
     update.message.reply_text(
         'Спасибо, я уже передал информацию коллегам! '
@@ -196,7 +196,7 @@ def after_add_new_feature(update: Update, context: CallbackContext):
 
 
 def about(update: Update, context: CallbackContext):
-    add_command_exec_statistic(update.message.chat_id, about.__name__)
+    log_command(update.message.chat_id, about.__name__)
 
     markup = [['Посмотреть открытые задания', 'Задать вопрос', 'О платформе'],
               ['Изменить компетенции', 'Хочу новый функционал бота',
@@ -217,7 +217,7 @@ def about(update: Update, context: CallbackContext):
 
 # TODO Переименовать функцию на change_task_subscription
 def stop_task_subscription(update: Update, context: CallbackContext):
-    add_command_exec_statistic(update.message.chat_id, stop_task_subscription.__name__)
+    log_command(update.message.chat_id, stop_task_subscription.__name__)
     new_mailing_status = change_subscription(update.message.chat_id)
 
     markup = [['Посмотреть открытые задания', 'Задать вопрос', 'О платформе'],
@@ -246,7 +246,7 @@ def stop_task_subscription(update: Update, context: CallbackContext):
 
 
 def cancel(update: Update, context: CallbackContext):
-    add_command_exec_statistic(update.message.chat_id, cancel.__name__)
+    log_command(update.message.chat_id, cancel.__name__)
 
     user = update.message.from_user
     logger.info("User %s canceled the conversation.", user.first_name)

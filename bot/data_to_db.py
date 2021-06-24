@@ -62,12 +62,9 @@ def add_command_exec_statistic(chat_id, command):
     :param command: The command clicked in the telegram chat by current user.
     :return:
     """
-    user = User.query.filter_by(telegram_id=chat_id).first()
+    statistic = Statistics(telegram_id=chat_id,
+                           command=command,
+                           added_date=datetime.now())
 
-    statistic = Statistics(telegram_id=user.id,
-                           added_date=datetime.now(),
-                           command=command
-
-                           )
     db_session.add(statistic)
     db_session.commit()

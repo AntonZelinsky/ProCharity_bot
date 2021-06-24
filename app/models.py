@@ -6,11 +6,12 @@ from sqlalchemy import (Column,
                         Boolean,
                         DateTime,
                         Date,
-                        BigInteger
+                        Table,
                         )
 
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.sql.functions import user
 from werkzeug.security import generate_password_hash, check_password_hash
 
 Base = declarative_base()
@@ -66,6 +67,8 @@ class User(Base):
     first_name = Column(String(32), nullable=True)
     last_name = Column(String(32), nullable=True)
     has_mailing = Column(Boolean, default=True)
+    categories = relationship('Category',
+                              secondary='link')
     date_registration = Column(DateTime, default=datetime.now())
 
     def __repr__(self):
@@ -109,7 +112,8 @@ class Category(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(100))
     archive = Column(Boolean())
-    task = relationship('Task', backref='category')
+    users = relationship('User', secondary='link')
+    tasks = relationship('Task', backref='category')
 
     def __repr__(self):
         return f'<Category {self.name}>'
@@ -132,3 +136,13 @@ class Notification(Base):
     message = Column(String(4096), nullable=False)
     was_sent = Column(Boolean, default=False)
     sent_date = Column(DateTime)
+
+
+class Link(Base):
+    __tablename__ = 'link'
+    user_id = Column(Integer,
+                     ForeignKey('user.id'),
+                     primary_key=True)
+    category_id = Column(Integer,
+                         ForeignKey('category.id'),
+                         primary_key=True)

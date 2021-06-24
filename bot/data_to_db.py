@@ -30,7 +30,19 @@ def get_task():
     return Task.query.limit(3).all()
 
 
-  
+def get_tasks(telegram_id):
+    categories = User.query.filter_by(
+        telegram_id=int(telegram_id)
+    ).first().categories
+    tasks = []
+    for category in categories:
+        for task in category.tasks:
+            if not task.archive:
+                task_lst = [task, Category.query.filter_by(id=task.category_id).first().name]
+                tasks.append(task_lst)
+    return tasks
+
+
 def change_subscription(chat_id):
     """
     Update subscription status of user

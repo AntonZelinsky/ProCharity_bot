@@ -25,7 +25,7 @@ from bot.states import (GREETING,
                         START_OVER)
 
 
-from bot.data_to_db import add_user, change_subscription, log_command, get_category, get_task
+from bot.data_to_db import add_user, change_subscription, log_command, get_category, get_tasks
 from bot.formatter import display_task
 
 load_dotenv()
@@ -149,7 +149,7 @@ def open_menu(update: Update, context: CallbackContext):
 def show_open_task(update: Update, context: CallbackContext):
     log_command(update.effective_user.id, show_open_task.__name__)
 
-    tasks = get_task()
+    tasks = get_tasks(update.effective_user.id)
     buttons = [
         [
             InlineKeyboardButton(text='Посмотреть ещё', callback_data='open_task')
@@ -164,9 +164,9 @@ def show_open_task(update: Update, context: CallbackContext):
     keyboard = InlineKeyboardMarkup(buttons)
     for task in tasks:
         update.callback_query.edit_message_text(
-            display_task(task), reply_markup=keyboard
+            display_task(task),
+            reply_markup=keyboard
         )
-
     return OPEN_TASKS
 
 

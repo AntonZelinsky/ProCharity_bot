@@ -31,6 +31,23 @@ def get_task():
 
 def display_task(t):
     return f'{t.title}\n\n' \
-            f'От {t.name_organization}, {t.location}\n\n' \
-            f'Категория {t.name_organization}\n' \
-            f'Срок: {t.deadline}\n\n{t.link}'
+           f'От {t.name_organization}, {t.location}\n\n' \
+           f'Категория {t.name_organization}\n' \
+           f'Срок: {t.deadline}\n\n{t.link}'
+
+
+def change_subscription(chat_id):
+    """
+    Update subscription status of user
+    :param chat_id: Chat id of current user from the telegram update obj.
+    :return:
+    """
+    user = User.query.filter_by(telegram_id=chat_id).first()
+
+    if user.has_mailing:
+        user.has_mailing = False
+    else:
+        user.has_mailing = True
+    db_session.commit()
+
+    return user.has_mailing

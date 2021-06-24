@@ -19,7 +19,7 @@ from bot.states import (GREETING,
                         AFTER_ADD_CATEGORY,
                         AFTER_NEW_QUESTION,
                         AFTER_ADD_FEATURE)
-from .data_to_db import add_user
+from .data_to_db import add_user, change_subscription
 
 from bot.data_to_db import get_category, get_task, display_task
 
@@ -32,6 +32,7 @@ logging.basicConfig(
 )
 
 updater = Updater(token=os.getenv('TOKEN'))
+
 
 def start(update: Update, context: CallbackContext) -> int:
     add_user(update.message)
@@ -195,13 +196,25 @@ def stop_task_subscription(update: Update, context: CallbackContext):
     markup = [['Посмотреть открытые задания', 'Задать вопрос', 'О платформе'],
               ['Изменить компетенции', 'Хочу новый функционал бота',
                'Остановить/включить подписку на задания']]
-    update.message.reply_text(
-        'Теперь ты не будешь получать новые задания от фондов, но всегда '
-        'можешь найти их на сайте http://procharity.ru',
-        reply_markup=ReplyKeyboardMarkup(markup, one_time_keyboard=True)
-    )
 
-    return MENU
+    if change_subscription(update.message.chat_id):
+        answer = 'Ура!  Теперь ты будешь получать новые задания по твоим компетенциям.' \
+                 ' А пока можешь посмотреть открытые задания.'
+
+        update.message.reply_text(text=answer,
+                                  reply_markup=ReplyKeyboardMarkup(markup, one_time_keyboard=True)
+                                  )
+        return OPEN_TASKS
+
+    else:
+        answer = 'Теперь ты не будешь получать новые задания от фондов, но всегда ' \
+                 'можешь найти их на сайте http://procharity.ru'
+
+        update.message.reply_text(text=answer,
+                                  reply_markup=ReplyKeyboardMarkup(markup, one_time_keyboard=True)
+                                  )
+
+        return MENU
 
 
 def cancel(update: Update, context: CallbackContext):
@@ -216,7 +229,6 @@ def cancel(update: Update, context: CallbackContext):
 
 
 def main() -> None:
-
     dispatcher = updater.dispatcher
 
     conv_handler = ConversationHandler(

@@ -65,7 +65,6 @@ def choose_category(update: Update, context: CallbackContext):
 
 
 def after_category_choose(update: Update, context: CallbackContext):
-    add_command_exec_statistic(update.message.chat_id, after_category_choose.__name__)
 
     markup = [['Посмотреть открытые задания', 'Открыть меню']]
     update.message.reply_text(
@@ -121,7 +120,6 @@ def ask_question(update: Update, context: CallbackContext):
 
 
 def after_ask_question(update: Update, context: CallbackContext):
-    add_command_exec_statistic(update.message.chat_id, after_ask_question.__name__)
 
     markup = [['Посмотреть открытые задания', 'Открыть меню']]
     update.message.reply_text(
@@ -162,7 +160,6 @@ def add_new_category(update: Update, context: CallbackContext):
 
 
 def after_add_new_category(update: Update, context: CallbackContext):
-    add_command_exec_statistic(update.message.chat_id, after_add_new_category.__name__)
 
     markup = [['Посмотреть открытые задания', 'Открыть меню']]
     update.message.reply_text(
@@ -187,7 +184,6 @@ def add_new_feature(update: Update, context: CallbackContext):
 
 
 def after_add_new_feature(update: Update, context: CallbackContext):
-    add_command_exec_statistic(update.message.chat_id, after_add_new_feature.__name__)
 
     markup = [['Посмотреть открытые задания', 'Открыть меню']]
     update.message.reply_text(

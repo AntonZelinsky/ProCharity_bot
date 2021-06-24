@@ -29,7 +29,7 @@ def get_category():
 def get_task():
     return Task.query.limit(3).all()
 
-
+  
 def display_task(t):
     return f'{t.title}\n\n' \
            f'От {t.name_organization}, {t.location}\n\n' \

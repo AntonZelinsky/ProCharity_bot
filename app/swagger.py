@@ -8,7 +8,7 @@ from app.apis.auth.invitation_checker import InvitationChecker
 from app.apis.auth.send_reg_invitation import SendRegistrationInvitе
 from app.apis.categories import CreateCategories
 from app.apis.tasks import CreateTasks
-from app.tg_statistics import Analysis
+from app.apis.analysis import Analysis
 
 docs.register(Login)
 docs.register(Refresh)

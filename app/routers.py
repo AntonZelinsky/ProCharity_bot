@@ -9,7 +9,7 @@ from app.apis.auth.registration import UserRegister
 from app.apis.auth.invitation_checker import InvitationChecker
 from app.apis.auth.send_reg_invitation import SendRegistrationInvitе
 from app.apis.messages import SendTelegramMessage
-from app.tg_statistics import Analysis
+from app.apis.analysis import Analysis
 
 api.add_resource(UsersList, '/api/users/')
 api.add_resource(User_item, '/api/users/<int:id>/')

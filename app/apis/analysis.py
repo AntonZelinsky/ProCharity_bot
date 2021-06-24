@@ -1,4 +1,3 @@
-from datetime import datetime
 from app.models import User, Statistics
 from app.database import db_session
 from datetime import datetime
@@ -6,21 +5,8 @@ from flask_apispec.views import MethodResource
 from flask_apispec import doc, use_kwargs
 from flask_restful import Resource
 from sqlalchemy import func
-from flask import request, jsonify
+from flask import request, jsonify, make_response
 from flask_jwt_extended import jwt_required
-
-
-def add_command(telegram_id, command):
-    try:
-        if not telegram_id.isdigit():
-            return 'telegram_id consists not number'
-        statistics = Statistics(telegram_id=telegram_id,
-                                command=command,
-                                added_date=datetime.today().date())
-        db_session.add(statistics)
-        db_session.commit()
-    except:
-        return 'error write in db'
 
 
 class Analysis(MethodResource, Resource):
@@ -41,8 +27,8 @@ class Analysis(MethodResource, Resource):
             Statistics.command,
             func.count(Statistics.command)
         ).group_by(Statistics.command).all()
-        added_users = [[d.strftime("%d %B, %Y"), n] for d,n, in added_users ]
-        return jsonify(added_users=dict(added_users),
-                       active_users=active_users,
-                       deactivated_users=deactivated_users,
-                       command_stats=dict(command_stats))
+        added_users = [[d.strftime("%d %B, %Y"), n] for d, n, in added_users]
+        return make_response(jsonify(added_users=dict(added_users),
+                                     active_users=active_users,
+                                     deactivated_users=deactivated_users,
+                                     command_stats=dict(command_stats)), 200)

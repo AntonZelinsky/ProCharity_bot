@@ -1,4 +1,4 @@
-from flask import request, jsonify
+from flask import request, jsonify, make_response
 from app.models import Task, Category
 from app.database import db_session
 from flask_restful import Resource
@@ -62,7 +62,6 @@ class CreateTasks(MethodResource, Resource):
             for task in archive_records:
                 task.archive = True
             db_session.commit()
-            return jsonify(result='ok')
+            return make_response(jsonify(result='ok'), 200)
         except:
-            return jsonify(result='json does not content "tasks"')
-            
+            return make_response(jsonify(result='json does not content "tasks"'), 400)

@@ -1,5 +1,6 @@
-from app.models import User, Category, Task
+from app.models import User, Category, Task, Statistics
 from app.database import db_session
+from datetime import datetime
 
 
 def add_user(message):
@@ -51,3 +52,22 @@ def change_subscription(chat_id):
     db_session.commit()
 
     return user.has_mailing
+
+
+def add_command_exec_statistic(chat_id, command):
+    """
+    Adds information of using bot commands to DB.
+
+    :param chat_id: Chat id of current user from the telegram update obj.
+    :param command: The command clicked in the telegram chat by current user.
+    :return:
+    """
+    user = User.query.filter_by(telegram_id=chat_id).first()
+
+    statistic = Statistics(telegram_id=user.id,
+                           added_date=datetime.now(),
+                           command=command
+
+                           )
+    db_session.add(statistic)
+    db_session.commit()

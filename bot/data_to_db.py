@@ -28,11 +28,11 @@ def get_category(telegram_id):
     :return:
     """
     result = []
-    user_categories = [x.id for x in User.query.filter_by(telegram_id=telegram_id).first().categories]
-    all_categories = Category.query.filter_by(archive=True).all()
+    user_categories = [cat.id for cat in User.query.filter_by(telegram_id=telegram_id).first().categories]
+    all_categories = Category.query.filter_by(archive=False).all()
     for category in all_categories:
         cat = {}
-        cat['id'] = category.id
+        cat['category_id'] = category.id
         cat['name'] = category.name
         if category.id in user_categories:
             cat['user_selected'] = True
@@ -40,6 +40,18 @@ def get_category(telegram_id):
             cat['user_selected'] = False
         result.append(cat)
     return result
+
+
+def change_category_subscription(telegram_id, category_id):
+
+    user = User.query.filter_by(telegram_id=telegram_id).first()
+    category = Category.query.filter_by(id=category_id).first()
+
+    if category_id in [cat.id for cat in user.categories]:
+        user.categories.remove(category)
+    else:
+        user.categories.append(category)
+    db_session.commit()
 
 
 def get_user_category(telegram_id):
@@ -102,7 +114,7 @@ def log_command(telegram_id, command):
 
 def change_user_category(telegram_id, category_id):
     user = User.query.filter_by(telegram_id=int(telegram_id)).first()
-    #category = Category.query.filter_by(name=category).first()
+    # category = Category.query.filter_by(name=category).first()
     category = Category.query.get(int(category_id))
     categories_list = user.categories
     if category in categories_list:

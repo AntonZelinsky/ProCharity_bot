@@ -89,29 +89,26 @@ def start(update: Update, context: CallbackContext) -> int:
     return GREETING
 
 
-def reply_chosen_category(update: Update, context: CallbackContext):
-    log_command(update.effective_user.id, reply_chosen_category.__name__)
-    button = [
-        [InlineKeyboardButton(text='Вернуться к выбору категорий', callback_data='return_chose_category')]
-    ]
-    keyboard = InlineKeyboardMarkup(button)
+def change_user_categories(update: Update, context: CallbackContext):
+    """Auxiliary function for selecting a category and changing the status of subscriptions."""
+    log_command(update.effective_user.id, change_user_categories.__name__)
+    category_id = int(update.callback_query.data)
+    telegram_id = update.effective_user.id
 
-    chose_category = update.callback_query.data
-    update.callback_query.edit_message_text(
-        text=f'Your choice is {chose_category}',
-        reply_markup=keyboard
-    )
+    change_category_subscription(telegram_id=telegram_id, category_id=category_id)
 
-    return CATEGORY
+    choose_category(update, context)
 
 
-def category_button_init(update: Update, context: CallbackContext):
-    """Initialization of buttons in the menu for adding and deleting a subscription to categories """
+def choose_category(update: Update, context: CallbackContext):
+    """The main function is to select categories for subscribing to them."""
+    log_command(update.effective_user.id, choose_category.__name__)
     categories = get_category(update.effective_user.id)
+
     buttons = []
     for cat in categories:
         if cat['user_selected']:
-            cat['name'] = f"{cat['name']} ✅"
+            cat['name'] += "✅"
         buttons.append([InlineKeyboardButton(text=cat['name'], context=cat['category_id'],
                                              callback_data=cat["category_id"]
                                              )])
@@ -124,29 +121,12 @@ def category_button_init(update: Update, context: CallbackContext):
             InlineKeyboardButton(text='Моих компетенций здесь нет', callback_data='no_relevant')
         ]
     ]
-
     keyboard = InlineKeyboardMarkup(buttons)
 
     update.callback_query.edit_message_text(
         text='Чтобы я знал, в каких задачах ты можешь помогать фондам выбери свои профессиональные компетенции:',
         reply_markup=keyboard,
     )
-
-
-def change_user_categories(update: Update, context: CallbackContext):
-    """Auxiliary function for selecting a category and changing the status of subscriptions."""
-    log_command(update.effective_user.id, change_user_categories.__name__)
-    category_id = int(update.callback_query.to_dict().get('data'))
-    telegram_id = update.effective_user.id
-
-    change_category_subscription(telegram_id=telegram_id, category_id=category_id)
-    category_button_init(update, context)
-
-
-def choose_category(update: Update, context: CallbackContext):
-    """The main function is to select categories for subscribing to them."""
-    log_command(update.effective_user.id, choose_category.__name__)
-    category_button_init(update, context)
     return CATEGORY
 
 
@@ -435,7 +415,6 @@ def main() -> None:
             ],
             CATEGORY: [
                 CallbackQueryHandler(choose_category, pattern='^return_chose_category$'),
-                # CallbackQueryHandler(reply_chosen_category, pattern='^[0-9]{1,2}$'),
                 CallbackQueryHandler(after_category_choose, pattern='^ready$'),
                 CallbackQueryHandler(no_relevant_category, pattern='^no_relevant$')
 
@@ -476,7 +455,7 @@ def main() -> None:
 
         fallbacks=[CommandHandler('cancel', cancel)]
     )
-    update_users_category = CallbackQueryHandler(change_user_categories, pattern='^[0-9]{1,2}$', )
+    update_users_category = CallbackQueryHandler(change_user_categories, pattern='^[0-9]{1,2}$')
 
     dispatcher.add_handler(conv_handler)
     dispatcher.add_handler(update_users_category)

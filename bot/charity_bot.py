@@ -25,7 +25,11 @@ from bot.states import (GREETING,
                         START_OVER)
 
 
-from bot.data_to_db import add_user, change_subscription, log_command, get_category, get_tasks
+from bot.data_to_db import (add_user,
+                            change_subscription,
+                            log_command,
+                            get_tasks,
+                            get_user_category)
 from bot.formatter import display_task
 
 load_dotenv()
@@ -84,39 +88,31 @@ def start(update: Update, context: CallbackContext) -> int:
     return GREETING
 
 
+def reply_chosen_category(update: Update, context: CallbackContext):
+    button = [
+        [InlineKeyboardButton(text='Вернуться к выбору категорий', callback_data='return_chose_category')]
+    ]
+    keyboard = InlineKeyboardMarkup(button)
+
+    chose_category = update.callback_query.data
+    update.callback_query.edit_message_text(
+        text=f'Your choice is {chose_category}',
+        reply_markup=keyboard
+    )
+
+    return CATEGORY
+
+
 def choose_category(update: Update, context: CallbackContext):
     log_command(update.effective_user.id, choose_category.__name__)
 
-    # TODO Закончить вывод категорий.
-    categories = get_category(update.effective_user.id)
-    """
-    Выводит список словарей с параметрами категорий:
-    [
-    {
-    'id': ID_CATEGORY,
-     'name': 'NAME_CATEGORY',
-      'user_selected': True\False
-      }
-    
-    ]
-    
-    ID_CATEGORY - ID категории
-    name - имя категории
-    user_selected - Выбрана пользователем или нет
-    """
-    for category in categories:
-        pass
+    categories = get_user_category(update.effective_user.id)
 
     buttons = [
-        [
-            InlineKeyboardButton(text='Category 1!', callback_data=CATEGORY)
-        ],
-        [
-            InlineKeyboardButton(text='Category 2!', callback_data=CATEGORY)
-        ],
-        [
-            InlineKeyboardButton(text='Category 3!', callback_data=CATEGORY)
-        ],
+        [InlineKeyboardButton(text=cat, callback_data=cat_id)] for cat_id, cat in categories
+    ]
+
+    buttons += [
         [
             InlineKeyboardButton(text='Готово!', callback_data='ready'),
         ],
@@ -365,10 +361,7 @@ def about(update: Update, context: CallbackContext):
 def stop_task_subscription(update: Update, context: CallbackContext):
     log_command(update.effective_user.id, stop_task_subscription.__name__)
     new_mailing_status = change_subscription(update.effective_user.id)
-    #
-    # markup = [['Посмотреть открытые задания', 'Задать вопрос', 'О платформе'],
-    #           ['Изменить компетенции', 'Хочу новый функционал бота',
-    #            'Остановить/включить подписку на задания']]
+
     button = [
         [InlineKeyboardButton(text='Вернуться в меню', callback_data='open_menu')]
     ]
@@ -393,12 +386,6 @@ def stop_task_subscription(update: Update, context: CallbackContext):
                                                 # reply_markup=ReplyKeyboardMarkup(markup, one_time_keyboard=True)
                                                 reply_markup=keyboard
                                                 )
-
-    # update.callback_query.edit_message_text(
-    #     text='Теперь ты не будешь получать новые задания от фондов, но всегда '
-    #          'можешь найти их на сайте http://procharity.ru',
-    #     reply_markup=keyboard
-    # )
 
     return MENU
 
@@ -427,7 +414,8 @@ def main() -> None:
                 CallbackQueryHandler(choose_category, pattern='^' + GREETING + '$')
             ],
             CATEGORY: [
-                CallbackQueryHandler(choose_category, pattern='^' + CATEGORY + '$'),
+                CallbackQueryHandler(choose_category, pattern='^return_chose_category$'),
+                CallbackQueryHandler(reply_chosen_category, pattern='^[0-9]{1,2}$'),
                 CallbackQueryHandler(after_category_choose, pattern='^ready$'),
                 CallbackQueryHandler(no_relevant_category, pattern='^no_relevant$')
 

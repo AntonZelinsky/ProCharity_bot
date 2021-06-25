@@ -1,4 +1,4 @@
-from app.models import User, Category, Task, Statistics
+from app.models import User, Category, Task, Statistics, Link
 from app.database import db_session
 from datetime import datetime
 
@@ -40,6 +40,14 @@ def get_category(telegram_id):
             cat['user_selected'] = False
         result.append(cat)
     return result
+
+
+def get_user_category(telegram_id):
+    user_category = (db_session.query(Link, Category).
+                     filter(Category.id == Link.category_id).
+                     filter_by(user_id=telegram_id))
+
+    return [(l.category_id, c.name) for l, c in user_category]
 
 
 def get_task():

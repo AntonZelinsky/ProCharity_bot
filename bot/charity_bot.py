@@ -87,6 +87,26 @@ def start(update: Update, context: CallbackContext) -> int:
 def choose_category(update: Update, context: CallbackContext):
     log_command(update.effective_user.id, choose_category.__name__)
 
+    # TODO Закончить вывод категорий.
+    categories = get_category(update.effective_user.id)
+    """
+    Выводит список словарей с параметрами категорий:
+    [
+    {
+    'id': ID_CATEGORY,
+     'name': 'NAME_CATEGORY',
+      'user_selected': True\False
+      }
+    
+    ]
+    
+    ID_CATEGORY - ID категории
+    name - имя категории
+    user_selected - Выбрана пользователем или нет
+    """
+    for category in categories:
+        pass
+
     buttons = [
         [
             InlineKeyboardButton(text='Category 1!', callback_data=CATEGORY)

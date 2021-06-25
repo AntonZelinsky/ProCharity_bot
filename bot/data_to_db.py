@@ -21,9 +21,25 @@ def add_user(message):
     return
 
 
-def get_category():
-    categories = Category.query.all()
-    return [category.name for category in categories]
+def get_category(telegram_id):
+    """
+    Returns a collection of categories. If the user has selected one of them, it returns True in dictionary.
+    :param telegram_id: chat_id of current user
+    :return:
+    """
+    result = []
+    user_categories = [x.id for x in User.query.filter_by(telegram_id=telegram_id).first().categories]
+    all_categories = Category.query.filter_by(archive=True).all()
+    for category in all_categories:
+        cat = {}
+        cat['id'] = category.id
+        cat['name'] = category.name
+        if category.id in user_categories:
+            cat['user_selected'] = True
+        else:
+            cat['user_selected'] = False
+        result.append(cat)
+    return result
 
 
 def get_task():

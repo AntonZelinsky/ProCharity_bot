@@ -21,9 +21,25 @@ def add_user(message):
     return
 
 
-def get_category():
-    categories = Category.query.all()
-    return [category.name for category in categories]
+def get_category(telegram_id):
+    """
+    Returns a collection of categories. If the user has selected one of them, it returns True in dictionary.
+    :param telegram_id: chat_id of current user
+    :return:
+    """
+    result = []
+    user_categories = [x.id for x in User.query.filter_by(telegram_id=telegram_id).first().categories]
+    all_categories = Category.query.filter_by(archive=True).all()
+    for category in all_categories:
+        cat = {}
+        cat['id'] = category.id
+        cat['name'] = category.name
+        if category.id in user_categories:
+            cat['user_selected'] = True
+        else:
+            cat['user_selected'] = False
+        result.append(cat)
+    return result
 
 
 def get_user_category(telegram_id):
@@ -82,3 +98,19 @@ def log_command(telegram_id, command):
 
     db_session.add(statistic)
     db_session.commit()
+
+
+def change_user_category(telegram_id, category_id):
+    user = User.query.filter_by(telegram_id=int(telegram_id)).first()
+    #category = Category.query.filter_by(name=category).first()
+    category = Category.query.get(int(category_id))
+    categories_list = user.categories
+    if category in categories_list:
+        user.categories.remove(category)
+        db_session.add(user)
+        db_session.commit()
+        return False
+    user.categories.append(category)
+    db_session.add(user)
+    db_session.commit()
+    return True

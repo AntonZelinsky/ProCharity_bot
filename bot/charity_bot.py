@@ -107,6 +107,7 @@ def choose_category(update: Update, context: CallbackContext):
     log_command(update.effective_user.id, choose_category.__name__)
 
     categories = get_user_category(update.effective_user.id)
+
     buttons = [
         [InlineKeyboardButton(text=cat, callback_data=cat_id)] for cat_id, cat in categories
     ]

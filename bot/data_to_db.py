@@ -76,9 +76,10 @@ def log_command(telegram_id, command):
     db_session.commit()
 
 
-def change_user_category(telegram_id, category):
+def change_user_category(telegram_id, category_id):
     user = User.query.filter_by(telegram_id=int(telegram_id)).first()
-    category = Category.query.filter_by(name=category).first()
+    #category = Category.query.filter_by(name=category).first()
+    category = Category.query.get(int(category_id))
     categories_list = user.categories
     if category in categories_list:
         user.categories.remove(category)

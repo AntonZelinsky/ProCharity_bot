@@ -47,7 +47,6 @@ TELEGRAM_TOKEN = os.getenv('TOKEN')
 # Basic application settings
 
 APPLICATION_CONFIGURATION = {
-    'DEBUG': True,
     'SITE_NAME': 'Test_site',
     'SECRET_KEY': 'ASDfasdQW4)(83099498&$^%2ewf',
 

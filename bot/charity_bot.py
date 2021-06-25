@@ -5,7 +5,8 @@ from dotenv import load_dotenv
 from telegram import (ReplyKeyboardRemove,
                       Update,
                       InlineKeyboardMarkup,
-                      InlineKeyboardButton)
+                      InlineKeyboardButton,
+                      ParseMode)
 from telegram.ext import (Updater,
                           CommandHandler,
                           ConversationHandler,
@@ -178,7 +179,13 @@ def show_open_task(update: Update, context: CallbackContext):
         ]
     ]
     keyboard = InlineKeyboardMarkup(buttons)
-    for task in tasks:
+
+    for task in tasks[0:2]:
+        context.bot.send_message(
+            chat_id=update.effective_chat.id, text=display_task(task), parse_mode=ParseMode.MARKDOWN
+        )
+
+    for task in tasks[2]:
         update.callback_query.edit_message_text(
             display_task(task),
             reply_markup=keyboard

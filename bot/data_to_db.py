@@ -42,17 +42,6 @@ def get_category(telegram_id):
     return result
 
 
-def change_category_subscription(telegram_id, category_id):
-    user = User.query.filter_by(telegram_id=telegram_id).first()
-    category = Category.query.filter_by(id=category_id).first()
-
-    if category_id in [cat.id for cat in user.categories]:
-        user.categories.remove(category)
-    else:
-        user.categories.append(category)
-    db_session.commit()
-
-
 def get_task():
     return Task.query.limit(3).all()
 

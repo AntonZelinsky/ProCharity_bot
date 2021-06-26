@@ -30,7 +30,7 @@ from bot.data_to_db import (add_user,
                             log_command,
                             get_tasks,
                             get_category,
-                            change_category_subscription)
+                            change_user_category)
 from bot.formatter import display_task
 
 load_dotenv()
@@ -96,7 +96,7 @@ def change_user_categories(update: Update, context: CallbackContext):
     category_id = int(pattern_id[0])
     telegram_id = update.effective_user.id
 
-    change_category_subscription(telegram_id=telegram_id, category_id=category_id)
+    change_user_category(telegram_id=telegram_id, category_id=category_id)
 
     choose_category(update, context)
 

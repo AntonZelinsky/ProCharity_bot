@@ -7,7 +7,7 @@ from marshmallow import fields, Schema
 from app.database import db_session
 from app.models import Notification
 
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from app import config
 from bot.messages import TelegramNotification
 
@@ -47,17 +47,18 @@ class SendTelegramNotification(Resource, MethodResource):
              'Authorization': config.PARAM_HEADER_AUTH,  # Only if request requires authorization
          }
          )
+    # TODO Добавить возможность отравлять всем пользователям. Сделать 3 состояния has_mailing: All, True, False
     @use_kwargs(TelegramNotificationSchema)
     @jwt_required()
     def post(self, **kwargs):
         message = kwargs.get('message')
         has_mailing = kwargs.get('has_mailing', True)
-
+        authorized_user = get_jwt_identity()
         if not message:
             return make_response(jsonify(result='The message can not be empty.'), 400)
 
         # add a sending message to database
-        message = Notification(message=message)
+        message = Notification(message=message, sent_by=authorized_user)
         db_session.add(message)
         db_session.commit()
 

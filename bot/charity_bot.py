@@ -29,7 +29,6 @@ from bot.data_to_db import (add_user,
                             change_subscription,
                             log_command,
                             get_tasks,
-                            get_user_category,
                             get_category,
                             change_category_subscription)
 from bot.formatter import display_task

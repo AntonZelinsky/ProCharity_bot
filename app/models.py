@@ -81,8 +81,6 @@ class User(Base):
             'last_name': self.last_name,
             'telegram_id': self.telegram_id,
             'has_mailing': self.has_mailing,
-            'last_logon': self.last_logon
-
         }
 
 

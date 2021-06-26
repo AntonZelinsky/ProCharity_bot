@@ -1,4 +1,4 @@
-from app.models import User, Category, Task, Statistics, Link
+from app.models import User, Category, Task, Statistics, Users_Categories
 from app.database import db_session
 from datetime import datetime
 
@@ -55,8 +55,8 @@ def change_category_subscription(telegram_id, category_id):
 
 
 def get_user_category(telegram_id):
-    user_category = (db_session.query(Link, Category).
-                     filter(Category.id == Link.category_id).
+    user_category = (db_session.query(Users_Categories, Category).
+                     filter(Category.id == Users_Categories.category_id).
                      filter_by(user_id=telegram_id))
 
     return [(l.category_id, c.name) for l, c in user_category]

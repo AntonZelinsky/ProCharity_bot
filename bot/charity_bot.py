@@ -1,6 +1,6 @@
 import logging
 import os
-
+import re
 from dotenv import load_dotenv
 from telegram import (ReplyKeyboardRemove,
                       Update,
@@ -92,7 +92,8 @@ def start(update: Update, context: CallbackContext) -> int:
 def change_user_categories(update: Update, context: CallbackContext):
     """Auxiliary function for selecting a category and changing the status of subscriptions."""
     log_command(update.effective_user.id, change_user_categories.__name__)
-    category_id = int(update.callback_query.data)
+    pattern_id = re.findall(r'\d+', update.callback_query.data)
+    category_id = int(pattern_id[0])
     telegram_id = update.effective_user.id
 
     change_category_subscription(telegram_id=telegram_id, category_id=category_id)
@@ -109,8 +110,7 @@ def choose_category(update: Update, context: CallbackContext):
     for cat in categories:
         if cat['user_selected']:
             cat['name'] += "✅"
-        buttons.append([InlineKeyboardButton(text=cat['name'], context=cat['category_id'],
-                                             callback_data=cat["category_id"]
+        buttons.append([InlineKeyboardButton(text=cat['name'], callback_data=f'up_cat{cat["category_id"]}'
                                              )])
 
     buttons += [
@@ -455,7 +455,7 @@ def main() -> None:
 
         fallbacks=[CommandHandler('cancel', cancel)]
     )
-    update_users_category = CallbackQueryHandler(change_user_categories, pattern='^[0-9]{1,2}$')
+    update_users_category = CallbackQueryHandler(change_user_categories, pattern='^up_cat[0-9]{1,2}$')
 
     dispatcher.add_handler(conv_handler)
     dispatcher.add_handler(update_users_category)

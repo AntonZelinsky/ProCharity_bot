@@ -1,4 +1,4 @@
-from app.models import User, Category, Task, Statistics, Users_Categories
+from app.models import User, Category, Task, Statistics
 from app.database import db_session
 from datetime import datetime
 
@@ -43,7 +43,6 @@ def get_category(telegram_id):
 
 
 def change_category_subscription(telegram_id, category_id):
-
     user = User.query.filter_by(telegram_id=telegram_id).first()
     category = Category.query.filter_by(id=category_id).first()
 
@@ -52,14 +51,6 @@ def change_category_subscription(telegram_id, category_id):
     else:
         user.categories.append(category)
     db_session.commit()
-
-
-def get_user_category(telegram_id):
-    user_category = (db_session.query(Users_Categories, Category).
-                     filter(Category.id == Users_Categories.category_id).
-                     filter_by(user_id=telegram_id))
-
-    return [(l.category_id, c.name) for l, c in user_category]
 
 
 def get_task():

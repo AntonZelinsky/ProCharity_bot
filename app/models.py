@@ -18,7 +18,7 @@ Base = declarative_base()
 
 
 class UserAdmin(Base):
-    __tablename__ = 'admin_user'
+    __tablename__ = 'admin_users'
     id = Column(Integer, primary_key=True)
     email = Column(String(48), unique=True, nullable=False)
     first_name = Column(String(32), nullable=True)
@@ -46,7 +46,7 @@ class UserAdmin(Base):
 
 
 class Register(Base):
-    __tablename__ = 'register'
+    __tablename__ = 'registers'
 
     id = Column(Integer, primary_key=True)
     email = Column(String(48), unique=True, nullable=False)
@@ -58,7 +58,7 @@ class Register(Base):
 
 
 class User(Base):
-    __tablename__ = 'user'
+    __tablename__ = 'users'
 
     id = Column(Integer, primary_key=True)
     username = Column(String(32), unique=True, nullable=True)
@@ -70,7 +70,7 @@ class User(Base):
     date_registration = Column(DateTime, default=datetime.now())
 
     def __repr__(self):
-        return f'<User {self.username}>'
+        return f'<User {self.telegram_id}>'
 
     def get_user_information(self):
         return {
@@ -81,17 +81,18 @@ class User(Base):
             'last_name': self.last_name,
             'telegram_id': self.telegram_id,
             'has_mailing': self.has_mailing,
+            'date_registration': self.date_registration,
         }
 
 
 class Task(Base):
-    __tablename__ = 'task'
+    __tablename__ = 'tasks'
 
     id = Column(Integer, primary_key=True)
     title = Column(String)
     name_organization = Column(String)
     deadline = Column(Date)
-    category_id = Column(Integer, ForeignKey('category.id'))
+    category_id = Column(Integer, ForeignKey('categories.id'))
     bonus = Column(Integer)
     location = Column(String)
     link = Column(String)
@@ -103,12 +104,12 @@ class Task(Base):
 
 
 class Category(Base):
-    __tablename__ = 'category'
+    __tablename__ = 'categories'
 
     id = Column(Integer, primary_key=True)
     name = Column(String(100))
     archive = Column(Boolean())
-    users = relationship('User', secondary='link', backref=backref('categories'))
+    users = relationship('User', secondary='users_categories', backref=backref('categories'))
     tasks = relationship('Task', backref=backref('categories'))
 
     def __repr__(self):
@@ -127,18 +128,20 @@ class Statistics(Base):
 
 
 class Notification(Base):
-    __tablename__ = 'notification'
+    __tablename__ = 'notifications'
     id = Column(Integer, primary_key=True)
     message = Column(String(4096), nullable=False)
     was_sent = Column(Boolean, default=False)
     sent_date = Column(DateTime)
+    sent_by = Column(String(60), nullable=False)
+    def __repr__(self):
+        return f'<Notification {self.message[0:10]}>'
 
-
-class Link(Base):
-    __tablename__ = 'link'
+class Users_Categories(Base):
+    __tablename__ = 'users_categories'
     user_id = Column(Integer,
-                     ForeignKey('user.id'),
+                     ForeignKey('users.id'),
                      primary_key=True)
     category_id = Column(Integer,
-                         ForeignKey('category.id'),
+                         ForeignKey('categories.id'),
                          primary_key=True)

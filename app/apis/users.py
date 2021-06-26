@@ -101,7 +101,7 @@ class User_item(MethodResource, Resource):
         # validate of an email if one included in the request.
         if email:
             try:
-                validate_email(email)
+                validate_email(email, check_deliverability=False)
 
             except EmailNotValidError as ex:
                 return make_response(jsonify(message=str(ex)), 400)

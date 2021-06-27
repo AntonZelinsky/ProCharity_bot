@@ -1,6 +1,7 @@
 from app.models import User, Category, Task, Statistics
 from app.database import db_session
 from datetime import datetime
+import inspect
 
 
 def add_user(message):
@@ -42,17 +43,6 @@ def get_category(telegram_id):
     return result
 
 
-def change_category_subscription(telegram_id, category_id):
-    user = User.query.filter_by(telegram_id=telegram_id).first()
-    category = Category.query.filter_by(id=category_id).first()
-
-    if category_id in [cat.id for cat in user.categories]:
-        user.categories.remove(category)
-    else:
-        user.categories.append(category)
-    db_session.commit()
-
-
 def get_task():
     return Task.query.limit(3).all()
 
@@ -87,20 +77,42 @@ def change_subscription(chat_id):
     return user.has_mailing
 
 
-def log_command(telegram_id, command):
+def log_command(command, start_menu=False, ignore_func=None, ):
     """
     Add information of using bot commands to DB.
-
-    :param chat_id: Chat id of current user from the telegram update obj.
-    :param command: The command clicked in the telegram chat by current user.
+    :param command: Commands passed to the bot for adding to the database
+    :param start_menu: It should be set True if the first call to the bot
+     is being made and the callback is not used to get the response data.
+    :param ignore_func: Ignoring logging based on the name of the called function.
     :return:
     """
-    statistic = Statistics(telegram_id=telegram_id,
-                           command=command,
-                           added_date=datetime.now())
 
-    db_session.add(statistic)
-    db_session.commit()
+    def log(func):
+        def wrapper(*args, **kwargs):
+
+            if ignore_func:
+                current_frame = inspect.currentframe()
+                caller_frame = current_frame.f_back
+                code_obj = caller_frame.f_code
+                code_obj_name = code_obj.co_name
+                if code_obj_name == ignore_func:
+                    return func(*args, **kwargs)
+
+            if start_menu:
+                telegram_id = args[0].message.chat.id
+            else:
+                telegram_id = args[0].callback_query.message.chat.id
+
+            statistic = Statistics(telegram_id=telegram_id,
+                                   command=command,
+                                   added_date=datetime.now())
+
+            db_session.add(statistic)
+            db_session.commit()
+            return func(*args, **kwargs)
+
+        return wrapper
+    return log
 
 
 def change_user_category(telegram_id, category_id):

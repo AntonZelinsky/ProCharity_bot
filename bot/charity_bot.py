@@ -27,10 +27,10 @@ from bot.states import (GREETING,
 
 from bot.data_to_db import (add_user,
                             change_subscription,
-                            log_command,
                             get_tasks,
                             get_category,
-                            change_category_subscription)
+                            change_user_category,
+                            log_command)
 from bot.formatter import display_task
 
 load_dotenv()
@@ -64,10 +64,32 @@ menu_buttons = [
     ]
 ]
 
+log_commands_name = {
+    'start': 'Старт',
+    'change_user_categories': 'Изменение категории',
+    'choose_category': 'Меню выбора категории',
+    'after_category_choose': 'Готово',
+    'open_menu': 'Открыть меню',
+    'show_open_task': 'Посмотреть открытые задания',
+    'send_task_to_friend': 'Переслать задание другу',
+    'ask_question': 'Задать вопрос',
+    'after_ask_question': 'Меню после вопроса',
+    'no_relevant_category': 'Моих компетенций здесь нет',
+    'email_feedback': 'Отправка емейла',
+    'add_new_category': 'Добавление новой категории',
+    'after_add_new_category': 'Меню после добавления новой категории',
+    'add_new_feature': 'Хочу новый функционал бота',
+    'after_add_new_feature': 'Меню после добавление функционала',
+    'about': 'О платформе',
+    'stop_task_subscription': 'Остановить/включить подписку на задания',
+    'cancel': 'Отмена',
 
+}
+
+
+@log_command(command=log_commands_name['start'], start_menu=True)
 def start(update: Update, context: CallbackContext) -> int:
     add_user(update.message)
-    log_command(update.effective_user.id, start.__name__)
 
     button = [
         [
@@ -89,21 +111,24 @@ def start(update: Update, context: CallbackContext) -> int:
     return GREETING
 
 
+@log_command(command=log_commands_name['change_user_categories'])
 def change_user_categories(update: Update, context: CallbackContext):
     """Auxiliary function for selecting a category and changing the status of subscriptions."""
-    log_command(update.effective_user.id, change_user_categories.__name__)
     pattern_id = re.findall(r'\d+', update.callback_query.data)
     category_id = int(pattern_id[0])
     telegram_id = update.effective_user.id
 
-    change_category_subscription(telegram_id=telegram_id, category_id=category_id)
+    change_user_category(telegram_id=telegram_id, category_id=category_id)
 
     choose_category(update, context)
 
 
+@log_command(command=log_commands_name['choose_category'], ignore_func='change_user_categories')
 def choose_category(update: Update, context: CallbackContext):
     """The main function is to select categories for subscribing to them."""
-    log_command(update.effective_user.id, choose_category.__name__)
+    # if log:
+    #   log_command(update.effective_user.id, choose_category.__name__)
+
     categories = get_category(update.effective_user.id)
 
     buttons = []
@@ -130,9 +155,8 @@ def choose_category(update: Update, context: CallbackContext):
     return CATEGORY
 
 
+@log_command(command=log_commands_name['after_category_choose'])
 def after_category_choose(update: Update, context: CallbackContext):
-    log_command(update.effective_user.id, after_category_choose.__name__)
-
     buttons = [
         [
             InlineKeyboardButton(text='Посмотреть открытые задания', callback_data='open_task')
@@ -150,9 +174,8 @@ def after_category_choose(update: Update, context: CallbackContext):
     return AFTER_CATEGORY_REPLY
 
 
+@log_command(command=log_commands_name['open_menu'])
 def open_menu(update: Update, context: CallbackContext):
-    log_command(update.effective_user.id, open_menu.__name__)
-
     keyboard = InlineKeyboardMarkup(menu_buttons)
     text = 'Menu'
     update.callback_query.answer()
@@ -161,9 +184,8 @@ def open_menu(update: Update, context: CallbackContext):
     return MENU
 
 
+@log_command(command=log_commands_name['show_open_task'])
 def show_open_task(update: Update, context: CallbackContext):
-    log_command(update.effective_user.id, show_open_task.__name__)
-
     tasks = get_tasks(update.effective_user.id)
 
     buttons = [
@@ -192,14 +214,13 @@ def show_open_task(update: Update, context: CallbackContext):
     return OPEN_TASKS
 
 
+@log_command(command=log_commands_name['send_task_to_friend'])
 def send_task_to_friend(update: Update, context: CallbackContext):
-    log_command(update.effective_user.id, send_task_to_friend.__name__)
     pass
 
 
+@log_command(command=log_commands_name['ask_question'])
 def ask_question(update: Update, context: CallbackContext):
-    log_command(update.effective_user.id, ask_question.__name__)
-
     button = [
         [InlineKeyboardButton(text='Вернуться в меню', callback_data='open_menu')]
     ]
@@ -211,9 +232,8 @@ def ask_question(update: Update, context: CallbackContext):
     return AFTER_NEW_QUESTION
 
 
+@log_command(command=log_commands_name['after_ask_question'])
 def after_ask_question(update: Update, context: CallbackContext):
-    log_command(update.effective_user.id, after_ask_question.__name__)
-
     buttons = [
         [
             InlineKeyboardButton(text='Посмотреть открытые задания', callback_data='open_task')
@@ -232,9 +252,8 @@ def after_ask_question(update: Update, context: CallbackContext):
     return AFTER_CATEGORY_REPLY
 
 
+@log_command(command=log_commands_name['no_relevant_category'])
 def no_relevant_category(update: Update, context: CallbackContext):
-    log_command(update.effective_user.id, no_relevant_category.__name__)
-
     buttons = [
         [
             InlineKeyboardButton(text='Написать, какие компетенции добавить', callback_data='add_new_category')
@@ -257,8 +276,8 @@ def no_relevant_category(update: Update, context: CallbackContext):
     return NO_CATEGORY
 
 
+@log_command(command=log_commands_name['email_feedback'])
 def email_feedback(update: Update, context: CallbackContext):
-    log_command(update.effective_user.id, email_feedback.__name__)
     button = [
         [
             InlineKeyboardButton(text='Вернуться в меню', callback_data='open_menu')
@@ -274,9 +293,8 @@ def email_feedback(update: Update, context: CallbackContext):
     return MENU
 
 
+@log_command(command=log_commands_name['add_new_category'])
 def add_new_category(update: Update, context: CallbackContext):
-    log_command(update.effective_user.id, add_new_category.__name__)
-
     button = [
         [InlineKeyboardButton(text='Вернуться в меню', callback_data='open_menu')]
     ]
@@ -289,9 +307,8 @@ def add_new_category(update: Update, context: CallbackContext):
     return AFTER_ADD_CATEGORY
 
 
+@log_command(command=log_commands_name['after_add_new_category'])
 def after_add_new_category(update: Update, context: CallbackContext):
-    log_command(update.effective_user.id, after_add_new_category.__name__)
-
     buttons = [
         [
             InlineKeyboardButton(text='Посмотреть открытые задания', callback_data='open_task')
@@ -310,9 +327,8 @@ def after_add_new_category(update: Update, context: CallbackContext):
     return AFTER_ADD_CATEGORY
 
 
+@log_command(command=log_commands_name['add_new_feature'])
 def add_new_feature(update: Update, context: CallbackContext):
-    log_command(update.effective_user.id, add_new_feature.__name__)
-
     update.callback_query.answer()
     update.callback_query.edit_message_text(
         text='Напиши, какого функционала в боте тебе не хватает?'
@@ -321,9 +337,8 @@ def add_new_feature(update: Update, context: CallbackContext):
     return TYPING
 
 
+@log_command(command=log_commands_name['after_add_new_feature'])
 def after_add_new_feature(update: Update, context: CallbackContext):
-    log_command(update.effective_user.id, after_add_new_feature.__name__)
-
     buttons = [
         [
             InlineKeyboardButton(text='Посмотреть открытые задания', callback_data='open_task')
@@ -342,9 +357,8 @@ def after_add_new_feature(update: Update, context: CallbackContext):
     return AFTER_ADD_FEATURE
 
 
+@log_command(command=log_commands_name['about'])
 def about(update: Update, context: CallbackContext):
-    log_command(update.effective_user.id, about.__name__)
-
     button = [
         [InlineKeyboardButton(text='Вернуться в меню', callback_data='open_menu')]
     ]
@@ -364,9 +378,8 @@ def about(update: Update, context: CallbackContext):
     return MENU
 
 
-# TODO Переименовать функцию на change_task_subscription
+@log_command(command=log_commands_name['stop_task_subscription'])
 def stop_task_subscription(update: Update, context: CallbackContext):
-    log_command(update.effective_user.id, stop_task_subscription.__name__)
     new_mailing_status = change_subscription(update.effective_user.id)
 
     button = [
@@ -397,9 +410,8 @@ def stop_task_subscription(update: Update, context: CallbackContext):
     return MENU
 
 
+@log_command(command=log_commands_name['cancel'])
 def cancel(update: Update, context: CallbackContext):
-    log_command(update.effective_user.id, cancel.__name__)
-
     user = update.message.from_user
     logger.info("User %s canceled the conversation.", user.first_name)
     update.message.reply_text(

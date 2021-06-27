@@ -18,7 +18,7 @@ class TelegramNotification:
     def __init__(self, has_mailing: bool = True) -> None:
         self.has_mailing = has_mailing
 
-    def add_job_queue(self, message):
+    def send_notification(self, message):
         """
            Adds queue to send notification to telegram chats.
 
@@ -27,10 +27,10 @@ class TelegramNotification:
         """
         context = {'message': message, 'has_mailing': self.has_mailing, }
 
-        updater.job_queue.run_once(self.send_notification_to_all, 1, context=context,
+        updater.job_queue.run_once(self.__send_to_all, 1, context=context,
                                    name=f'Notification: {message.message[0:10]}')
 
-    def send_notification_to_all(self, context):
+    def __send_to_all(self, context):
         """
         Sends the message to all telegram users registered in the database.
 

@@ -206,11 +206,13 @@ def show_open_task(update: Update, context: CallbackContext):
             chat_id=update.effective_chat.id, text=display_task(task), parse_mode=ParseMode.MARKDOWN
         )
 
-    for task in tasks[2]:
-        update.callback_query.edit_message_text(
-            display_task(task),
-            reply_markup=keyboard
-        )
+    update.callback_query.delete_message()
+
+    context.bot.send_message(
+        chat_id=update.effective_chat.id, text=display_task(tasks[2]), parse_mode=ParseMode.MARKDOWN,
+        reply_markup=keyboard
+    )
+
     return OPEN_TASKS
 
 

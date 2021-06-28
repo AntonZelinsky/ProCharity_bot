@@ -1,25 +1,38 @@
 from app.models import User, Category, Task, Statistics
 from app.database import db_session
 from datetime import datetime
+from sqlalchemy.orm import load_only
 import inspect
 
 
 def add_user(message):
     telegram_id = message.chat.id
-    last_name, first_name = message.chat.last_name, message.chat.first_name
-    record = User.query.filter_by(telegram_id=telegram_id).first()
-    if not record:
-        record = User(telegram_id=telegram_id)
-        record.last_name = last_name
-        record.first_name = first_name
-        db_session.add(record)
-        db_session.commit()
-        return
-    if (record.last_name != last_name) or (record.first_name != first_name):
-        record.last_name = last_name
-        record.first_name = first_name
-        db_session.commit()
-    return
+    last_name, first_name, username = message.chat.last_name, message.chat.first_name, message.chat.username
+    user = User.query.filter_by(telegram_id=telegram_id).first()
+    if not user:
+        user = User(telegram_id=telegram_id)
+        user.last_name = last_name
+        user.first_name = first_name
+        user.username = username
+        db_session.add(user)
+        return db_session.commit()
+
+    record_updated = False
+
+    if user.last_name != last_name:
+        user.last_name = last_name
+        record_updated = True
+
+    if user.first_name != first_name:
+        user.first_name = first_name
+        record_updated = True
+
+    if user.username != username:
+        user.username = username
+        record_updated = True
+
+    if record_updated:
+        return db_session.commit()
 
 
 def get_category(telegram_id):
@@ -30,7 +43,7 @@ def get_category(telegram_id):
     """
     result = []
     user_categories = [cat.id for cat in User.query.filter_by(telegram_id=telegram_id).first().categories]
-    all_categories = Category.query.filter_by(archive=False).all()
+    all_categories = Category.query.options(load_only('id')).filter_by(archive=False)
     for category in all_categories:
         cat = {}
         cat['category_id'] = category.id
@@ -60,13 +73,13 @@ def get_tasks(telegram_id):
     return tasks
 
 
-def change_subscription(chat_id):
+def change_subscription(telegram_id):
     """
-    Update subscription status of user
-    :param chat_id: Chat id of current user from the telegram update obj.
+    Update subscription status of user.
+    :param telegram_id: Chat id of current user from the telegram update obj.
     :return:
     """
-    user = User.query.filter_by(telegram_id=chat_id).first()
+    user = User.query.options(load_only('has_mailing')).filter_by(telegram_id=telegram_id).first()
 
     if user.has_mailing:
         user.has_mailing = False
@@ -116,16 +129,13 @@ def log_command(command, start_menu=False, ignore_func=None, ):
 
 
 def change_user_category(telegram_id, category_id):
-    user = User.query.filter_by(telegram_id=int(telegram_id)).first()
-    # category = Category.query.filter_by(name=category).first()
-    category = Category.query.get(int(category_id))
-    categories_list = user.categories
-    if category in categories_list:
+    user = User.query.filter_by(telegram_id=telegram_id).first()
+    category = Category.query.get(category_id)
+
+    if category in user.categories:
         user.categories.remove(category)
         db_session.add(user)
-        db_session.commit()
-        return False
-    user.categories.append(category)
-    db_session.add(user)
-    db_session.commit()
-    return True
+    else:
+        user.categories.append(category)
+        db_session.add(user)
+    return db_session.commit()

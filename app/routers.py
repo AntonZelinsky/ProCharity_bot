@@ -13,17 +13,17 @@ from app.apis.analysis import Analysis
 
 
 # users endpoints
-api.add_resource(UsersList, '/api/users/')
-api.add_resource(User_item, '/api/users/<int:id>/')
+api.add_resource(UsersList, '/api/v1/users/')
+api.add_resource(User_item, '/api/v1/users/<int:id>/')
 # Auth endpoints
-api.add_resource(InvitationChecker, '/api/auth/invitation_checker/')
-api.add_resource(Login, '/api/auth/login/')
-api.add_resource(Refresh, '/api/auth/token_refresh/')
-api.add_resource(PasswordReset, '/api/auth/password_reset/')
-api.add_resource(UserRegister, '/api/auth/register/')
-api.add_resource(SendRegistrationInvitе, '/api/auth/invitation/')
+api.add_resource(InvitationChecker, '/api/v1/auth/invitation_checker/')
+api.add_resource(Login, '/api/v1/auth/login/')
+api.add_resource(Refresh, '/api/v1/auth/token_refresh/')
+api.add_resource(PasswordReset, '/api/v1/auth/password_reset/')
+api.add_resource(UserRegister, '/api/v1/auth/register/')
+api.add_resource(SendRegistrationInvitе, '/api/v1/auth/invitation/')
 # Notification
-api.add_resource(SendTelegramNotification, '/api/send_telegram_notification/')
+api.add_resource(SendTelegramNotification, '/api/v1/send_telegram_notification/')
 # Webhooks
 api.add_resource(CreateTasks, '/api/v1/tasks/')
 api.add_resource(CreateCategories, '/api/v1/categories/')

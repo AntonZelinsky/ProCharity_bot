@@ -138,4 +138,4 @@ def change_user_category(telegram_id, category_id):
     else:
         user.categories.append(category)
         db_session.add(user)
-    return db_session.commit()
+    db_session.commit()

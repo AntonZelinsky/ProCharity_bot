@@ -96,22 +96,20 @@ def change_user_categories(update: Update, context: CallbackContext):
     telegram_id = update.effective_user.id
 
     change_user_category(telegram_id=telegram_id, category_id=category_id)
-
+    update.callback_query.answer()
     choose_category(update, context)
 
 
 @log_command(command=LOG_COMMANDS_NAME['choose_category'], ignore_func='change_user_categories')
 def choose_category(update: Update, context: CallbackContext):
     """The main function is to select categories for subscribing to them."""
-    # if log:
-    #   log_command(update.effective_user.id, choose_category.__name__)
 
     categories = get_category(update.effective_user.id)
 
     buttons = []
     for cat in categories:
         if cat['user_selected']:
-            cat['name'] += "✅"
+            cat['name'] += " ✅"
         buttons.append([InlineKeyboardButton(text=cat['name'], callback_data=f'up_cat{cat["category_id"]}'
                                              )])
 

@@ -38,12 +38,12 @@ class SendTelegramNotification(Resource, MethodResource):
 
              'has_mailing': {
                  'description': ('Sending notifications to users by the type of permission to mailing.'
-                                 'Enabled - user has enabled a mailing.'
-                                 'Disabled - user has disabled a mailing.'
-                                 'All - send to all users'),
+                                 'subscribed - user has enabled a mailing.'
+                                 'unsubscribed - user has disabled a mailing.'
+                                 'all - send to all users'),
                  'in': 'query',
                  'type': 'string',
-                 'default': True,
+                 'default': 'Enabled',
              },
              'Authorization': config.PARAM_HEADER_AUTH,  # Only if request requires authorization
          }

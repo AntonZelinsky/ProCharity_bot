@@ -1,7 +1,7 @@
 from app.database import db_session
 from app.models import User
-from telegram import Bot, ParseMode
-from bot.charity_bot import updater
+from telegram import Bot, ParseMode, error
+from bot.charity_bot import updater, logger
 
 import datetime
 from app import config
@@ -14,7 +14,7 @@ class TelegramNotification:
     This class describes the functionality for working with notifications in Telegram.
     """
 
-    def __init__(self, has_mailing=True) -> None:
+    def __init__(self, has_mailing='subscribed') -> None:
         self.has_mailing = has_mailing
 
     def send_notification(self, message):
@@ -25,24 +25,24 @@ class TelegramNotification:
         :return:
         """
 
-        if not self.has_mailing in ['All', 'Enabled', 'Disabled']:
+        if not self.has_mailing in ['all', 'subscribed', 'unsubscribed']:
             return False
 
         telegram_chats = []
         query = db_session.query(User.telegram_id)
 
-        if self.has_mailing == 'Enabled':
+        if self.has_mailing == 'subscribed':
             telegram_chats = query.filter(User.has_mailing.is_(True))
 
-        if self.has_mailing == 'Disabled':
+        if self.has_mailing == 'unsubscribed':
             telegram_chats = query.filter(User.has_mailing.is_(False))
 
-        if self.has_mailing == 'All':
+        if self.has_mailing == 'all':
             telegram_chats = query
 
         chats = [user for user in telegram_chats]
 
-        for i, part in enumerate(self.__split_chats(chats, 30)):
+        for i, part in enumerate(self.__split_chats(chats, config.NUMBER_USERS_TO_SEND)):
             context = {'message': message, 'chats': part}
 
             updater.job_queue.run_once(self.__send_to_all, i, context=context,
@@ -63,10 +63,9 @@ class TelegramNotification:
 
         for user in chats:
             try:
-                print(user.telegram_id)
                 bot.send_message(chat_id=user.telegram_id, text=message.message, parse_mode=ParseMode.MARKDOWN)
-            except Exception as ex:
-                raise ex
+            except error.BadRequest as ex:
+                logger.error(str(ex), user.telegram_id)
 
         message.was_sent = True
         message.sent_date = datetime.datetime.now()

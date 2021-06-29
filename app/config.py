@@ -56,6 +56,8 @@ APPLICATION_CONFIGURATION = {
     'JWT_ACCESS_TOKEN_EXPIRES': 1800,  # 30 minutes
     'JWT_REFRESH_TOKEN_EXPIRES': 1800,  # 30 minutes
     'JWT_SECRET_KEY': 'Ad3ewrf#$wqA24&2W24-0)*&)@43',
+    'PROPAGATE_EXCEPTIONS': True,
+    # API rest settings
     'JSON_SORT_KEYS': False,
 
     # Mail settings

@@ -19,7 +19,6 @@ USER_SCHEMA = {
     'telegram_id': fields.Int(),
 }
 
-
 class UsersList(MethodResource, Resource):
     """Provides access to 'get', 'post' requests for User model"""
 
@@ -52,24 +51,22 @@ class UsersList(MethodResource, Resource):
         for item in paginate_page.items:
             result.append(item.get_user_information())
 
+        next_url = None
+        previous_url = None
         if paginate_page.has_next:
             next_url = f'{api.url_for(UsersList)}?page={page + 1}&limit={limit}'
-        else:
-            next_url = ''
 
         if paginate_page.has_previous:
             previous_url = f'{api.url_for(UsersList)}?page={page - 1}&limit={limit}'
-        else:
-            previous_url = ''
 
         return make_response(jsonify(
             {
                 'total': paginate_page.total,
                 'pages': paginate_page.pages,
-                'has_next': paginate_page.has_next,
-                'has_previous': paginate_page.has_previous,
-                'next_page': paginate_page.next_page,
                 'previous_page': paginate_page.previous_page,
+                'current_page': page,
+                'next_page': paginate_page.next_page,
+
                 'next_url': next_url,
                 'previous_url': previous_url,
                 'result': result

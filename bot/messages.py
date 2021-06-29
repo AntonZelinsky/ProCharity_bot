@@ -5,7 +5,6 @@ from bot.charity_bot import updater
 
 import datetime
 from app import config
-import time
 
 bot = Bot(config.TELEGRAM_TOKEN)
 
@@ -15,7 +14,7 @@ class TelegramNotification:
     This class describes the functionality for working with notifications in Telegram.
     """
 
-    def __init__(self, has_mailing: bool = True) -> None:
+    def __init__(self, has_mailing=True) -> None:
         self.has_mailing = has_mailing
 
     def send_notification(self, message):
@@ -25,10 +24,31 @@ class TelegramNotification:
         :param message: Message to add to the sending queue
         :return:
         """
-        context = {'message': message, 'has_mailing': self.has_mailing, }
 
-        updater.job_queue.run_once(self.__send_to_all, 1, context=context,
-                                   name=f'Notification: {message.message[0:10]}')
+        if not self.has_mailing in ['All', 'Enabled', 'Disabled']:
+            return False
+
+        telegram_chats = []
+        query = db_session.query(User.telegram_id)
+
+        if self.has_mailing == 'Enabled':
+            telegram_chats = query.filter(User.has_mailing.is_(True))
+
+        if self.has_mailing == 'Disabled':
+            telegram_chats = query.filter(User.has_mailing.is_(False))
+
+        if self.has_mailing == 'All':
+            telegram_chats = query
+
+        chats = [chat_id for chat_id in telegram_chats]
+
+        for i, part_chats_id in enumerate(self.__split_chats(chats, 30)):
+            context = {'message': message, 'chats_id': part_chats_id}
+
+            updater.job_queue.run_once(self.__send_to_all, i, context=context,
+                                       name=f'Notification: {message.message[0:10]}')
+
+        return True
 
     def __send_to_all(self, context):
         """
@@ -38,16 +58,26 @@ class TelegramNotification:
         :return:
         """
         job = context.job
-        has_mailing = job.context['has_mailing']
-        chats = [chat_id for chat_id in db_session.query(User.telegram_id).
-            filter(User.has_mailing.is_(has_mailing)).all()]
-
         message = job.context['message']
+        chats_id = job.context['chats_id']
 
-        for chat_id in chats:
-            bot.send_message(chat_id=chat_id[0], text=message.message, parse_mode=ParseMode.MARKDOWN)
-            time.sleep(1)
-        # marks the sent message as 'sent' and add date of sending.
+        for chat_id in chats_id:
+            try:
+                bot.send_message(chat_id=chat_id[0], text=message.message, parse_mode=ParseMode.MARKDOWN)
+            except Exception as ex:
+                raise ex
+
         message.was_sent = True
         message.sent_date = datetime.datetime.now()
         db_session.commit()
+
+    @staticmethod
+    def __split_chats(array, size):
+
+        arrs = []
+        while len(array) > size:
+            piece = array[:size]
+            arrs.append(piece)
+            array = array[size:]
+        arrs.append(array)
+        return arrs

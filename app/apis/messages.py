@@ -14,7 +14,7 @@ from bot.messages import TelegramNotification
 
 class TelegramNotificationSchema(Schema):
     message = fields.String(required=True)
-    has_mailing = fields.Boolean(required=False, default=True)
+    has_mailing = fields.String(required=True)
 
 
 class SendTelegramNotification(Resource, MethodResource):
@@ -38,10 +38,11 @@ class SendTelegramNotification(Resource, MethodResource):
 
              'has_mailing': {
                  'description': ('Sending notifications to users by the type of permission to mailing.'
-                                 'True - user has enabled a mailing.'
-                                 ' False - user has disabled a mailing.'),
+                                 'Enabled - user has enabled a mailing.'
+                                 'Disabled - user has disabled a mailing.'
+                                 'All - send to all users'),
                  'in': 'query',
-                 'type': 'boolean',
+                 'type': 'string',
                  'default': True,
              },
              'Authorization': config.PARAM_HEADER_AUTH,  # Only if request requires authorization
@@ -63,6 +64,8 @@ class SendTelegramNotification(Resource, MethodResource):
         db_session.commit()
 
         job_queue = TelegramNotification(has_mailing)
-        job_queue.send_notification(message=message)
+
+        if not job_queue.send_notification(message=message):
+            return make_response(jsonify(result=f'The has_mailing key error. The message has not be sent.'), 400)
 
         return make_response(jsonify(result=f'The message has been added to a query job'), 200)

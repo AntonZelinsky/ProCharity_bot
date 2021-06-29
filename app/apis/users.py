@@ -1,15 +1,15 @@
 from flask import jsonify, make_response, request
 from flask_jwt_extended import jwt_required
+from app.swagger_schemas import USERS_SCHEMA
 from app.models import User
 from app import config, api
 from app.database import db_session
 from flask_restful import Resource
 from flask_apispec.views import MethodResource
-from flask_apispec import doc, use_kwargs
+from flask_apispec import doc, use_kwargs, marshal_with
 from email_validator import validate_email, EmailNotValidError
 from marshmallow import fields
 from sqlalchemy_pagination import paginate
-
 
 USER_SCHEMA = {
     'username': fields.Str(),
@@ -18,6 +18,7 @@ USER_SCHEMA = {
     'last_name': fields.Str(),
     'telegram_id': fields.Int(),
 }
+
 
 class UsersList(MethodResource, Resource):
     """Provides access to 'get', 'post' requests for User model"""
@@ -39,7 +40,10 @@ class UsersList(MethodResource, Resource):
                  'required': True
              },
              'Authorization': config.PARAM_HEADER_AUTH,
+
          },
+         responses=USERS_SCHEMA
+
          )
     @jwt_required()
     def get(self):
@@ -66,12 +70,13 @@ class UsersList(MethodResource, Resource):
                 'previous_page': paginate_page.previous_page,
                 'current_page': page,
                 'next_page': paginate_page.next_page,
-
                 'next_url': next_url,
                 'previous_url': previous_url,
                 'result': result
-            }
-        ), 200)
+            },
+        ),
+            200
+        )
 
 
 class User_item(MethodResource, Resource):

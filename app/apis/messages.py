@@ -63,6 +63,6 @@ class SendTelegramNotification(Resource, MethodResource):
         db_session.commit()
 
         job_queue = TelegramNotification(has_mailing)
-        job_queue.add_job_queue(message=message)
+        job_queue.send_notification(message=message)
 
         return make_response(jsonify(result=f'The message has been added to a query job'), 200)

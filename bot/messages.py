@@ -40,10 +40,10 @@ class TelegramNotification:
         if self.has_mailing == 'All':
             telegram_chats = query
 
-        chats = [chat_id for chat_id in telegram_chats]
+        chats = [user for user in telegram_chats]
 
-        for i, part_chats_id in enumerate(self.__split_chats(chats, 30)):
-            context = {'message': message, 'chats_id': part_chats_id}
+        for i, part in enumerate(self.__split_chats(chats, 30)):
+            context = {'message': message, 'chats': part}
 
             updater.job_queue.run_once(self.__send_to_all, i, context=context,
                                        name=f'Notification: {message.message[0:10]}')
@@ -59,11 +59,12 @@ class TelegramNotification:
         """
         job = context.job
         message = job.context['message']
-        chats_id = job.context['chats_id']
+        chats = job.context['chats']
 
-        for chat_id in chats_id:
+        for user in chats:
             try:
-                bot.send_message(chat_id=chat_id[0], text=message.message, parse_mode=ParseMode.MARKDOWN)
+                print(user.telegram_id)
+                bot.send_message(chat_id=user.telegram_id, text=message.message, parse_mode=ParseMode.MARKDOWN)
             except Exception as ex:
                 raise ex
 

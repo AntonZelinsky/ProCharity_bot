@@ -23,7 +23,8 @@ from bot.states import (GREETING,
                         AFTER_NEW_QUESTION,
                         AFTER_ADD_FEATURE,
                         TYPING,
-                        START_OVER)
+                        START_OVER,
+                        START_SHOW_TASK)
 
 from bot.data_to_db import (add_user,
                             change_subscription,
@@ -33,6 +34,9 @@ from bot.data_to_db import (add_user,
                             log_command)
 from bot.formatter import display_task
 from bot.constants import LOG_COMMANDS_NAME
+
+PAGINATION = 3
+
 load_dotenv()
 
 logger = logging.getLogger(__name__)
@@ -161,8 +165,6 @@ def open_menu(update: Update, context: CallbackContext):
 
 @log_command(command=LOG_COMMANDS_NAME['show_open_task'])
 def show_open_task(update: Update, context: CallbackContext):
-    tasks = get_tasks(update.effective_user.id)
-
     buttons = [
         [
             InlineKeyboardButton(text='Посмотреть ещё', callback_data='open_task')
@@ -176,16 +178,42 @@ def show_open_task(update: Update, context: CallbackContext):
     ]
     keyboard = InlineKeyboardMarkup(buttons)
 
-    for task in tasks[0:2]:
-        context.bot.send_message(
-            chat_id=update.effective_chat.id, text=display_task(task), parse_mode=ParseMode.MARKDOWN
-        )
+    showed = 0
+    show_task_now = []
 
-    for task in tasks[2]:
+    if not context.user_data.get(START_SHOW_TASK):
+        context.user_data[START_SHOW_TASK] = []
+
+    tasks = get_tasks(update.effective_user.id)
+    if tasks:
+        tasks.sort(key=lambda x: x[0].id)
+        for task in tasks:
+            if task[0].id not in context.user_data[START_SHOW_TASK] and showed != PAGINATION:
+                context.user_data[START_SHOW_TASK].append(task[0].id)
+                show_task_now.append(task)
+                showed += 1
+
+    if not show_task_now:
         update.callback_query.edit_message_text(
-            display_task(task),
+            text='Нет доступных заданий', parse_mode=ParseMode.MARKDOWN, reply_markup=keyboard
+        )
+    if len(show_task_now) == 1:
+        update.callback_query.edit_message_text(
+            text=display_task(show_task_now[0]), parse_mode=ParseMode.MARKDOWN, reply_markup=keyboard
+        )
+    elif len(show_task_now) > 1:
+        for task in show_task_now[:len(show_task_now) - 1]:
+            context.bot.send_message(
+                chat_id=update.effective_chat.id, text=display_task(task), parse_mode=ParseMode.MARKDOWN
+            )
+
+        update.callback_query.delete_message()
+
+        context.bot.send_message(
+            chat_id=update.effective_chat.id, text=display_task(show_task_now[-1]), parse_mode=ParseMode.MARKDOWN,
             reply_markup=keyboard
         )
+
     return OPEN_TASKS
 
 

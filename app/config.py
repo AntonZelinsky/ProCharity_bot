@@ -39,7 +39,9 @@ PARAM_HEADER_AUTH = {
     'type': 'string',
     'required': True
 }
-
+# ------------------------------
+# Pagination
+PAGE_LIMIT = 10
 # ------------------------------
 # Telegram bot settings
 TELEGRAM_TOKEN = os.getenv('TOKEN')

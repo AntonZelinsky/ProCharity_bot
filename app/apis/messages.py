@@ -43,7 +43,7 @@ class SendTelegramNotification(Resource, MethodResource):
                                  'all - send to all users'),
                  'in': 'query',
                  'type': 'string',
-                 'default': 'Enabled',
+                 'default': 'subscribed',
              },
              'Authorization': config.PARAM_HEADER_AUTH,  # Only if request requires authorization
          }

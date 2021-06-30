@@ -45,12 +45,12 @@ class TelegramNotification:
         for i, part in enumerate(self.__split_chats(chats, config.NUMBER_USERS_TO_SEND)):
             context = {'message': message, 'chats': part}
 
-            updater.job_queue.run_once(self.__send_to_all, i, context=context,
+            updater.job_queue.run_once(self.__send_by_subscription_status, i, context=context,
                                        name=f'Notification: {message.message[0:10]}')
 
         return True
 
-    def __send_to_all(self, context):
+    def __send_by_subscription_status(self, context):
         """
         Sends the message to all telegram users registered in the database.
 

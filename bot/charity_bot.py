@@ -195,13 +195,16 @@ def show_open_task(update: Update, context: CallbackContext):
 
     if not show_task_now:
         update.callback_query.edit_message_text(
-            text='Нет доступных заданий', parse_mode=ParseMode.MARKDOWN, reply_markup=keyboard
+            text='Нет доступных заданий',
+            reply_markup=InlineKeyboardMarkup(
+                [[InlineKeyboardButton(text='Открыть меню', callback_data='open_menu')]]
+            )
         )
-    if len(show_task_now) == 1:
+    elif len(show_task_now) == 1:
         update.callback_query.edit_message_text(
             text=display_task(show_task_now[0]), parse_mode=ParseMode.MARKDOWN, reply_markup=keyboard
         )
-    elif len(show_task_now) > 1:
+    else:
         for task in show_task_now[:len(show_task_now) - 1]:
             context.bot.send_message(
                 chat_id=update.effective_chat.id, text=display_task(task), parse_mode=ParseMode.MARKDOWN

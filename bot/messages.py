@@ -1,11 +1,10 @@
 from app.database import db_session
 from app.models import User
-from telegram import Bot, ParseMode
-from bot.charity_bot import updater
+from telegram import Bot, ParseMode, error
+from bot.charity_bot import updater, logger
 
 import datetime
 from app import config
-import time
 
 bot = Bot(config.TELEGRAM_TOKEN)
 
@@ -15,7 +14,7 @@ class TelegramNotification:
     This class describes the functionality for working with notifications in Telegram.
     """
 
-    def __init__(self, has_mailing: bool = True) -> None:
+    def __init__(self, has_mailing='subscribed') -> None:
         self.has_mailing = has_mailing
 
     def send_notification(self, message):
@@ -25,12 +24,33 @@ class TelegramNotification:
         :param message: Message to add to the sending queue
         :return:
         """
-        context = {'message': message, 'has_mailing': self.has_mailing, }
 
-        updater.job_queue.run_once(self.__send_to_all, 1, context=context,
-                                   name=f'Notification: {message.message[0:10]}')
+        if not self.has_mailing in ['all', 'subscribed', 'unsubscribed']:
+            return False
 
-    def __send_to_all(self, context):
+        telegram_chats = []
+        query = db_session.query(User.telegram_id)
+
+        if self.has_mailing == 'subscribed':
+            telegram_chats = query.filter(User.has_mailing.is_(True))
+
+        if self.has_mailing == 'unsubscribed':
+            telegram_chats = query.filter(User.has_mailing.is_(False))
+
+        if self.has_mailing == 'all':
+            telegram_chats = query
+
+        chats = [user for user in telegram_chats]
+
+        for i, part in enumerate(self.__split_chats(chats, config.NUMBER_USERS_TO_SEND)):
+            context = {'message': message, 'chats': part}
+
+            updater.job_queue.run_once(self.__send_by_subscription_status, i, context=context,
+                                       name=f'Notification: {message.message[0:10]}')
+
+        return True
+
+    def __send_by_subscription_status(self, context):
         """
         Sends the message to all telegram users registered in the database.
 
@@ -38,16 +58,26 @@ class TelegramNotification:
         :return:
         """
         job = context.job
-        has_mailing = job.context['has_mailing']
-        chats = [chat_id for chat_id in db_session.query(User.telegram_id).
-            filter(User.has_mailing.is_(has_mailing)).all()]
-
         message = job.context['message']
+        chats = job.context['chats']
 
-        for chat_id in chats:
-            bot.send_message(chat_id=chat_id[0], text=message.message, parse_mode=ParseMode.MARKDOWN)
-            time.sleep(1)
-        # marks the sent message as 'sent' and add date of sending.
+        for user in chats:
+            try:
+                bot.send_message(chat_id=user.telegram_id, text=message.message, parse_mode=ParseMode.MARKDOWN)
+            except error.BadRequest as ex:
+                logger.error(str(ex), user.telegram_id)
+
         message.was_sent = True
         message.sent_date = datetime.datetime.now()
         db_session.commit()
+
+    @staticmethod
+    def __split_chats(array, size):
+
+        arrs = []
+        while len(array) > size:
+            piece = array[:size]
+            arrs.append(piece)
+            array = array[size:]
+        arrs.append(array)
+        return arrs

@@ -1,13 +1,15 @@
-from flask import jsonify, make_response
+from flask import jsonify, make_response, request
 from flask_jwt_extended import jwt_required
+from app.swagger_schemas import USERS_SCHEMA
 from app.models import User
-from app import config
+from app import config, api
 from app.database import db_session
 from flask_restful import Resource
 from flask_apispec.views import MethodResource
-from flask_apispec import doc, use_kwargs
+from flask_apispec import doc, use_kwargs, marshal_with
 from email_validator import validate_email, EmailNotValidError
 from marshmallow import fields
+from sqlalchemy_pagination import paginate
 
 USER_SCHEMA = {
     'username': fields.Str(),
@@ -23,16 +25,58 @@ class UsersList(MethodResource, Resource):
 
     @doc(description='List of all users',
          tags=['Users Control'],
-         params={'Authorization': config.PARAM_HEADER_AUTH, })
+         params={'page': {
+             'description': 'Number of page',
+             'in': 'query',
+             'type': 'integer',
+             'required': True
+         },
+
+             'limit': {
+                 'description': 'Limit of items on one page',
+                 'in': 'query',
+                 'type': 'integer',
+                 'default': 10,
+                 'required': True
+             },
+             'Authorization': config.PARAM_HEADER_AUTH,
+
+         },
+         responses=USERS_SCHEMA
+
+         )
     @jwt_required()
     def get(self):
-        users = User.query.all()
         result = []
+        page = int(request.args.get('page', 1))
+        limit = int(request.args.get('limit', config.PAGE_LIMIT))
+        paginate_page = paginate(db_session.query(User), page, limit)
 
-        for user in users:
-            result.append(user.get_user_information())
+        for item in paginate_page.items:
+            result.append(item.get_user_information())
 
-        return make_response(jsonify(result), 200)
+        next_url = None
+        previous_url = None
+        if paginate_page.has_next:
+            next_url = f'{api.url_for(UsersList)}?page={page + 1}&limit={limit}'
+
+        if paginate_page.has_previous:
+            previous_url = f'{api.url_for(UsersList)}?page={page - 1}&limit={limit}'
+
+        return make_response(jsonify(
+            {
+                'total': paginate_page.total,
+                'pages': paginate_page.pages,
+                'previous_page': paginate_page.previous_page,
+                'current_page': page,
+                'next_page': paginate_page.next_page,
+                'next_url': next_url,
+                'previous_url': previous_url,
+                'result': result
+            },
+        ),
+            200
+        )
 
 
 class User_item(MethodResource, Resource):

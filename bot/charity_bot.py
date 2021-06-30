@@ -201,11 +201,20 @@ def show_open_task(update: Update, context: CallbackContext):
             )
         )
     elif len(show_task_now) == 1:
-        update.callback_query.edit_message_text(
-            text=display_task(show_task_now[0]), parse_mode=ParseMode.MARKDOWN, reply_markup=keyboard
+        context.bot.send_message(
+            chat_id=update.effective_chat.id, text=display_task(show_task_now[0]), parse_mode=ParseMode.MARKDOWN
+        )
+        update.callback_query.delete_message()
+
+        context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text='Нет доступных заданий',
+            reply_markup=InlineKeyboardMarkup(
+                [[InlineKeyboardButton(text='Открыть меню', callback_data='open_menu')]]
+            )
         )
     else:
-        for task in show_task_now[:len(show_task_now) - 1]:
+        for task in show_task_now[:PAGINATION]:
             context.bot.send_message(
                 chat_id=update.effective_chat.id, text=display_task(task), parse_mode=ParseMode.MARKDOWN
             )
@@ -213,7 +222,7 @@ def show_open_task(update: Update, context: CallbackContext):
         update.callback_query.delete_message()
 
         context.bot.send_message(
-            chat_id=update.effective_chat.id, text=display_task(show_task_now[-1]), parse_mode=ParseMode.MARKDOWN,
+            chat_id=update.effective_chat.id, text='Есть ещё задания, показать?', parse_mode=ParseMode.MARKDOWN,
             reply_markup=keyboard
         )
 

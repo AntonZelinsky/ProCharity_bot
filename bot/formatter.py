@@ -5,3 +5,12 @@ def display_task(t):
            f'Категория: {t[1]}\n' \
            f'Срок: {t[0].deadline}\n\n' \
            f'[Посмотреть задание]({t[0].link})'
+
+
+def display_task_notification(task):
+    return (f'<b>{task.title}</b>\n\n'
+            f'От: {task.name_organization}, {task.location}\n\n'
+            f'Бонусы {"💎" * task.bonus}\n'
+            f'Категория: {task.categories.name}\n'
+            f'Срок: {task.deadline}\n\n'
+            f'<a href="{task.link}">Посмотреть задание</a>')

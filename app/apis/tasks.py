@@ -9,7 +9,7 @@ from marshmallow import fields
 from marshmallow.schema import Schema
 from bot.messages import TelegramNotification
 from sqlalchemy.orm import load_only
-
+from bot.formatter import display_task_notification
 
 # class Task_schema(Schema):
 #     id = fields.Int()
@@ -83,17 +83,8 @@ class CreateTasks(MethodResource, Resource):
                             chats_list.append(user)
 
                     if chats_list:
-                        notification.send_new_tasks(message=self.display_task_notification(task), send_to=chats_list)
+                        notification.send_new_tasks(message=display_task_notification(task), send_to=chats_list)
 
             return make_response(jsonify(result='ok'), 200)
         except Exception as ex:
             return make_response(jsonify(result=str(ex)), 400)
-
-    @staticmethod
-    def display_task_notification(task: Task):
-        return (f'<b>{task.title}</b>\n\n'
-                f'От: {task.name_organization}, {task.location}\n\n'
-                f'Бонусы {"💎" * task.bonus}\n'
-                f'Категория: {task.categories.name}\n'
-                f'Срок: {task.deadline}\n\n'
-                f'<a href="{task.link}">Посмотреть задание</a>')

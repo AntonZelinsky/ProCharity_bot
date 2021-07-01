@@ -72,7 +72,7 @@ class CreateTasks(MethodResource, Resource):
             db_session.commit()
 
             if task_to_send:
-                users = User.query.options(load_only('telegram_id')).all()
+                users = User.query.options(load_only('telegram_id')).filter_by(has_mailing=True).all()
                 notification = TelegramNotification()
 
                 for task in task_to_send:
@@ -83,17 +83,17 @@ class CreateTasks(MethodResource, Resource):
                             chats_list.append(user)
 
                     if chats_list:
-                        notification.send_notification(message=self.display_task(task), query=chats_list)
+                        notification.send_new_tasks(message=self.display_task_notification(task), send_to=chats_list)
 
             return make_response(jsonify(result='ok'), 200)
         except Exception as ex:
             return make_response(jsonify(result=str(ex)), 400)
 
     @staticmethod
-    def display_task(task: Task):
+    def display_task_notification(task: Task):
         return (f'<b>{task.title}</b>\n\n'
                 f'От: {task.name_organization}, {task.location}\n\n'
-                f'Бонусы {task.bonus}\n'
+                f'Бонусы {"💎" * task.bonus}\n'
                 f'Категория: {task.categories.name}\n'
                 f'Срок: {task.deadline}\n\n'
                 f'<a href="{task.link}">Посмотреть задание</a>')

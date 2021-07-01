@@ -202,7 +202,7 @@ def show_open_task(update: Update, context: CallbackContext):
         )
     elif len(show_task_now) == 1:
         context.bot.send_message(
-            chat_id=update.effective_chat.id, text=display_task(show_task_now[0]), parse_mode=ParseMode.MARKDOWN
+            chat_id=update.effective_chat.id, text=display_task(show_task_now[0]), parse_mode=ParseMode.HTML
         )
         update.callback_query.delete_message()
 
@@ -216,7 +216,7 @@ def show_open_task(update: Update, context: CallbackContext):
     else:
         for task in show_task_now[:PAGINATION]:
             context.bot.send_message(
-                chat_id=update.effective_chat.id, text=display_task(task), parse_mode=ParseMode.MARKDOWN
+                chat_id=update.effective_chat.id, text=display_task(task), parse_mode=ParseMode.HTML
             )
 
         update.callback_query.delete_message()

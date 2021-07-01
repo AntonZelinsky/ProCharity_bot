@@ -6,12 +6,10 @@ from sqlalchemy import (Column,
                         Boolean,
                         DateTime,
                         Date,
-                        Table,
                         )
 
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.sql.functions import user
 from werkzeug.security import generate_password_hash, check_password_hash
 
 Base = declarative_base()
@@ -134,8 +132,10 @@ class Notification(Base):
     was_sent = Column(Boolean, default=False)
     sent_date = Column(DateTime)
     sent_by = Column(String(48), nullable=False)
+
     def __repr__(self):
         return f'<Notification {self.message[0:10]}>'
+
 
 class Users_Categories(Base):
     __tablename__ = 'users_categories'

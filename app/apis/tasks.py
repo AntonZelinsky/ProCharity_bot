@@ -91,9 +91,9 @@ class CreateTasks(MethodResource, Resource):
 
     @staticmethod
     def display_task(task: Task):
-        return (f'*{task.title}*\n\n'
+        return (f'<b>{task.title}</b>\n\n'
                 f'От: {task.name_organization}, {task.location}\n\n'
                 f'Бонусы {task.bonus}\n'
                 f'Категория: {task.categories.name}\n'
                 f'Срок: {task.deadline}\n\n'
-                f'[Посмотреть задание]({task.link})')
+                f'<a href="{task.link}">Посмотреть задание</a>')

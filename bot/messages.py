@@ -17,7 +17,7 @@ class TelegramNotification:
         self.has_mailing = has_mailing
 
     # TODO refactoring https://github.com/python-telegram-bot/python-telegram-bot/wiki/Avoiding-flood-limits
-    def send_notification(self, message, send_to=None):
+    def send_notification(self, message):
         """
            Adds queue to send notification to telegram chats.
 
@@ -28,18 +28,19 @@ class TelegramNotification:
         if self.has_mailing not in ('all', 'subscribed', 'unsubscribed'):
             return False
 
+        chats_list = []
         query = db_session.query(User.telegram_id)
 
         if self.has_mailing == 'subscribed':
-            send_to = query.filter(User.has_mailing.is_(True))
+            chats_list = query.filter(User.has_mailing.is_(True))
 
         if self.has_mailing == 'unsubscribed':
-            send_to = query.filter(User.has_mailing.is_(False))
+            chats_list = query.filter(User.has_mailing.is_(False))
 
         if self.has_mailing == 'all':
-            send_to = query
+            chats_list = query
 
-        chats = [user for user in send_to]
+        chats = [user for user in chats_list]
 
         for i, part in enumerate(self.__split_chats(chats, config.NUMBER_USERS_TO_SEND)):
             context = {'message': message, 'chats': part}

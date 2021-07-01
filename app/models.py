@@ -6,12 +6,10 @@ from sqlalchemy import (Column,
                         Boolean,
                         DateTime,
                         Date,
-                        Table,
                         )
 
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.sql.functions import user
 from werkzeug.security import generate_password_hash, check_password_hash
 
 Base = declarative_base()
@@ -60,10 +58,10 @@ class Register(Base):
 class User(Base):
     __tablename__ = 'users'
 
-    id = Column(Integer, primary_key=True)
+    telegram_id = Column(Integer, primary_key=True)
     username = Column(String(32), unique=True, nullable=True)
     email = Column(String(48), unique=True, nullable=True)
-    telegram_id = Column(Integer, unique=True, nullable=False)
+    external_id = Column(Integer, unique=True, nullable=True)
     first_name = Column(String(32), nullable=True)
     last_name = Column(String(32), nullable=True)
     has_mailing = Column(Boolean, default=True)
@@ -74,12 +72,12 @@ class User(Base):
 
     def get_user_information(self):
         return {
-            'id': self.id,
+            'telegram_id': self.telegram_id,
             'username': self.username,
             'email': self.email,
             'first_name': self.first_name,
             'last_name': self.last_name,
-            'telegram_id': self.telegram_id,
+            'external_id': self.external_id,
             'has_mailing': self.has_mailing,
             'date_registration': self.date_registration,
         }
@@ -134,14 +132,16 @@ class Notification(Base):
     was_sent = Column(Boolean, default=False)
     sent_date = Column(DateTime)
     sent_by = Column(String(48), nullable=False)
+
     def __repr__(self):
         return f'<Notification {self.message[0:10]}>'
 
+
 class Users_Categories(Base):
     __tablename__ = 'users_categories'
-    user_id = Column(Integer,
-                     ForeignKey('users.id'),
-                     primary_key=True)
+    telegram_id = Column(Integer,
+                         ForeignKey('users.telegram_id'),
+                         primary_key=True)
     category_id = Column(Integer,
                          ForeignKey('categories.id'),
                          primary_key=True)

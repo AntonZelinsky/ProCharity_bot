@@ -10,6 +10,7 @@ from app.models import Notification
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app import config
 from bot.messages import TelegramNotification
+import datetime
 
 
 class TelegramNotificationSchema(Schema):
@@ -48,7 +49,6 @@ class SendTelegramNotification(Resource, MethodResource):
              'Authorization': config.PARAM_HEADER_AUTH,  # Only if request requires authorization
          }
          )
-    # TODO Добавить возможность отравлять всем пользователям. Сделать 3 состояния has_mailing: All, True, False
     @use_kwargs(TelegramNotificationSchema)
     @jwt_required()
     def post(self, **kwargs):
@@ -65,7 +65,10 @@ class SendTelegramNotification(Resource, MethodResource):
 
         job_queue = TelegramNotification(has_mailing)
 
-        if not job_queue.send_notification(message=message):
+        if not job_queue.send_notification(message=message.message):
             return make_response(jsonify(result=f'The has_mailing key error. The message has not be sent.'), 400)
 
+        message.was_sent = True
+        message.sent_date = datetime.datetime.now()
+        db_session.commit()
         return make_response(jsonify(result=f'The message has been added to a query job'), 200)

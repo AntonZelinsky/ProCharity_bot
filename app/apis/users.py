@@ -87,8 +87,8 @@ class User_item(MethodResource, Resource):
          params={'Authorization': config.PARAM_HEADER_AUTH, }
          )
     @jwt_required()
-    def get(self, id):
-        user = User.query.get(id)
+    def get(self, telegram_id):
+        user = User.query.get(telegram_id)
         if not user:
             return make_response(jsonify(message='This user was not found.'), 400)
         return make_response(jsonify(user.get_user_information()), 200)
@@ -132,7 +132,7 @@ class User_item(MethodResource, Resource):
          )
     @jwt_required()
     @use_kwargs(USER_SCHEMA)
-    def put(self, id, **kwargs):
+    def put(self, telegram_id, **kwargs):
         username = kwargs.get('username')
         email = kwargs.get('email')
 
@@ -153,7 +153,7 @@ class User_item(MethodResource, Resource):
             # validate of a password if one included in the request.
 
             # update request to DB
-        User.query.filter_by(id=id).update(kwargs)
+        User.query.filter_by(telegram_id=telegram_id).update(kwargs)
         db_session.commit()
 
         return make_response(jsonify(message='The user has been updated'), 200)
@@ -163,8 +163,8 @@ class User_item(MethodResource, Resource):
          params={'Authorization': config.PARAM_HEADER_AUTH, }
          )
     @jwt_required()
-    def delete(self, id):
-        user = User.query.get(id)
+    def delete(self, telegram_id):
+        user = User.query.get(telegram_id)
         if not user:
             return make_response(jsonify(message=f'The user did not found.'), 400)
         db_session.delete(user)

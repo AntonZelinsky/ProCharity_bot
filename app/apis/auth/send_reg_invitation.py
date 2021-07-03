@@ -37,7 +37,7 @@ class SendRegistrationInvite(MethodResource, Resource):
          )
     # TODO Token verification is temporarily disabled.
     @use_kwargs({'email': fields.Str()})
-    # @jwt_required() TODO Token verification is temporarily disabled.
+    #@jwt_required()
     def post(self, **kwargs):
         email = kwargs.get('email')
 
@@ -53,7 +53,7 @@ class SendRegistrationInvite(MethodResource, Resource):
         expiration = config.INV_TOKEN_EXPIRATION
         token_expiration_date = datetime.now() + timedelta(hours=config.INV_TOKEN_EXPIRATION)
         token = str(uuid.uuid4())
-        inv_link = f'{config.HOST_NAME}/register/?token:{token}'
+        inv_link = f'http://{config.HOST_NAME}/#/register/{token}'
 
         template = render_template(config.INVITATION_TEMPLATE, inv_link=inv_link, expiration=expiration)
 

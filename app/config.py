@@ -12,7 +12,7 @@ load_dotenv(dotenv_path)
 # Basic project settings
 SQL_ALCHEMY_DATABASE_URL = os.getenv('DATABASE_URL')
 PROJECT_NAME = "ProCharrity bot"
-HOST_NAME = 'host'
+HOST_NAME = '178.154.202.217'
 PASSWORD_POLICY = {
     "min_length": 8,
     "uppercase": 1,

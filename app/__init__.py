@@ -9,6 +9,7 @@ from flask_apispec.extension import FlaskApiSpec
 from password_validation import PasswordPolicy
 from flask_mail import Mail
 from flask_cors import CORS
+from bot.charity_bot import main
 
 app = Flask(__name__)
 app.config.update(config.APPLICATION_CONFIGURATION)
@@ -24,3 +25,4 @@ app.config.update(**config.APISPEC_SPEC)
 docs = FlaskApiSpec(app)
 
 from . import api, routers, swagger
+main()  # bot  initialization

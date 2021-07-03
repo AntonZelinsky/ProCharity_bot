@@ -15,8 +15,7 @@ import datetime
 
 class TelegramNotificationSchema(Schema):
     message = fields.String(required=True)
-    has_mailing = fields.String(required=False)
-
+    has_mailing = fields.String(required=True)
 
 class SendTelegramNotification(Resource, MethodResource):
 
@@ -36,7 +35,6 @@ class SendTelegramNotification(Resource, MethodResource):
                  'type': 'string',
                  'required': True
              },
-
              'has_mailing': {
                  'description': ('Sending notifications to users by the type of permission to mailing.'
                                  'subscribed - user has enabled a mailing.'
@@ -44,7 +42,7 @@ class SendTelegramNotification(Resource, MethodResource):
                                  'all - send to all users'),
                  'in': 'query',
                  'type': 'string',
-                 'default': 'subscribed',
+                 'required': True
              },
              'Authorization': config.PARAM_HEADER_AUTH,  # Only if request requires authorization
          }
@@ -53,12 +51,13 @@ class SendTelegramNotification(Resource, MethodResource):
     @jwt_required()
     def post(self, **kwargs):
         message = kwargs.get('message')
-        has_mailing = kwargs.get('has_mailing', 'subscribed')
-        authorized_user = get_jwt_identity()
-        if not message:
-            return make_response(jsonify(result='The message can not be empty.'), 400)
+        has_mailing = kwargs.get('has_mailing')
+
+        if not message or not has_mailing:
+            return make_response(jsonify(result='The "message" and "has_mailing" params is required.'), 400)
 
         # add a sending message to database
+        authorized_user = get_jwt_identity()
         message = Notification(message=message, sent_by=authorized_user)
         db_session.add(message)
         db_session.commit()

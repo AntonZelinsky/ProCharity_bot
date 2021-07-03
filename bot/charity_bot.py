@@ -49,24 +49,38 @@ updater = Updater(token=os.getenv('TOKEN'))
 
 menu_buttons = [
     [
-        InlineKeyboardButton(text='Посмотреть открытые задания', callback_data='open_task')
+        InlineKeyboardButton(
+            text='🔎 Посмотреть открытые задания', callback_data='open_task'
+        )
     ],
     [
-        InlineKeyboardButton(text='Задать вопрос', callback_data='ask_question')
+        InlineKeyboardButton(
+            text='✏️ Изменить компетенции', callback_data='change_category'
+        )
     ],
     [
-        InlineKeyboardButton(text='О платформе', callback_data='about')
+        InlineKeyboardButton(
+            text='✉️ Отправить предложение/ошибку', callback_data='new_feature'
+        )
     ],
     [
-        InlineKeyboardButton(text='Изменить компетенции', callback_data='change_category')
+        InlineKeyboardButton(
+            text='❓ Задать вопрос', callback_data='ask_question'
+        )
     ],
     [
-        InlineKeyboardButton(text='Хочу новый функционал бота', callback_data='new_feature')
+        InlineKeyboardButton(
+            text='ℹ️ О платформе', callback_data='about'
+        )
     ],
     [
-        InlineKeyboardButton(text='Остановить/включить подписку на задания', callback_data='stop_subscription')
+        InlineKeyboardButton(
+            text='⏹ Остановить/включить подписку на задания',
+            callback_data='stop_subscription'
+        )
     ]
 ]
+
 
 @log_command(command=LOG_COMMANDS_NAME['start'], start_menu=True)
 def start(update: Update, context: CallbackContext) -> int:
@@ -79,11 +93,11 @@ def start(update: Update, context: CallbackContext) -> int:
     ]
     keyboard = InlineKeyboardMarkup(button)
     update.message.reply_text(
-        'Привет! Я - бот '
-        'ProCharity-онлайн-платформы интеллектуального волонтёрства!'
-        'Помогу тебе быть в курсе интересных задач и буду напоминать '
-        'о текущих задачах.'
-        'Давай начнём прямо сейчас?',
+        'Привет! 👋 \n'
+        'Я бот ProCharity -онлайн-платформы интеллектуального волонтёрства.'
+        'Буду держать тебя в курсе новых задач и помогу оперативно связаться'
+        'с командой поддержки.\n\n'
+        'Начнём?',
         reply_markup=keyboard
     )
 
@@ -119,16 +133,19 @@ def choose_category(update: Update, context: CallbackContext):
 
     buttons += [
         [
-            InlineKeyboardButton(text='Готово!', callback_data='ready'),
+            InlineKeyboardButton(text='Нет моих компетенций 😕',
+                                 callback_data='no_relevant')
         ],
         [
-            InlineKeyboardButton(text='Моих компетенций здесь нет', callback_data='no_relevant')
-        ]
+            InlineKeyboardButton(text='Готово 👌', callback_data='ready'),
+        ],
     ]
     keyboard = InlineKeyboardMarkup(buttons)
 
     update.callback_query.edit_message_text(
-        text='Чтобы я знал, в каких задачах ты можешь помогать фондам выбери свои профессиональные компетенции:',
+        text='Чтобы я знал, с какими задачами ты готов помогать, '
+             'выбери свои профессиональные компетенции (можно выбрать '
+             'несколько). После этого, нажми на пункт "Готово 👌"',
         reply_markup=keyboard,
     )
     return CATEGORY
@@ -146,7 +163,8 @@ def after_category_choose(update: Update, context: CallbackContext):
     ]
     keyboard = InlineKeyboardMarkup(buttons)
     update.callback_query.edit_message_text(
-        text='Ура! Теперь ты будешь получать новые задания по твоим компетенциям.'
+        text='Отлично! Теперь я буду присылать тебе уведомления о новых '
+             'заданиях в категориях: <перечень выбранных категорий>.\n\n'
              'А пока можешь посмотреть открытые задания.',
         reply_markup=keyboard
     )
@@ -156,7 +174,7 @@ def after_category_choose(update: Update, context: CallbackContext):
 @log_command(command=LOG_COMMANDS_NAME['open_menu'])
 def open_menu(update: Update, context: CallbackContext):
     keyboard = InlineKeyboardMarkup(menu_buttons)
-    text = 'Menu'
+    text = 'Открыть меню'
     update.callback_query.answer()
     update.callback_query.edit_message_text(text=text, reply_markup=keyboard)
 
@@ -169,9 +187,6 @@ def show_open_task(update: Update, context: CallbackContext):
         [
             InlineKeyboardButton(text='Посмотреть ещё', callback_data='open_task')
         ],
-        # [
-        #     InlineKeyboardButton(text='Переслать задание другу', callback_data='send_task')
-        # ],
         [
             InlineKeyboardButton(text='Открыть меню', callback_data='open_menu')
         ]
@@ -260,7 +275,8 @@ def after_ask_question(update: Update, context: CallbackContext):
     keyboard = InlineKeyboardMarkup(buttons)
     update.callback_query.answer()
     update.callback_query.edit_message_text(
-        text='Спасибо, я уже передал информацию коллегам! Ответ придёт на твою почту <почта волонтёра>',
+        text='Спасибо, я уже передал информацию коллегам! '
+             'Ответ придёт на твою почту <почта волонтёра>',
         reply_markup=keyboard
     )
 
@@ -271,20 +287,25 @@ def after_ask_question(update: Update, context: CallbackContext):
 def no_relevant_category(update: Update, context: CallbackContext):
     buttons = [
         [
-            InlineKeyboardButton(text='Написать, какие компетенции добавить', callback_data='add_new_category')
+            InlineKeyboardButton(
+                text='Предложить компетенции', callback_data='add_new_category'
+            )
         ],
         [
-            InlineKeyboardButton(text='Посмотреть другие задания', callback_data='open_task')
+            InlineKeyboardButton(
+                text='Посмотреть задания', callback_data='open_task'
+            )
         ],
         [
-            InlineKeyboardButton(text='Вернуться в меню', callback_data='open_menu')
+            InlineKeyboardButton(
+                text='Вернуться в меню', callback_data='open_menu'
+            )
         ]
     ]
     keyboard = InlineKeyboardMarkup(buttons)
     update.callback_query.edit_message_text(
-        text='Очень жаль!\n\nТы можешь посмотреть задания '
-             'в других категориях или поделиться с нами, '
-             'какие компетенции нам следует добавить.',
+        text='Расскажи, какие компетенции нам стоит добавить? '
+             'Также ты можешь посмотреть задания в других категориях 😉',
         reply_markup=keyboard
     )
 
@@ -315,7 +336,7 @@ def add_new_category(update: Update, context: CallbackContext):
     ]
     keyboard = InlineKeyboardMarkup(button)
     update.callback_query.edit_message_text(
-        text='Напиши, в какой профессиональной сфере ты бы хотел помогать',
+        text='Напиши, в какой профессиональной сфере ты бы хотел помогать?',
         reply_markup=keyboard
     )
 
@@ -334,8 +355,8 @@ def after_add_new_category(update: Update, context: CallbackContext):
     ]
     keyboard = InlineKeyboardMarkup(buttons)
     update.callback_query.edit_message_text(
-        text='Спасибо, я уже передал информацию коллегам! '
-             'Ответ придёт на твою почту <почта волонтёра>',
+        text='Спасибо, я передал информацию команде ProCharity!'
+             'Ответ придет на почту <email волонтера>',
         reply_markup=keyboard
     )
 
@@ -346,7 +367,7 @@ def after_add_new_category(update: Update, context: CallbackContext):
 def add_new_feature(update: Update, context: CallbackContext):
     update.callback_query.answer()
     update.callback_query.edit_message_text(
-        text='Напиши, какого функционала в боте тебе не хватает?'
+        text='Расскажи, какого функционала тебе не хватает?'
     )
 
     return TYPING
@@ -379,14 +400,11 @@ def about(update: Update, context: CallbackContext):
     ]
     keyboard = InlineKeyboardMarkup(button)
     update.callback_query.edit_message_text(
-        text='ProCharity - это возможность для профессионалов своего дела помочь '
-             'некоммерческим организациям в вопросах, которые требуют специального '
-             'знания и опыта. Интеллектуальный волонтёр безвозмездно дарит фонду '
-             'время и профессиональные навыки, позволяя решать задачи, которые '
-             'трудно бывает закрыть силами штатных сотрудников. А фонд благодаря '
-             'ему получает квалифицированную практическую помощь в решении '
-             'накопившихся задач.'
-             ' http://procharity.ru',
+        text='С ProCharity профессионалы могут помочь некоммерческим '
+             'организациям в вопросах, которые требуют специальных знаний и '
+             'опыта. Интеллектуальный волонтёр безвозмездно дарит фонду своё '
+             'время и профессиональные навыки, позволяя решать задачи, '
+             'которые трудно закрыть силами штатных сотрудников.',
         reply_markup=keyboard
     )
 
@@ -403,8 +421,9 @@ def stop_task_subscription(update: Update, context: CallbackContext):
     keyboard = InlineKeyboardMarkup(button)
 
     if new_mailing_status:
-        answer = 'Ура! Теперь ты будешь получать новые задания по твоим компетенциям.' \
-                 ' А пока можешь посмотреть открытые задания.'
+        answer = 'Отлично! Теперь я буду присылать тебе уведомления о новых ' \
+                 'заданиях в категориях: <перечень выбранных категорий>.\n\n' \
+                 'А пока можешь посмотреть открытые задания.'
 
         update.callback_query.edit_message_text(text=answer,
                                                 # reply_markup=ReplyKeyboardMarkup(markup, one_time_keyboard=True)
@@ -414,8 +433,8 @@ def stop_task_subscription(update: Update, context: CallbackContext):
         return AFTER_CATEGORY_REPLY
 
     else:
-        answer = 'Теперь ты не будешь получать новые задания от фондов, но всегда ' \
-                 'можешь найти их на сайте http://procharity.ru'
+        answer = 'Ты больше не будешь получать новые задания от фондов, но ' \
+                 'всегда сможешь найти их на сайте https://procharity.ru'
 
         update.callback_query.edit_message_text(text=answer,
                                                 # reply_markup=ReplyKeyboardMarkup(markup, one_time_keyboard=True)

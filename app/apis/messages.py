@@ -54,7 +54,7 @@ class SendTelegramNotification(Resource, MethodResource):
         has_mailing = kwargs.get('has_mailing')
 
         if not message or not has_mailing:
-            return make_response(jsonify(result='The "message" and "has_mailing" params is required.'), 400)
+            return make_response(jsonify(result='The "message" and "has_mailing" params are required.'), 400)
 
         # add a sending message to database
         authorized_user = get_jwt_identity()

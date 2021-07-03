@@ -37,7 +37,7 @@ class SendRegistrationInvite(MethodResource, Resource):
          )
     # TODO Token verification is temporarily disabled.
     @use_kwargs({'email': fields.Str()})
-    #@jwt_required()
+    @jwt_required()
     def post(self, **kwargs):
         email = kwargs.get('email')
 

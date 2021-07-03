@@ -36,7 +36,7 @@ class PasswordReset(MethodResource, Resource):
         user = UserAdmin.query.filter_by(email=email).first()
 
         if not user:
-            return make_response(jsonify(message='New password has been sent'), 400)
+            return make_response(jsonify(message='The user does not exist'), 400)
         password = self.random_password()
 
         subject = config.PASSWORD_RESET_SUBJECT

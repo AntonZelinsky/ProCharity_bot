@@ -20,4 +20,3 @@ class Refresh(MethodResource, Resource):
         access_token = create_access_token(identity=identity, fresh=False)
         refresh_token = create_refresh_token(identity=identity)
         return make_response(jsonify(access_token=access_token, refresh_token=refresh_token), 200)
-

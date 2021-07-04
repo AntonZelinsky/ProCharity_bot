@@ -20,9 +20,9 @@ class InvitationChecker(MethodResource, Resource):
                  'required': True
              },
          },
-         responses={200: {'description': 'Token is valid'},
-                    403: {'description': 'No invitation found or expired.'
-                                         ' Please contact your site administrator.'},
+         responses={200: {'description': "Токен подтвержден."},
+                    403: {'description': "Приглашение не было найдено или просрочено. "
+                                         "Пожалуйста свяжитесь с своим системным администратором."},
 
                     }
          )
@@ -32,7 +32,7 @@ class InvitationChecker(MethodResource, Resource):
         record = Register.query.filter_by(token=token).first()
 
         if not record or record.token_expiration_date < datetime.now():
-            return make_response(jsonify(message='No invitation found or expired.'
-                                                 ' Please contact your site administrator.'), 403)
+            return make_response(jsonify(message="Приглашение не было найдено или просрочено. "
+                                                 "Пожалуйста свяжитесь с своим системным администратором."), 403)
 
-        return make_response(jsonify(message='Token is valid'), 200)
+        return make_response(jsonify(message='Токен подтвержден.'), 200)

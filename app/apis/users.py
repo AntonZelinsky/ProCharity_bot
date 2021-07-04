@@ -137,10 +137,10 @@ class User_item(MethodResource, Resource):
         email = kwargs.get('email')
 
         if User.query.filter_by(username=username).first():
-            return make_response(jsonify(message='The user already exist.'), 400)
+            return make_response(jsonify(message='Указанный пользователь уже существует.'), 400)
 
         if User.query.filter_by(email=email).first():
-            return make_response(jsonify(message='The email already exist.'), 400)
+            return make_response(jsonify(message='Указанный почтовый адрес уже существует.'), 400)
 
         # validate of an email if one included in the request.
         if email:
@@ -156,7 +156,7 @@ class User_item(MethodResource, Resource):
         User.query.filter_by(telegram_id=telegram_id).update(kwargs)
         db_session.commit()
 
-        return make_response(jsonify(message='The user has been updated'), 200)
+        return make_response(jsonify(message='Информация о пользователе успешно обновлена.'), 200)
 
     @doc(description="Delete user record.",
          tags=['Users Control'],
@@ -166,7 +166,7 @@ class User_item(MethodResource, Resource):
     def delete(self, telegram_id):
         user = User.query.get(telegram_id)
         if not user:
-            return make_response(jsonify(message=f'The user did not found.'), 400)
+            return make_response(jsonify(message=f'Пользователь не найден.'), 400)
         db_session.delete(user)
         db_session.commit()
-        return make_response(jsonify(message=f'The user ID:{id} has been deleted.'), 200)
+        return make_response(jsonify(message=f'Пользователь:{id} успешно удален.'), 200)

@@ -38,26 +38,28 @@ class Login(MethodResource, Resource):
                  'required': True
              }
          },
-         responses={200: {'description': 'access_token:"" refresh_token: ""'},
-                    403: {'description': "'Email and password is required.', 'Bad email or Password.'"},
+         responses={200: {'description': "access_token:'' refresh_token: ''"},
+                    403: {'description': "Запрос не может быть пустым.'., "
+                                         "Неверный почтовый адрес или пароль., "
+                                         "Необходимо указать <email> и <password>."},
 
                     }
          )
     @use_kwargs(LoginSchema)
     def post(self, **kwargs):
         if not kwargs:
-            return make_response(jsonify(message="Email and password is required"), 403)
+            return make_response(jsonify(message="Запрос не может быть пустым."), 403)
 
         email = kwargs.get("email")
         password = kwargs.get("password")
 
         if not email or not password:
-            return make_response(jsonify(message="Email and password is required"), 403)
+            return make_response(jsonify(message="Необходимо указать <email> и <password>."), 403)
 
         user = UserAdmin.query.filter_by(email=email).first()
 
         if not user or not user.check_password(password):
-            return make_response(jsonify(message="Bad email or Password"), 403)
+            return make_response(jsonify(message="Неверный почтовый адрес или пароль."), 403)
 
         access_token = create_access_token(identity=email)
         refresh_token = create_refresh_token(identity=email)

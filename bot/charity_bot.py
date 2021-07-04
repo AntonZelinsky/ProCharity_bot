@@ -196,6 +196,10 @@ def show_open_task(update: Update, context: CallbackContext):
         )
     else:
         for task in tasks[:PAGINATION]:
+            """
+            Это условия проверяет, является ли элемент последним в списке
+            доступных к показу заданий или нет.
+            """
             if task[0].id != tasks[-1][0].id:
                 context.bot.send_message(
                     chat_id=update.effective_chat.id, text=display_task(task),

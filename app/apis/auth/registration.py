@@ -48,11 +48,11 @@ class UserRegister(MethodResource, Resource):
                  'required': True
              },
          },
-         responses={200: {'description': 'User registered successfully'},
-                    400: {'description': "The password does not comply with the password policy."},
-                    401: {'description': "The registration request requires a password."},
-                    403: {'description': 'No invitation found or expired.'
-                                         ' Please contact your site administrator.'},
+         responses={200: {'description': 'Пользователь успешно зарегистрирован.'},
+                    400: {'description': "Введенный пароль не соответствует политике паролей."},
+                    401: {'description': "Для регистрации необходимо указать пароль."},
+                    403: {'description': "Приглашение не было найдено или просрочено. "
+                                         "Пожалуйста свяжитесь с своим системным администратором."},
 
                     }
          )
@@ -64,19 +64,19 @@ class UserRegister(MethodResource, Resource):
 
         if (not registration_record
                 or registration_record.token_expiration_date < datetime.now()):
-            return make_response(jsonify(message='No invitation found or expired.'
-                                                 ' Please contact your site administrator.'), 403)
+            return make_response(jsonify(message="Приглашение не было найдено или просрочено. "
+                                                 "Пожалуйста свяжитесь с своим системным администратором."), 403)
         # This key is no longer required.
         del kwargs['token']
 
         if not password:
-            return make_response(jsonify("The registration request requires a password."), 401)
+            return make_response(jsonify("Для регистрации необходимо указать пароль."), 401)
 
         kwargs['email'] = registration_record.email
         kwargs['password'] = generate_password_hash(password)
 
         if not password_policy.validate(password):
-            return make_response(jsonify(message="The password does not comply with the password policy."), 400)
+            return make_response(jsonify(message="Введенный пароль не соответствует политике паролей."), 400)
 
         # Create a new Admin user
         db_session.add(UserAdmin(**kwargs))
@@ -84,4 +84,4 @@ class UserRegister(MethodResource, Resource):
         db_session.delete(registration_record)
         db_session.commit()
 
-        return make_response(jsonify(message="User registered successfully "), 200)
+        return make_response(jsonify(message="Пользователь успешно зарегистрирован."), 200)

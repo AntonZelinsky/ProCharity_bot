@@ -27,7 +27,7 @@ class Analysis(MethodResource, Resource):
             Statistics.command,
             func.count(Statistics.command)
         ).group_by(Statistics.command).all()
-        added_users = [[d.strftime("%d %B, %Y"), n] for d, n, in added_users]
+        added_users = [[d.strftime('%Y-%m-%d'), n] for d, n, in added_users]
         return make_response(jsonify(added_users=dict(added_users),
                                      active_users=active_users,
                                      deactivated_users=deactivated_users,

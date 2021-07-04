@@ -180,7 +180,7 @@ def after_category_choose(update: Update, context: CallbackContext):
 @log_command(command=LOG_COMMANDS_NAME['open_menu'])
 def open_menu(update: Update, context: CallbackContext):
     keyboard = InlineKeyboardMarkup(menu_buttons)
-    text = 'Открыть меню'
+    text = 'Меню'
     update.callback_query.answer()
     update.callback_query.edit_message_text(text=text, reply_markup=keyboard)
 
@@ -252,11 +252,6 @@ def show_open_task(update: Update, context: CallbackContext):
         )
 
     return OPEN_TASKS
-
-
-@log_command(command=LOG_COMMANDS_NAME['send_task_to_friend'])
-def send_task_to_friend(update: Update, context: CallbackContext):
-    pass
 
 
 @log_command(command=LOG_COMMANDS_NAME['ask_question'])
@@ -464,7 +459,7 @@ def stop_task_subscription(update: Update, context: CallbackContext):
     button = [
         [
             InlineKeyboardButton(
-                text='Вернуться в меню', callback_data='open_menu'
+                text='Посмотреть открытые задания', callback_data='open_task'
             )
         ],
         [
@@ -475,10 +470,16 @@ def stop_task_subscription(update: Update, context: CallbackContext):
     ]
     keyboard = InlineKeyboardMarkup(button)
 
+    user_categories = [
+        c['name'] for c in get_category(update.effective_user.id)
+        if c['user_selected']
+    ]
+
     if new_mailing_status:
-        answer = 'Отлично! Теперь я буду присылать тебе уведомления о новых ' \
-                 'заданиях в категориях: <перечень выбранных категорий>.\n\n' \
-                 'А пока можешь посмотреть открытые задания.'
+        answer = f'Отлично! Теперь я буду присылать тебе уведомления о ' \
+                 f'новых заданиях в ' \
+                 f'категориях: {", ".join(user_categories)}.\n\n' \
+                 f'А пока можешь посмотреть открытые задания.'
 
         update.callback_query.edit_message_text(text=answer,
                                                 reply_markup=keyboard

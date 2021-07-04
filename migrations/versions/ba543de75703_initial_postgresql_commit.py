@@ -1,8 +1,8 @@
-"""changed_user_id
+"""initial postgresql commit
 
-Revision ID: fd5539665512
+Revision ID: ba543de75703
 Revises: 
-Create Date: 2021-07-01 20:23:59.284894
+Create Date: 2021-07-04 00:13:10.157870
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'fd5539665512'
+revision = 'ba543de75703'
 down_revision = None
 branch_labels = None
 depends_on = None

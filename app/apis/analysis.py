@@ -13,9 +13,9 @@ class Analysis(MethodResource, Resource):
     @doc(description='Analysis statistics',
          tags=['Analysis']
          )
-    #@jwt_required()
+    @jwt_required()
     def get(self):
-        added_users = db_session.query(User.date_registration, func.count(User.date_registration)).group_by(func.date(User.date_registration)).all()
+        added_users = db_session.query(func.date(User.date_registration), func.count(User.date_registration)).group_by(func.date(User.date_registration)).all()
         users = db_session.query(User.has_mailing).all()
         num_users = len(users)
         active_users = 0

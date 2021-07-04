@@ -14,7 +14,7 @@ from flask_restful import Resource
 from marshmallow import fields
 
 
-class SendRegistrationInvitе(MethodResource, Resource):
+class SendRegistrationInvite(MethodResource, Resource):
     @doc(description='Send email with invitation url',
          tags=['User Registration'],
          responses={200: {'description': 'The email with the invitation url'
@@ -37,7 +37,7 @@ class SendRegistrationInvitе(MethodResource, Resource):
          )
     # TODO Token verification is temporarily disabled.
     @use_kwargs({'email': fields.Str()})
-    # @jwt_required() TODO Token verification is temporarily disabled.
+    #@jwt_required()
     def post(self, **kwargs):
         email = kwargs.get('email')
 
@@ -53,7 +53,7 @@ class SendRegistrationInvitе(MethodResource, Resource):
         expiration = config.INV_TOKEN_EXPIRATION
         token_expiration_date = datetime.now() + timedelta(hours=config.INV_TOKEN_EXPIRATION)
         token = str(uuid.uuid4())
-        inv_link = f'{config.HOST_NAME}/register/?token:{token}'
+        inv_link = f'http://{config.HOST_NAME}/#/register/{token}'
 
         template = render_template(config.INVITATION_TEMPLATE, inv_link=inv_link, expiration=expiration)
 
@@ -68,7 +68,7 @@ class SendRegistrationInvitе(MethodResource, Resource):
             # if the invitation exist, try search the user in User Admin db
             admin_user = UserAdmin.query.filter_by(email=email).first()
             if admin_user:
-                return make_response(jsonify('The user already exist in the database.'), 400)
+                return make_response(jsonify(message='The user already exist in the database.'), 400)
 
             user = Register(email=email, token=token, token_expiration_date=token_expiration_date)
             db_session.add(user)
@@ -79,5 +79,5 @@ class SendRegistrationInvitе(MethodResource, Resource):
         except Exception as ex:
             return make_response(jsonify(str(ex)), 500)
 
-        return make_response(jsonify('The email with the invitation url'
-                                     ' was been sent to specified email address'), 200)
+        return make_response(jsonify(message='The email with the invitation url'
+                                             ' was been sent to specified email address'), 200)

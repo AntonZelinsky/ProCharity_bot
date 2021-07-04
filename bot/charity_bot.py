@@ -43,7 +43,7 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.DEBUG
+    level=logging.INFO
 )
 
 updater = Updater(token=os.getenv('TOKEN'))
@@ -163,10 +163,15 @@ def after_category_choose(update: Update, context: CallbackContext):
         ]
     ]
     keyboard = InlineKeyboardMarkup(buttons)
+    user_categories = [
+        c['name'] for c in get_category(update.effective_user.id)
+        if c['user_selected']
+    ]
+
     update.callback_query.edit_message_text(
-        text='Отлично! Теперь я буду присылать тебе уведомления о новых '
-             'заданиях в категориях: <перечень выбранных категорий>.\n\n'
-             'А пока можешь посмотреть открытые задания.',
+        text=f'Отлично! Теперь я буду присылать тебе уведомления о новых '
+             f'заданиях в категориях: {", ".join(user_categories)}.\n\n'
+             f'А пока можешь посмотреть открытые задания.',
         reply_markup=keyboard
     )
     return AFTER_CATEGORY_REPLY

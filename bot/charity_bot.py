@@ -550,7 +550,6 @@ def main() -> None:
             ],
             OPEN_TASKS: [
                 CallbackQueryHandler(show_open_task, pattern='^open_task$'),
-                CallbackQueryHandler(send_task_to_friend, pattern='^send_task$'),
                 CallbackQueryHandler(open_menu, pattern='^open_menu$')
             ],
             NO_CATEGORY: [

@@ -24,7 +24,8 @@ from bot.states import (GREETING,
                         AFTER_ADD_FEATURE,
                         TYPING,
                         START_OVER,
-                        START_SHOW_TASK)
+                        START_SHOW_TASK,
+                        CANCEL_FEEDBACK)
 
 from bot.data_to_db import (add_user,
                             change_subscription,
@@ -418,9 +419,54 @@ def about(update: Update, context: CallbackContext):
 @log_command(command=LOG_COMMANDS_NAME['stop_task_subscription'])
 def stop_task_subscription(update: Update, context: CallbackContext):
     new_mailing_status = change_subscription(update.effective_user.id)
+    cancel_feedback_buttons = [
+        [
+            InlineKeyboardButton(
+                text='Слишком много уведомлений',
+                callback_data='many_notification'
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                text='Нет времени на волонтёрство',
+                callback_data='no_time'
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                text='Нет подходящих заданий',
+                callback_data='no_relevant_task'
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                text='Бот мне не удобен',
+                callback_data='bot_is_bad'
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                text='Фонды меня не выбирают',
+                callback_data='fond_ignore'
+            )
+        ],
+        [
+            InlineKeyboardButton(text='Другое', callback_data='another')
+        ],
+    ]
+    cancel_feedback_keyboard = InlineKeyboardMarkup(cancel_feedback_buttons)
 
     button = [
-        [InlineKeyboardButton(text='Вернуться в меню', callback_data='open_menu')]
+        [
+            InlineKeyboardButton(
+                text='Вернуться в меню', callback_data='open_menu'
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                text='Открыть меню', callback_data='open_menu'
+            )
+        ]
     ]
     keyboard = InlineKeyboardMarkup(button)
 
@@ -430,7 +476,6 @@ def stop_task_subscription(update: Update, context: CallbackContext):
                  'А пока можешь посмотреть открытые задания.'
 
         update.callback_query.edit_message_text(text=answer,
-                                                # reply_markup=ReplyKeyboardMarkup(markup, one_time_keyboard=True)
                                                 reply_markup=keyboard
                                                 )
 
@@ -440,10 +485,19 @@ def stop_task_subscription(update: Update, context: CallbackContext):
         answer = 'Ты больше не будешь получать новые задания от фондов, но ' \
                  'всегда сможешь найти их на сайте https://procharity.ru'
 
-        update.callback_query.edit_message_text(text=answer,
-                                                # reply_markup=ReplyKeyboardMarkup(markup, one_time_keyboard=True)
-                                                reply_markup=keyboard
-                                                )
+        update.callback_query.edit_message_text(
+            text=answer, reply_markup=cancel_feedback_keyboard
+        )
+
+    return CANCEL_FEEDBACK
+
+
+def cancel_feedback(update: Update, context: CallbackContext):
+    keyboard = InlineKeyboardMarkup(menu_buttons)
+    update.callback_query.edit_message_text(
+        text='Спасибо, я передал информацию команде ProCharity!',
+        reply_markup=keyboard
+    )
 
     return MENU
 
@@ -507,6 +561,14 @@ def main() -> None:
             AFTER_ADD_FEATURE: [
                 CallbackQueryHandler(email_feedback, pattern='^open_menu$')
             ],
+            CANCEL_FEEDBACK: [
+                CallbackQueryHandler(cancel_feedback, pattern='^many_notification$'),
+                CallbackQueryHandler(cancel_feedback, pattern='^no_time$'),
+                CallbackQueryHandler(cancel_feedback, pattern='^no_relevant_task$'),
+                CallbackQueryHandler(cancel_feedback, pattern='^bot_is_bad$'),
+                CallbackQueryHandler(cancel_feedback, pattern='^fond_ignore'),
+                CallbackQueryHandler(cancel_feedback, pattern='^another')
+            ]
         },
 
         fallbacks=[CommandHandler('cancel', cancel)]

@@ -28,7 +28,7 @@ from bot.states import (GREETING,
 
 from bot.data_to_db import (add_user,
                             change_subscription,
-                            get_tasks,
+                            get_user_active_tasks,
                             get_category,
                             change_user_category,
                             log_command)
@@ -193,51 +193,55 @@ def show_open_task(update: Update, context: CallbackContext):
     ]
     keyboard = InlineKeyboardMarkup(buttons)
 
-    showed = 0
-    show_task_now = []
-
     if not context.user_data.get(START_SHOW_TASK):
         context.user_data[START_SHOW_TASK] = []
 
-    tasks = get_tasks(update.effective_user.id)
+    tasks = get_user_active_tasks(
+        update.effective_user.id, context.user_data[START_SHOW_TASK]
+    )
     if tasks:
         tasks.sort(key=lambda x: x[0].id)
-        for task in tasks:
-            if task[0].id not in context.user_data[START_SHOW_TASK] and showed != PAGINATION:
-                context.user_data[START_SHOW_TASK].append(task[0].id)
-                show_task_now.append(task)
-                showed += 1
 
-    if not show_task_now:
+    if not tasks:
         update.callback_query.edit_message_text(
             text='Нет доступных заданий',
             reply_markup=InlineKeyboardMarkup(
                 [[InlineKeyboardButton(text='Открыть меню', callback_data='open_menu')]]
             )
         )
-    elif len(show_task_now) == 1:
-        context.bot.send_message(
-            chat_id=update.effective_chat.id, text=display_task(show_task_now[0]), parse_mode=ParseMode.HTML
-        )
+    else:
+        for task in tasks[:PAGINATION]:
+            """
+            Это условия проверяет, является ли элемент последним в списке
+            доступных к показу заданий или нет.
+            """
+            if task[0].id != tasks[-1][0].id:
+                context.bot.send_message(
+                    chat_id=update.effective_chat.id, text=display_task(task),
+                    parse_mode=ParseMode.HTML
+                )
+                context.user_data[START_SHOW_TASK].append(task[0].id)
+            else:
+                context.bot.send_message(
+                    chat_id=update.effective_chat.id, text=display_task(task),
+                    parse_mode=ParseMode.HTML
+                )
+                update.callback_query.delete_message()
+                context.bot.send_message(
+                    chat_id=update.effective_chat.id,
+                    text='Нет доступных заданий',
+                    reply_markup=InlineKeyboardMarkup(
+                        [[InlineKeyboardButton(text='Открыть меню',
+                                               callback_data='open_menu')]]
+                    )
+                )
+                return OPEN_TASKS
+
         update.callback_query.delete_message()
 
         context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text='Нет доступных заданий',
-            reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton(text='Открыть меню', callback_data='open_menu')]]
-            )
-        )
-    else:
-        for task in show_task_now[:PAGINATION]:
-            context.bot.send_message(
-                chat_id=update.effective_chat.id, text=display_task(task), parse_mode=ParseMode.HTML
-            )
-
-        update.callback_query.delete_message()
-
-        context.bot.send_message(
-            chat_id=update.effective_chat.id, text='Есть ещё задания, показать?', parse_mode=ParseMode.MARKDOWN,
+            text='Есть ещё задания, показать?',
             reply_markup=keyboard
         )
 

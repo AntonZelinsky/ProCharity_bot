@@ -1,7 +1,8 @@
-from app.models import User, Category, Task, Statistics
+from app.models import User, Category, Task, Statistics, Users_Categories
 from app.database import db_session
 from datetime import datetime
 from sqlalchemy.orm import load_only
+from sqlalchemy import select
 import inspect
 
 
@@ -60,17 +61,15 @@ def get_task():
     return Task.query.limit(3).all()
 
 
-def get_tasks(telegram_id):
-    categories = User.query.filter_by(
-        telegram_id=int(telegram_id)
-    ).first().categories
-    tasks = []
-    for category in categories:
-        for task in category.tasks:
-            if not task.archive:
-                task_lst = [task, Category.query.filter_by(id=task.category_id).first().name]
-                tasks.append(task_lst)
-    return tasks
+def get_user_active_tasks(telegram_id, shown_task):
+    stmt = select(Task, Category.name). \
+        where(Users_Categories.telegram_id == telegram_id). \
+        where(Task.archive == False).where(~Task.id.in_(shown_task)). \
+        join(Users_Categories, Users_Categories.category_id == Task.category_id). \
+        join(Category, Category.id == Users_Categories.category_id)
+
+    result = db_session.execute(stmt)
+    return [[task, category_name] for task, category_name in result]
 
 
 def change_subscription(telegram_id):

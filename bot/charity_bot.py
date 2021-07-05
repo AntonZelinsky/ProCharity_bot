@@ -43,7 +43,7 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.DEBUG
+    level=logging.INFO
 )
 
 updater = Updater(token=os.getenv('TOKEN'))
@@ -122,6 +122,9 @@ def change_user_categories(update: Update, context: CallbackContext):
 @log_command(command=LOG_COMMANDS_NAME['choose_category'], ignore_func='change_user_categories')
 def choose_category(update: Update, context: CallbackContext):
     """The main function is to select categories for subscribing to them."""
+    update.callback_query.edit_message_text(
+        text=update.callback_query.message.text
+    )
 
     categories = get_category(update.effective_user.id)
 
@@ -143,7 +146,8 @@ def choose_category(update: Update, context: CallbackContext):
     ]
     keyboard = InlineKeyboardMarkup(buttons)
 
-    update.callback_query.edit_message_text(
+    context.bot.send_message(
+        chat_id=update.effective_chat.id,
         text='Чтобы я знал, с какими задачами ты готов помогать, '
              'выбери свои профессиональные компетенции (можно выбрать '
              'несколько). После этого, нажми на пункт "Готово 👌"',
@@ -163,10 +167,15 @@ def after_category_choose(update: Update, context: CallbackContext):
         ]
     ]
     keyboard = InlineKeyboardMarkup(buttons)
+    user_categories = [
+        c['name'] for c in get_category(update.effective_user.id)
+        if c['user_selected']
+    ]
+
     update.callback_query.edit_message_text(
-        text='Отлично! Теперь я буду присылать тебе уведомления о новых '
-             'заданиях в категориях: <перечень выбранных категорий>.\n\n'
-             'А пока можешь посмотреть открытые задания.',
+        text=f'Отлично! Теперь я буду присылать тебе уведомления о новых '
+             f'заданиях в категориях: {", ".join(user_categories)}.\n\n'
+             f'А пока можешь посмотреть открытые задания.',
         reply_markup=keyboard
     )
     return AFTER_CATEGORY_REPLY
@@ -175,7 +184,7 @@ def after_category_choose(update: Update, context: CallbackContext):
 @log_command(command=LOG_COMMANDS_NAME['open_menu'])
 def open_menu(update: Update, context: CallbackContext):
     keyboard = InlineKeyboardMarkup(menu_buttons)
-    text = 'Открыть меню'
+    text = 'Меню'
     update.callback_query.answer()
     update.callback_query.edit_message_text(text=text, reply_markup=keyboard)
 
@@ -247,11 +256,6 @@ def show_open_task(update: Update, context: CallbackContext):
         )
 
     return OPEN_TASKS
-
-
-@log_command(command=LOG_COMMANDS_NAME['send_task_to_friend'])
-def send_task_to_friend(update: Update, context: CallbackContext):
-    pass
 
 
 @log_command(command=LOG_COMMANDS_NAME['ask_question'])
@@ -459,7 +463,7 @@ def stop_task_subscription(update: Update, context: CallbackContext):
     button = [
         [
             InlineKeyboardButton(
-                text='Вернуться в меню', callback_data='open_menu'
+                text='Посмотреть открытые задания', callback_data='open_task'
             )
         ],
         [
@@ -470,10 +474,16 @@ def stop_task_subscription(update: Update, context: CallbackContext):
     ]
     keyboard = InlineKeyboardMarkup(button)
 
+    user_categories = [
+        c['name'] for c in get_category(update.effective_user.id)
+        if c['user_selected']
+    ]
+
     if new_mailing_status:
-        answer = 'Отлично! Теперь я буду присылать тебе уведомления о новых ' \
-                 'заданиях в категориях: <перечень выбранных категорий>.\n\n' \
-                 'А пока можешь посмотреть открытые задания.'
+        answer = f'Отлично! Теперь я буду присылать тебе уведомления о ' \
+                 f'новых заданиях в ' \
+                 f'категориях: {", ".join(user_categories)}.\n\n' \
+                 f'А пока можешь посмотреть открытые задания.'
 
         update.callback_query.edit_message_text(text=answer,
                                                 reply_markup=keyboard
@@ -544,7 +554,6 @@ def main() -> None:
             ],
             OPEN_TASKS: [
                 CallbackQueryHandler(show_open_task, pattern='^open_task$'),
-                CallbackQueryHandler(send_task_to_friend, pattern='^send_task$'),
                 CallbackQueryHandler(open_menu, pattern='^open_menu$')
             ],
             NO_CATEGORY: [

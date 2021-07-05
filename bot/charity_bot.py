@@ -24,11 +24,12 @@ from bot.states import (GREETING,
                         AFTER_ADD_FEATURE,
                         TYPING,
                         START_OVER,
-                        START_SHOW_TASK)
+                        START_SHOW_TASK,
+                        CANCEL_FEEDBACK)
 
 from bot.data_to_db import (add_user,
                             change_subscription,
-                            get_tasks,
+                            get_user_active_tasks,
                             get_category,
                             change_user_category,
                             log_command)
@@ -42,7 +43,7 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.DEBUG
+    level=logging.INFO
 )
 
 updater = Updater(token=os.getenv('TOKEN'))
@@ -121,6 +122,9 @@ def change_user_categories(update: Update, context: CallbackContext):
 @log_command(command=LOG_COMMANDS_NAME['choose_category'], ignore_func='change_user_categories')
 def choose_category(update: Update, context: CallbackContext):
     """The main function is to select categories for subscribing to them."""
+    # update.callback_query.edit_message_text(
+    #     text=update.callback_query.message.text
+    # )
 
     categories = get_category(update.effective_user.id)
 
@@ -162,10 +166,15 @@ def after_category_choose(update: Update, context: CallbackContext):
         ]
     ]
     keyboard = InlineKeyboardMarkup(buttons)
+    user_categories = [
+        c['name'] for c in get_category(update.effective_user.id)
+        if c['user_selected']
+    ]
+
     update.callback_query.edit_message_text(
-        text='Отлично! Теперь я буду присылать тебе уведомления о новых '
-             'заданиях в категориях: <перечень выбранных категорий>.\n\n'
-             'А пока можешь посмотреть открытые задания.',
+        text=f'Отлично! Теперь я буду присылать тебе уведомления о новых '
+             f'заданиях в категориях: {", ".join(user_categories)}.\n\n'
+             f'А пока можешь посмотреть открытые задания.',
         reply_markup=keyboard
     )
     return AFTER_CATEGORY_REPLY
@@ -174,7 +183,7 @@ def after_category_choose(update: Update, context: CallbackContext):
 @log_command(command=LOG_COMMANDS_NAME['open_menu'])
 def open_menu(update: Update, context: CallbackContext):
     keyboard = InlineKeyboardMarkup(menu_buttons)
-    text = 'Открыть меню'
+    text = 'Меню'
     update.callback_query.answer()
     update.callback_query.edit_message_text(text=text, reply_markup=keyboard)
 
@@ -193,60 +202,59 @@ def show_open_task(update: Update, context: CallbackContext):
     ]
     keyboard = InlineKeyboardMarkup(buttons)
 
-    showed = 0
-    show_task_now = []
-
     if not context.user_data.get(START_SHOW_TASK):
         context.user_data[START_SHOW_TASK] = []
 
-    tasks = get_tasks(update.effective_user.id)
+    tasks = get_user_active_tasks(
+        update.effective_user.id, context.user_data[START_SHOW_TASK]
+    )
     if tasks:
         tasks.sort(key=lambda x: x[0].id)
-        for task in tasks:
-            if task[0].id not in context.user_data[START_SHOW_TASK] and showed != PAGINATION:
-                context.user_data[START_SHOW_TASK].append(task[0].id)
-                show_task_now.append(task)
-                showed += 1
 
-    if not show_task_now:
+    if not tasks:
         update.callback_query.edit_message_text(
             text='Нет доступных заданий',
             reply_markup=InlineKeyboardMarkup(
                 [[InlineKeyboardButton(text='Открыть меню', callback_data='open_menu')]]
             )
         )
-    elif len(show_task_now) == 1:
-        context.bot.send_message(
-            chat_id=update.effective_chat.id, text=display_task(show_task_now[0]), parse_mode=ParseMode.HTML
-        )
+    else:
+        for task in tasks[:PAGINATION]:
+            """
+            Это условия проверяет, является ли элемент последним в списке
+            доступных к показу заданий или нет.
+            """
+            if task[0].id != tasks[-1][0].id:
+                context.bot.send_message(
+                    chat_id=update.effective_chat.id, text=display_task(task),
+                    parse_mode=ParseMode.HTML
+                )
+                context.user_data[START_SHOW_TASK].append(task[0].id)
+            else:
+                context.bot.send_message(
+                    chat_id=update.effective_chat.id, text=display_task(task),
+                    parse_mode=ParseMode.HTML
+                )
+                update.callback_query.delete_message()
+                context.bot.send_message(
+                    chat_id=update.effective_chat.id,
+                    text='Нет доступных заданий',
+                    reply_markup=InlineKeyboardMarkup(
+                        [[InlineKeyboardButton(text='Открыть меню',
+                                               callback_data='open_menu')]]
+                    )
+                )
+                return OPEN_TASKS
+
         update.callback_query.delete_message()
 
         context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text='Нет доступных заданий',
-            reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton(text='Открыть меню', callback_data='open_menu')]]
-            )
-        )
-    else:
-        for task in show_task_now[:PAGINATION]:
-            context.bot.send_message(
-                chat_id=update.effective_chat.id, text=display_task(task), parse_mode=ParseMode.HTML
-            )
-
-        update.callback_query.delete_message()
-
-        context.bot.send_message(
-            chat_id=update.effective_chat.id, text='Есть ещё задания, показать?', parse_mode=ParseMode.MARKDOWN,
+            text='Есть ещё задания, показать?',
             reply_markup=keyboard
         )
 
     return OPEN_TASKS
-
-
-@log_command(command=LOG_COMMANDS_NAME['send_task_to_friend'])
-def send_task_to_friend(update: Update, context: CallbackContext):
-    pass
 
 
 @log_command(command=LOG_COMMANDS_NAME['ask_question'])
@@ -414,19 +422,69 @@ def about(update: Update, context: CallbackContext):
 @log_command(command=LOG_COMMANDS_NAME['stop_task_subscription'])
 def stop_task_subscription(update: Update, context: CallbackContext):
     new_mailing_status = change_subscription(update.effective_user.id)
+    cancel_feedback_buttons = [
+        [
+            InlineKeyboardButton(
+                text='Слишком много уведомлений',
+                callback_data='many_notification'
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                text='Нет времени на волонтёрство',
+                callback_data='no_time'
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                text='Нет подходящих заданий',
+                callback_data='no_relevant_task'
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                text='Бот мне не удобен',
+                callback_data='bot_is_bad'
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                text='Фонды меня не выбирают',
+                callback_data='fond_ignore'
+            )
+        ],
+        [
+            InlineKeyboardButton(text='Другое', callback_data='another')
+        ],
+    ]
+    cancel_feedback_keyboard = InlineKeyboardMarkup(cancel_feedback_buttons)
 
     button = [
-        [InlineKeyboardButton(text='Вернуться в меню', callback_data='open_menu')]
+        [
+            InlineKeyboardButton(
+                text='Посмотреть открытые задания', callback_data='open_task'
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                text='Открыть меню', callback_data='open_menu'
+            )
+        ]
     ]
     keyboard = InlineKeyboardMarkup(button)
 
+    user_categories = [
+        c['name'] for c in get_category(update.effective_user.id)
+        if c['user_selected']
+    ]
+
     if new_mailing_status:
-        answer = 'Отлично! Теперь я буду присылать тебе уведомления о новых ' \
-                 'заданиях в категориях: <перечень выбранных категорий>.\n\n' \
-                 'А пока можешь посмотреть открытые задания.'
+        answer = f'Отлично! Теперь я буду присылать тебе уведомления о ' \
+                 f'новых заданиях в ' \
+                 f'категориях: {", ".join(user_categories)}.\n\n' \
+                 f'А пока можешь посмотреть открытые задания.'
 
         update.callback_query.edit_message_text(text=answer,
-                                                # reply_markup=ReplyKeyboardMarkup(markup, one_time_keyboard=True)
                                                 reply_markup=keyboard
                                                 )
 
@@ -436,10 +494,19 @@ def stop_task_subscription(update: Update, context: CallbackContext):
         answer = 'Ты больше не будешь получать новые задания от фондов, но ' \
                  'всегда сможешь найти их на сайте https://procharity.ru'
 
-        update.callback_query.edit_message_text(text=answer,
-                                                # reply_markup=ReplyKeyboardMarkup(markup, one_time_keyboard=True)
-                                                reply_markup=keyboard
-                                                )
+        update.callback_query.edit_message_text(
+            text=answer, reply_markup=cancel_feedback_keyboard
+        )
+
+    return CANCEL_FEEDBACK
+
+
+def cancel_feedback(update: Update, context: CallbackContext):
+    keyboard = InlineKeyboardMarkup(menu_buttons)
+    update.callback_query.edit_message_text(
+        text='Спасибо, я передал информацию команде ProCharity!',
+        reply_markup=keyboard
+    )
 
     return MENU
 
@@ -486,7 +553,6 @@ def main() -> None:
             ],
             OPEN_TASKS: [
                 CallbackQueryHandler(show_open_task, pattern='^open_task$'),
-                CallbackQueryHandler(send_task_to_friend, pattern='^send_task$'),
                 CallbackQueryHandler(open_menu, pattern='^open_menu$')
             ],
             NO_CATEGORY: [
@@ -503,6 +569,14 @@ def main() -> None:
             AFTER_ADD_FEATURE: [
                 CallbackQueryHandler(email_feedback, pattern='^open_menu$')
             ],
+            CANCEL_FEEDBACK: [
+                CallbackQueryHandler(cancel_feedback, pattern='^many_notification$'),
+                CallbackQueryHandler(cancel_feedback, pattern='^no_time$'),
+                CallbackQueryHandler(cancel_feedback, pattern='^no_relevant_task$'),
+                CallbackQueryHandler(cancel_feedback, pattern='^bot_is_bad$'),
+                CallbackQueryHandler(cancel_feedback, pattern='^fond_ignore'),
+                CallbackQueryHandler(cancel_feedback, pattern='^another')
+            ]
         },
 
         fallbacks=[CommandHandler('cancel', cancel)]

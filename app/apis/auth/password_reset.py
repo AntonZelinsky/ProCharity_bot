@@ -36,7 +36,7 @@ class PasswordReset(MethodResource, Resource):
         user = UserAdmin.query.filter_by(email=email).first()
 
         if not user:
-            return make_response(jsonify(message='The user does not exist'), 400)
+            return make_response(jsonify(message="Указанный пользователь не существует."), 400)
         password = self.random_password()
 
         subject = config.PASSWORD_RESET_SUBJECT
@@ -45,7 +45,7 @@ class PasswordReset(MethodResource, Resource):
         user.password = generate_password_hash(password=password)
         db_session.commit()
         send_email(subject=subject, template=template, recipients=[user.email])
-        return make_response(jsonify(message='New password has been sent to the registered email address.'), 200)
+        return make_response(jsonify(message="Новый пароль был выслан на указанную почту."), 200)
 
     def random_password(self):
         length = config.PASSWORD_POLICY["min_length"]

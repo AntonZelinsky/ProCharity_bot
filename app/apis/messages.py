@@ -17,6 +17,7 @@ class TelegramNotificationSchema(Schema):
     message = fields.String(required=True)
     has_mailing = fields.String(required=True)
 
+
 class SendTelegramNotification(Resource, MethodResource):
 
     @doc(description='Sends message to the Telegram chat. Requires "message" parameter.'
@@ -54,7 +55,7 @@ class SendTelegramNotification(Resource, MethodResource):
         has_mailing = kwargs.get('has_mailing')
 
         if not message or not has_mailing:
-            return make_response(jsonify(result='The "message" and "has_mailing" params are required.'), 400)
+            return make_response(jsonify(result="Необходимо указать параметры <message> и <has_mailing>."), 400)
 
         # add a sending message to database
         authorized_user = get_jwt_identity()
@@ -65,9 +66,10 @@ class SendTelegramNotification(Resource, MethodResource):
         job_queue = TelegramNotification(has_mailing)
 
         if not job_queue.send_notification(message=message.message):
-            return make_response(jsonify(result=f'The has_mailing key error. The message has not be sent.'), 400)
+            return make_response(jsonify(result=f"Неверно указан параметр <has_mailing>. "
+                                                f"Сообщение не отправлено."), 400)
 
         message.was_sent = True
         message.sent_date = datetime.datetime.now()
         db_session.commit()
-        return make_response(jsonify(result=f'The message has been added to a query job'), 200)
+        return make_response(jsonify(result=f"Сообщение успешно добавлено в очередь рассылки."), 200)

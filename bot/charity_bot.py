@@ -43,7 +43,7 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
+    level=logging.DEBUG
 )
 
 updater = Updater(token=os.getenv('TOKEN'))
@@ -123,10 +123,7 @@ def change_user_categories(update: Update, context: CallbackContext):
 def choose_category(update: Update, context: CallbackContext):
     """The main function is to select categories for subscribing to them."""
     update.callback_query.edit_message_text(
-        text='Привет! 👋 \n'
-             'Я бот ProCharity -онлайн-платформы интеллектуального '
-             'волонтёрства. Буду держать тебя в курсе новых задач и помогу '
-             'оперативно связаться с командой поддержки.'
+        text=update.callback_query.message.text
     )
 
     categories = get_category(update.effective_user.id)

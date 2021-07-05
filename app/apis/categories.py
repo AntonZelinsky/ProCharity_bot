@@ -18,11 +18,17 @@ class CreateCategories(MethodResource, Resource):
             jsonify(result='is not json')
         try:
             categories = request.json
-            categories_db = Category.query.filter_by(archive=False).all()
+            categories_db = Category.query.all()
+            categories_db_not_archive = Category.query.filter_by(archive=False).all()
             category_id_json = [int(member['id']) for member in categories]
             category_id_db = [member.id for member in categories_db]
+            category_id_db_not_archive = [member.id for member in categories_db_not_archive]
+            category_id_db_archive = list(set(category_id_db) - set(category_id_db_not_archive))
+            category_for_unarchive = list(
+                set(category_id_db_archive) & set(category_id_json)
+            )
             category_for_adding_db = list(set(category_id_json) - set(category_id_db))
-            category_for_archive = list(set(category_id_db) - set(category_id_json))
+            category_for_archive = list(set(category_id_db_not_archive) - set(category_id_json))
             for category in categories:
                 if int(category['id']) in category_for_adding_db:
                     c = Category(
@@ -35,7 +41,10 @@ class CreateCategories(MethodResource, Resource):
             archive_records = [category for category in categories_db if category.id in category_for_archive]
             for category in archive_records:
                 category.archive = True
+            unarchive_records = [category for category in categories_db if category.id in category_for_unarchive]
+            for task in unarchive_records:
+                task.archive = False
             db_session.commit()
             return make_response(jsonify(result='ok'), 200)
         except:
-            return make_response(jsonify(result='json does not content "tasks"'), 400)
+            return make_response(jsonify(result='json does not content "categorys"'), 400)

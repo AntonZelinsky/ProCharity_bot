@@ -122,9 +122,9 @@ def change_user_categories(update: Update, context: CallbackContext):
 @log_command(command=LOG_COMMANDS_NAME['choose_category'], ignore_func='change_user_categories')
 def choose_category(update: Update, context: CallbackContext):
     """The main function is to select categories for subscribing to them."""
-    update.callback_query.edit_message_text(
-        text=update.callback_query.message.text
-    )
+    # update.callback_query.edit_message_text(
+    #     text=update.callback_query.message.text
+    # )
 
     categories = get_category(update.effective_user.id)
 
@@ -146,8 +146,7 @@ def choose_category(update: Update, context: CallbackContext):
     ]
     keyboard = InlineKeyboardMarkup(buttons)
 
-    context.bot.send_message(
-        chat_id=update.effective_chat.id,
+    update.callback_query.edit_message_text(
         text='Чтобы я знал, с какими задачами ты готов помогать, '
              'выбери свои профессиональные компетенции (можно выбрать '
              'несколько). После этого, нажми на пункт "Готово 👌"',

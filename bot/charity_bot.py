@@ -503,7 +503,9 @@ def stop_task_subscription(update: Update, context: CallbackContext):
 
 
 def cancel_feedback(update: Update, context: CallbackContext):
-    cancel_feedback_stat(update)
+    reason_canceling = update['callback_query']['data']
+    telegram_id = update['callback_query']['message']['chat']['id']
+    cancel_feedback_stat(telegram_id, reason_canceling)
     keyboard = InlineKeyboardMarkup(menu_buttons)
     update.callback_query.edit_message_text(
         text='Спасибо, я передал информацию команде ProCharity!',

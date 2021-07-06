@@ -20,10 +20,9 @@ class CreateCategories(MethodResource, Resource):
         try:
             categories = request.json
             categories_db = Category.query.options(load_only('archive')).all()
-            categories_db_not_archive = Category.query.options(load_only('archive')).filter_by(archive=False).all()
             category_id_json = [int(member['id']) for member in categories]
             category_id_db = [member.id for member in categories_db]
-            category_id_db_not_archive = [member.id for member in categories_db_not_archive]
+            category_id_db_not_archive = [member.id for member in categories_db if member.archive == False]
             category_id_db_archive = list(set(category_id_db) - set(category_id_db_not_archive))
             category_for_unarchive = list(
                 set(category_id_db_archive) & set(category_id_json)

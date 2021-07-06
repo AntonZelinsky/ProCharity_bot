@@ -43,10 +43,9 @@ class CreateTasks(MethodResource, Resource):
         try:
             tasks = request.json
             tasks_db = Task.query.options(load_only('archive')).all()
-            tasks_db_not_archive = Task.query.options(load_only('archive')).filter_by(archive=False).all()
             task_id_json = [int(member['id']) for member in tasks]
             task_id_db = [member.id for member in tasks_db]
-            task_id_db_not_archive = [member.id for member in tasks_db_not_archive]
+            task_id_db_not_archive = [member.id for member in tasks_db if member.archive == False]
             task_id_db_archive = list(set(task_id_db) - set(task_id_db_not_archive))
             task_for_unarchive = list(
                 set(task_id_db_archive) & set(task_id_json)

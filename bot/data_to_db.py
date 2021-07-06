@@ -140,10 +140,9 @@ def change_user_category(telegram_id, category_id):
     db_session.commit()
 
 
-def cancel_feedback_stat(update):
-    print(update)
-    reason_canceling = update['callback_query']['data']
-    telegram_id = update['callback_query']['message']['chat']['id']
+def cancel_feedback_stat(telegram_id, reason_canceling):
+    # reason_canceling = update['callback_query']['data']
+    # telegram_id = update['callback_query']['message']['chat']['id']
     reason = ReasonCanceling(
         telegram_id=telegram_id,
         reason_canceling=reason_canceling

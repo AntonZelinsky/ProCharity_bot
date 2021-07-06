@@ -36,17 +36,28 @@ class CreateTasks(MethodResource, Resource):
              400: {'description': 'error message'},
          },
          )
-    # @use_kwargs(Task_schema, location=('json'))
+    #@use_kwargs(Task_schema, location=('json'))
     def post(self):
         if not request.json:
             jsonify(result='is not json')
         try:
             tasks = request.json
-            tasks_db = Task.query.filter_by(archive=False).all()
+            tasks_db = Task.query.options(load_only('archive')).all()
             task_id_json = [int(member['id']) for member in tasks]
             task_id_db = [member.id for member in tasks_db]
-            task_for_adding_db = list(set(task_id_json) - set(task_id_db))
-            task_for_archive = list(set(task_id_db) - set(task_id_json))
+            task_id_db_not_archive = [member.id for member in tasks_db if member.archive == False]
+            task_id_db_archive = list(
+                set(task_id_db) - set(task_id_db_not_archive)
+            )
+            task_for_unarchive = list(
+                set(task_id_db_archive) & set(task_id_json)
+            )
+            task_for_adding_db = list(
+                set(task_id_json) - set(task_id_db)
+            )
+            task_for_archive = list(
+                set(task_id_db_not_archive) - set(task_id_json)
+            )
             task_to_send = []
             for task in tasks:
                 if int(task['id']) in task_for_adding_db:
@@ -69,8 +80,10 @@ class CreateTasks(MethodResource, Resource):
             archive_records = [task for task in tasks_db if task.id in task_for_archive]
             for task in archive_records:
                 task.archive = True
+            unarchive_records = [task for task in tasks_db if task.id in task_for_unarchive]
+            for task in unarchive_records:
+                task.archive = False
             db_session.commit()
-
             if task_to_send:
                 users = User.query.options(load_only('telegram_id')).filter_by(has_mailing=True).all()
                 notification = TelegramNotification()

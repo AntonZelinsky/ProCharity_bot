@@ -32,7 +32,8 @@ from bot.data_to_db import (add_user,
                             get_user_active_tasks,
                             get_category,
                             change_user_category,
-                            log_command)
+                            log_command,
+                            cancel_feedback_stat)
 from bot.formatter import display_task
 from bot.constants import LOG_COMMANDS_NAME
 
@@ -502,6 +503,9 @@ def stop_task_subscription(update: Update, context: CallbackContext):
 
 
 def cancel_feedback(update: Update, context: CallbackContext):
+    reason_canceling = update['callback_query']['data']
+    telegram_id = update['callback_query']['message']['chat']['id']
+    cancel_feedback_stat(telegram_id, reason_canceling)
     keyboard = InlineKeyboardMarkup(menu_buttons)
     update.callback_query.edit_message_text(
         text='Спасибо, я передал информацию команде ProCharity!',

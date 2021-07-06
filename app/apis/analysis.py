@@ -1,4 +1,4 @@
-from app.models import User, Statistics
+from app.models import ReasonCanceling, User, Statistics
 from app.database import db_session
 from datetime import datetime
 from flask_apispec.views import MethodResource
@@ -27,8 +27,13 @@ class Analysis(MethodResource, Resource):
             Statistics.command,
             func.count(Statistics.command)
         ).group_by(Statistics.command).all()
-        added_users = [[d.strftime("%d %B, %Y"), n] for d, n, in added_users]
+        reasons_canceling = db_session.query(
+            ReasonCanceling.reason_canceling,
+            func.count(ReasonCanceling.reason_canceling)
+        ).group_by(ReasonCanceling.reason_canceling).all()
+        added_users = [[d.strftime('%Y-%m-%d'), n] for d, n, in added_users]
         return make_response(jsonify(added_users=dict(added_users),
                                      active_users=active_users,
                                      deactivated_users=deactivated_users,
-                                     command_stats=dict(command_stats)), 200)
+                                     command_stats=dict(command_stats),
+                                     reasons_canceling=dict(reasons_canceling)), 200)

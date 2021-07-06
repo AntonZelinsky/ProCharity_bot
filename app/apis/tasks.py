@@ -36,14 +36,14 @@ class CreateTasks(MethodResource, Resource):
              400: {'description': 'error message'},
          },
          )
-    # @use_kwargs(Task_schema, location=('json'))
+    #@use_kwargs(Task_schema, location=('json'))
     def post(self):
         if not request.json:
             jsonify(result='is not json')
         try:
             tasks = request.json
-            tasks_db = Task.query.all()
-            tasks_db_not_archive = Task.query.filter_by(archive=False).all()
+            tasks_db = Task.query.options(load_only('archive')).all()
+            tasks_db_not_archive = Task.query.options(load_only('archive')).filter_by(archive=False).all()
             task_id_json = [int(member['id']) for member in tasks]
             task_id_db = [member.id for member in tasks_db]
             task_id_db_not_archive = [member.id for member in tasks_db_not_archive]

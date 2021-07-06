@@ -1,4 +1,5 @@
 from flask import request, jsonify, make_response
+from sqlalchemy.orm import load_only
 from app.models import Task, Category
 from app.database import db_session
 from flask_restful import Resource
@@ -18,8 +19,8 @@ class CreateCategories(MethodResource, Resource):
             jsonify(result='is not json')
         try:
             categories = request.json
-            categories_db = Category.query.all()
-            categories_db_not_archive = Category.query.filter_by(archive=False).all()
+            categories_db = Category.query.options(load_only('archive')).all()
+            categories_db_not_archive = Category.query.options(load_only('archive')).filter_by(archive=False).all()
             category_id_json = [int(member['id']) for member in categories]
             category_id_db = [member.id for member in categories_db]
             category_id_db_not_archive = [member.id for member in categories_db_not_archive]

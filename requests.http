@@ -77,4 +77,11 @@ Content-Type: application/json
 ###
 GET  http://localhost:5000/api/v1/analysis/   
 
+###
 
+POST http://178.154.202.217/api/v1/auth/invitation/
+Content-Type: application/json
+
+{
+   "email": "musserg@rambler.ru"
+}

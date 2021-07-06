@@ -145,3 +145,11 @@ class Users_Categories(Base):
     category_id = Column(Integer,
                          ForeignKey('categories.id'),
                          primary_key=True)
+
+
+class ReasonCanceling(Base):
+    __tablename__ = 'reasons_canceling'
+    id = Column(Integer, primary_key=True)
+    telegram_id = Column(Integer)
+    reason_canceling = Column(String(48), nullable=False)
+    added_date = Column(DateTime, default=datetime.now())

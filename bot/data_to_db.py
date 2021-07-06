@@ -1,4 +1,4 @@
-from app.models import User, Category, Task, Statistics, Users_Categories
+from app.models import ReasonCanceling, User, Category, Task, Statistics, Users_Categories
 from app.database import db_session
 from datetime import datetime
 from sqlalchemy.orm import load_only
@@ -138,3 +138,15 @@ def change_user_category(telegram_id, category_id):
         user.categories.append(category)
         db_session.add(user)
     db_session.commit()
+
+
+def cancel_feedback_stat(update):
+    print(update)
+    reason_canceling = update['callback_query']['data']
+    telegram_id = update['callback_query']['message']['chat']['id']
+    reason = ReasonCanceling(
+        telegram_id=telegram_id,
+        reason_canceling=reason_canceling
+    )
+    db_session.add(reason)
+    return db_session.commit()

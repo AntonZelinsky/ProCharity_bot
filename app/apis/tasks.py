@@ -46,12 +46,18 @@ class CreateTasks(MethodResource, Resource):
             task_id_json = [int(member['id']) for member in tasks]
             task_id_db = [member.id for member in tasks_db]
             task_id_db_not_archive = [member.id for member in tasks_db if member.archive == False]
-            task_id_db_archive = list(set(task_id_db) - set(task_id_db_not_archive))
+            task_id_db_archive = list(
+                set(task_id_db) - set(task_id_db_not_archive)
+            )
             task_for_unarchive = list(
                 set(task_id_db_archive) & set(task_id_json)
             )
-            task_for_adding_db = list(set(task_id_json) - set(task_id_db))
-            task_for_archive = list(set(task_id_db_not_archive) - set(task_id_json))
+            task_for_adding_db = list(
+                set(task_id_json) - set(task_id_db)
+            )
+            task_for_archive = list(
+                set(task_id_db_not_archive) - set(task_id_json)
+            )
             task_to_send = []
             for task in tasks:
                 if int(task['id']) in task_for_adding_db:

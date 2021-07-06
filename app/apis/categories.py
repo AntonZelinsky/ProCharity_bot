@@ -23,7 +23,9 @@ class CreateCategories(MethodResource, Resource):
             category_id_json = [int(member['id']) for member in categories]
             category_id_db = [member.id for member in categories_db]
             category_id_db_not_archive = [member.id for member in categories_db if member.archive == False]
-            category_id_db_archive = list(set(category_id_db) - set(category_id_db_not_archive))
+            category_id_db_archive = list(
+                set(category_id_db) - set(category_id_db_not_archive)
+            )
             category_for_unarchive = list(
                 set(category_id_db_archive) & set(category_id_json)
             )
@@ -37,7 +39,7 @@ class CreateCategories(MethodResource, Resource):
                         archive=False
                     )
                     db_session.add(c)
-                
+
             archive_records = [category for category in categories_db if category.id in category_for_archive]
             for category in archive_records:
                 category.archive = True

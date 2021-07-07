@@ -80,9 +80,11 @@ class CreateTasks(MethodResource, Resource):
             archive_records = [task for task in tasks_db if task.id in task_for_archive]
             for task in archive_records:
                 task.archive = True
+                task.updated_date = datetime.now()
             unarchive_records = [task for task in tasks_db if task.id in task_for_unarchive]
             for task in unarchive_records:
                 task.archive = False
+                task.updated_date = datetime.now()
             db_session.commit()
             if task_to_send:
                 users = User.query.options(load_only('telegram_id')).filter_by(has_mailing=True).all()

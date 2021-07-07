@@ -6,6 +6,7 @@ from sqlalchemy import (Column,
                         Boolean,
                         DateTime,
                         Date,
+                        text,
                         )
 
 from sqlalchemy.orm import relationship, backref
@@ -96,6 +97,9 @@ class Task(Base):
     link = Column(String)
     description = Column(String)
     archive = Column(Boolean)
+    created_date = Column(DateTime, server_default=text('now()'), nullable=False)
+    updated_date = Column(DateTime, server_default=text('now()'), nullable=False)
+
 
     def __repr__(self):
         return f'<Task {self.title}>'

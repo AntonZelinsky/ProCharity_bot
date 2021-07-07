@@ -96,6 +96,9 @@ class Task(Base):
     link = Column(String)
     description = Column(String)
     archive = Column(Boolean)
+    created_date = Column(DateTime, default=datetime.now())
+    updated_date = Column(DateTime)
+
 
     def __repr__(self):
         return f'<Task {self.title}>'

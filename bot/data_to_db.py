@@ -5,6 +5,8 @@ from sqlalchemy.orm import load_only
 from sqlalchemy import select
 import inspect
 
+from telegram import InlineKeyboardButton
+
 
 def add_user(message):
     telegram_id = message.chat.id
@@ -70,6 +72,23 @@ def get_user_active_tasks(telegram_id, shown_task):
 
     result = db_session.execute(stmt)
     return [[task, category_name] for task, category_name in result]
+
+
+def get_mailing_status(telegram_id):
+    user = User.query.options(load_only('has_mailing')).filter_by(telegram_id=telegram_id).first()
+    return user.has_mailing
+
+
+def get_subscription_button(telegram_id):
+    if get_mailing_status(telegram_id):
+        return InlineKeyboardButton(
+            text='⏹ Остановить подписку на задания',
+            callback_data='stop_subscription'
+        )
+    return InlineKeyboardButton(
+        text='⏹ Включить подписку на задания',
+        callback_data='stop_subscription'
+    )
 
 
 def change_subscription(telegram_id):

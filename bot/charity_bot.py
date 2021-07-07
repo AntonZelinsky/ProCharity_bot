@@ -33,7 +33,8 @@ from bot.data_to_db import (add_user,
                             get_category,
                             change_user_category,
                             log_command,
-                            cancel_feedback_stat)
+                            cancel_feedback_stat,
+                            get_subscription_button)
 from bot.formatter import display_task
 from bot.constants import LOG_COMMANDS_NAME
 
@@ -183,6 +184,8 @@ def after_category_choose(update: Update, context: CallbackContext):
 
 @log_command(command=LOG_COMMANDS_NAME['open_menu'])
 def open_menu(update: Update, context: CallbackContext):
+    subscription_button = get_subscription_button(update.effective_user.id)
+    menu_buttons[-1] = [subscription_button]
     keyboard = InlineKeyboardMarkup(menu_buttons)
     text = 'Меню'
     update.callback_query.answer()
@@ -506,6 +509,8 @@ def cancel_feedback(update: Update, context: CallbackContext):
     reason_canceling = update['callback_query']['data']
     telegram_id = update['callback_query']['message']['chat']['id']
     cancel_feedback_stat(telegram_id, reason_canceling)
+    subscription_button = get_subscription_button(update.effective_user.id)
+    menu_buttons[-1] = [subscription_button]
     keyboard = InlineKeyboardMarkup(menu_buttons)
     update.callback_query.edit_message_text(
         text='Спасибо, я передал информацию команде ProCharity!',

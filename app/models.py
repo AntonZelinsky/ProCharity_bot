@@ -153,3 +153,16 @@ class ReasonCanceling(Base):
     telegram_id = Column(Integer)
     reason_canceling = Column(String(48), nullable=False)
     added_date = Column(DateTime, default=datetime.now())
+
+
+class SiteUser(Base):
+    __tablename__ = 'site_users'
+    id = Column(Integer, primary_key=True)
+    id_hash = Column(String(256), unique=True, nullable=False)
+    email = Column(String(48), unique=True, nullable=False)
+    first_name = Column(String(32), nullable=True)
+    last_name = Column(String(32), nullable=True)
+    specializations = Column(String(), nullable=True)
+
+    def __repr__(self):
+        return f'<SiteUser {self.email}>'

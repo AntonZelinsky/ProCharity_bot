@@ -11,7 +11,8 @@ from telegram.ext import (Updater,
                           CommandHandler,
                           ConversationHandler,
                           CallbackContext,
-                          CallbackQueryHandler)
+                          CallbackQueryHandler,
+                          PicklePersistence)
 
 from bot.states import (GREETING,
                         CATEGORY,
@@ -38,6 +39,7 @@ from bot.data_to_db import (add_user,
                             get_mailing_status)
 from bot.formatter import display_task
 from bot.constants import LOG_COMMANDS_NAME
+from app.config import BOT_PERSISTENCE_FILE
 
 PAGINATION = 3
 
@@ -49,7 +51,8 @@ logging.basicConfig(
     level=logging.INFO
 )
 
-updater = Updater(token=os.getenv('TOKEN'))
+bot_persistence = PicklePersistence(filename=BOT_PERSISTENCE_FILE)
+updater = Updater(token=os.getenv('TOKEN'), persistence=bot_persistence, use_context=True)
 
 menu_buttons = [
     [
@@ -250,7 +253,7 @@ def show_open_task(update: Update, context: CallbackContext):
                 update.callback_query.delete_message()
                 context.bot.send_message(
                     chat_id=update.effective_chat.id,
-                    text='Нет доступных заданий',
+                    text='Ты просмотрел все открытые задания на текущий момент.',
                     reply_markup=InlineKeyboardMarkup(
                         [[InlineKeyboardButton(text='Открыть меню',
                                                callback_data='open_menu')]]
@@ -422,7 +425,7 @@ def about(update: Update, context: CallbackContext):
     update.callback_query.edit_message_text(
         text='С ProCharity профессионалы могут помочь некоммерческим '
              'организациям в вопросах, которые требуют специальных знаний и '
-             'опыта. Интеллектуальный волонтёр безвозмездно дарит фонду своё '
+             'опыта.\n\nИнтеллектуальный волонтёр безвозмездно дарит фонду своё '
              'время и профессиональные навыки, позволяя решать задачи, '
              'которые трудно закрыть силами штатных сотрудников.',
         reply_markup=keyboard
@@ -504,8 +507,9 @@ def stop_task_subscription(update: Update, context: CallbackContext):
         return AFTER_CATEGORY_REPLY
 
     else:
-        answer = 'Ты больше не будешь получать новые задания от фондов, но ' \
-                 'всегда сможешь найти их на сайте https://procharity.ru'
+        answer = ('Ты больше не будешь получать новые задания от фондов, но '
+                  'всегда сможешь найти их на сайте https://procharity.ru\n\n'
+                  'Поделись, пожалуйста, почему ты решил отписаться?')
 
         update.callback_query.edit_message_text(
             text=answer, reply_markup=cancel_feedback_keyboard
@@ -607,7 +611,9 @@ def main() -> None:
             ]
         },
 
-        fallbacks=[CommandHandler('cancel', cancel)]
+        fallbacks=[CommandHandler('cancel', cancel)],
+        persistent=True,
+        name='conv_handler'
     )
     update_users_category = CallbackQueryHandler(change_user_categories, pattern='^up_cat[0-9]{1,2}$')
 

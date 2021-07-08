@@ -8,6 +8,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 dotenv_path = os.path.join(BASE_DIR, '.env')
 load_dotenv(dotenv_path)
 
+BOT_PERSISTENCE_FILE = os.getenv('PERSISTENCE_FILE')
+
 # -----------------------
 # Basic project settings
 SQL_ALCHEMY_DATABASE_URL = os.getenv('DATABASE_URL')

@@ -239,7 +239,7 @@ def show_open_task(update: Update, context: CallbackContext):
                 update.callback_query.delete_message()
                 context.bot.send_message(
                     chat_id=update.effective_chat.id,
-                    text='Нет доступных заданий',
+                    text='Ты просмотрел все открытые задания на текущий момент.',
                     reply_markup=InlineKeyboardMarkup(
                         [[InlineKeyboardButton(text='Открыть меню',
                                                callback_data='open_menu')]]
@@ -411,7 +411,7 @@ def about(update: Update, context: CallbackContext):
     update.callback_query.edit_message_text(
         text='С ProCharity профессионалы могут помочь некоммерческим '
              'организациям в вопросах, которые требуют специальных знаний и '
-             'опыта. Интеллектуальный волонтёр безвозмездно дарит фонду своё '
+             'опыта.\n\nИнтеллектуальный волонтёр безвозмездно дарит фонду своё '
              'время и профессиональные навыки, позволяя решать задачи, '
              'которые трудно закрыть силами штатных сотрудников.',
         reply_markup=keyboard
@@ -492,8 +492,9 @@ def stop_task_subscription(update: Update, context: CallbackContext):
         return AFTER_CATEGORY_REPLY
 
     else:
-        answer = 'Ты больше не будешь получать новые задания от фондов, но ' \
-                 'всегда сможешь найти их на сайте https://procharity.ru'
+        answer = ('Ты больше не будешь получать новые задания от фондов, но '
+                  'всегда сможешь найти их на сайте https://procharity.ru\n\n'
+                  'Поделись, пожалуйста, почему ты решил отписаться?')
 
         update.callback_query.edit_message_text(
             text=answer, reply_markup=cancel_feedback_keyboard

@@ -48,7 +48,7 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
+    level=logging.DEBUG
 )
 
 bot_persistence = PicklePersistence(filename=BOT_PERSISTENCE_FILE)
@@ -436,8 +436,7 @@ def about(update: Update, context: CallbackContext):
 
 @log_command(command=LOG_COMMANDS_NAME['stop_task_subscription'])
 def stop_task_subscription(update: Update, context: CallbackContext):
-    new_mailing_status = change_subscription(update.effective_user.id)
-    context.user_data[SUBSCRIPTION_FLAG] = new_mailing_status
+    context.user_data[SUBSCRIPTION_FLAG] = change_subscription(update.effective_user.id)
     cancel_feedback_buttons = [
         [
             InlineKeyboardButton(
@@ -475,6 +474,21 @@ def stop_task_subscription(update: Update, context: CallbackContext):
     ]
     cancel_feedback_keyboard = InlineKeyboardMarkup(cancel_feedback_buttons)
 
+    answer = ('Ты больше не будешь получать новые задания от фондов, но '
+              'всегда сможешь найти их на сайте https://procharity.ru\n\n'
+              'Поделись, пожалуйста, почему ты решил отписаться?')
+
+    update.callback_query.edit_message_text(
+        text=answer, reply_markup=cancel_feedback_keyboard
+    )
+
+    return CANCEL_FEEDBACK
+
+
+@log_command(command=LOG_COMMANDS_NAME['start_task_subscription'])
+def start_task_subscription(update: Update, context: CallbackContext):
+    context.user_data[SUBSCRIPTION_FLAG] = change_subscription(update.effective_user.id)
+
     button = [
         [
             InlineKeyboardButton(
@@ -494,28 +508,16 @@ def stop_task_subscription(update: Update, context: CallbackContext):
         if c['user_selected']
     ]
 
-    if new_mailing_status:
-        answer = f'Отлично! Теперь я буду присылать тебе уведомления о ' \
-                 f'новых заданиях в ' \
-                 f'категориях: {", ".join(user_categories)}.\n\n' \
-                 f'А пока можешь посмотреть открытые задания.'
+    answer = f'Отлично! Теперь я буду присылать тебе уведомления о ' \
+             f'новых заданиях в ' \
+             f'категориях: {", ".join(user_categories)}.\n\n' \
+             f'А пока можешь посмотреть открытые задания.'
 
-        update.callback_query.edit_message_text(text=answer,
-                                                reply_markup=keyboard
-                                                )
+    update.callback_query.edit_message_text(text=answer,
+                                            reply_markup=keyboard
+                                            )
 
-        return AFTER_CATEGORY_REPLY
-
-    else:
-        answer = ('Ты больше не будешь получать новые задания от фондов, но '
-                  'всегда сможешь найти их на сайте https://procharity.ru\n\n'
-                  'Поделись, пожалуйста, почему ты решил отписаться?')
-
-        update.callback_query.edit_message_text(
-            text=answer, reply_markup=cancel_feedback_keyboard
-        )
-
-    return CANCEL_FEEDBACK
+    return AFTER_CATEGORY_REPLY
 
 
 def cancel_feedback(update: Update, context: CallbackContext):
@@ -580,7 +582,7 @@ def main() -> None:
                 CallbackQueryHandler(choose_category, pattern='^change_category$'),
                 CallbackQueryHandler(email_feedback, pattern='^new_feature$'),
                 CallbackQueryHandler(stop_task_subscription, pattern='^stop_subscription$'),
-                CallbackQueryHandler(stop_task_subscription, pattern='^start_subscription$'),
+                CallbackQueryHandler(start_task_subscription, pattern='^start_subscription$'),
                 CallbackQueryHandler(open_menu, pattern='^open_menu$')
             ],
             OPEN_TASKS: [

@@ -48,6 +48,8 @@ class SendRegistrationInvite(MethodResource, Resource):
             except EmailNotValidError as ex:
                 return make_response(jsonify(message=str(ex)), 400)
 
+        email = email.lower()
+
         subject = config.REGISTRATION_SUBJECT
         expiration = config.INV_TOKEN_EXPIRATION
         token_expiration_date = datetime.now() + timedelta(hours=config.INV_TOKEN_EXPIRATION)

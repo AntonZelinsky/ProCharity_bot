@@ -25,7 +25,8 @@ from bot.states import (GREETING,
                         TYPING,
                         START_OVER,
                         START_SHOW_TASK,
-                        CANCEL_FEEDBACK)
+                        CANCEL_FEEDBACK,
+                        SUBSCRIPTION_FLAG)
 
 from bot.data_to_db import (add_user,
                             change_subscription,
@@ -34,7 +35,7 @@ from bot.data_to_db import (add_user,
                             change_user_category,
                             log_command,
                             cancel_feedback_stat,
-                            get_subscription_button)
+                            get_mailing_status)
 from bot.formatter import display_task
 from bot.constants import LOG_COMMANDS_NAME
 
@@ -88,7 +89,7 @@ menu_buttons = [
 @log_command(command=LOG_COMMANDS_NAME['start'], start_menu=True)
 def start(update: Update, context: CallbackContext) -> int:
     add_user(update.message)
-
+    context.user_data[SUBSCRIPTION_FLAG] = get_mailing_status(update.effective_user.id)
     button = [
         [
             InlineKeyboardButton(text='Поехали!', callback_data=GREETING)
@@ -103,8 +104,6 @@ def start(update: Update, context: CallbackContext) -> int:
         'Начнём?',
         reply_markup=keyboard
     )
-
-    context.user_data[START_OVER] = False
 
     return GREETING
 
@@ -184,7 +183,16 @@ def after_category_choose(update: Update, context: CallbackContext):
 
 @log_command(command=LOG_COMMANDS_NAME['open_menu'])
 def open_menu(update: Update, context: CallbackContext):
-    subscription_button = get_subscription_button(update.effective_user.id)
+    if context.user_data[SUBSCRIPTION_FLAG]:
+        subscription_button = InlineKeyboardButton(
+                text='⏹ Остановить подписку на задания',
+                callback_data='stop_subscription'
+            )
+    else:
+        subscription_button = InlineKeyboardButton(
+                text='⏹ Включить подписку на задания',
+                callback_data='start_subscription'
+            )
     menu_buttons[-1] = [subscription_button]
     keyboard = InlineKeyboardMarkup(menu_buttons)
     text = 'Меню'
@@ -426,6 +434,7 @@ def about(update: Update, context: CallbackContext):
 @log_command(command=LOG_COMMANDS_NAME['stop_task_subscription'])
 def stop_task_subscription(update: Update, context: CallbackContext):
     new_mailing_status = change_subscription(update.effective_user.id)
+    context.user_data[SUBSCRIPTION_FLAG] = new_mailing_status
     cancel_feedback_buttons = [
         [
             InlineKeyboardButton(
@@ -506,10 +515,19 @@ def stop_task_subscription(update: Update, context: CallbackContext):
 
 
 def cancel_feedback(update: Update, context: CallbackContext):
+    if context.user_data[SUBSCRIPTION_FLAG]:
+        subscription_button = InlineKeyboardButton(
+                text='⏹ Остановить подписку на задания',
+                callback_data='stop_subscription'
+            )
+    else:
+        subscription_button = InlineKeyboardButton(
+                text='⏹ Включить подписку на задания',
+                callback_data='start_subscription'
+            )
     reason_canceling = update['callback_query']['data']
     telegram_id = update['callback_query']['message']['chat']['id']
     cancel_feedback_stat(telegram_id, reason_canceling)
-    subscription_button = get_subscription_button(update.effective_user.id)
     menu_buttons[-1] = [subscription_button]
     keyboard = InlineKeyboardMarkup(menu_buttons)
     update.callback_query.edit_message_text(
@@ -557,7 +575,8 @@ def main() -> None:
                 CallbackQueryHandler(about, pattern='^about$'),
                 CallbackQueryHandler(choose_category, pattern='^change_category$'),
                 CallbackQueryHandler(email_feedback, pattern='^new_feature$'),
-                CallbackQueryHandler(stop_task_subscription, pattern='^stop_subscription'),
+                CallbackQueryHandler(stop_task_subscription, pattern='^stop_subscription$'),
+                CallbackQueryHandler(stop_task_subscription, pattern='^start_subscription$'),
                 CallbackQueryHandler(open_menu, pattern='^open_menu$')
             ],
             OPEN_TASKS: [

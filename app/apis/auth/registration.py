@@ -1,8 +1,10 @@
 from datetime import datetime
 
+from sqlalchemy.orm import load_only
+
 from app import password_policy
 from app.database import db_session
-from app.models import Register, UserAdmin
+from app.models import Register, UserAdmin, SiteUser
 from flask import jsonify, make_response
 from flask_apispec import doc, use_kwargs
 from flask_apispec.views import MethodResource
@@ -85,3 +87,33 @@ class UserRegister(MethodResource, Resource):
         db_session.commit()
 
         return make_response(jsonify(message="Пользователь успешно зарегистрирован."), 200)
+
+
+class ExternalUserRegistration(MethodResource, Resource):
+
+    @doc(description='Receives user data from the portal for further registration.', tags=['User Registration'])
+    @use_kwargs(
+        {'id_hash': fields.Str(description='md5 has of id', required=True),
+         'first_name': fields.Str(required=True),
+         'last_name': fields.Str(required=True),
+         'email': fields.Str(required=True),
+         'specializations': fields.List(fields.Integer, description='specializations', required=True)}
+    )
+    def post(self, **kwargs):
+        id_hash = kwargs.get('id_hash')
+
+        user = SiteUser.query.options(load_only('id_hash')).filter_by(id_hash=id_hash).first()
+
+        if user:
+            return make_response(jsonify(message='Пользователь уже существует'), 400)
+
+        spec = kwargs.get('specializations')
+        if spec:
+            kwargs['specializations'] = ','.join(str(x) for x in spec)
+        else:
+            kwargs['specializations'] = None
+
+        user = SiteUser(**kwargs)
+        db_session.add(user)
+        db_session.commit()
+        return make_response(jsonify(message='Пользователь добавлен'), 200)

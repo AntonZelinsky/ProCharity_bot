@@ -8,8 +8,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 dotenv_path = os.path.join(BASE_DIR, '.env')
 load_dotenv(dotenv_path)
 
-BOT_PERSISTENCE_FILE = os.getenv('PERSISTENCE_FILE')
-
 # -----------------------
 # Basic project settings
 SQL_ALCHEMY_DATABASE_URL = os.getenv('DATABASE_URL')
@@ -48,6 +46,8 @@ PAGE_LIMIT = 10
 # Telegram bot settings
 TELEGRAM_TOKEN = os.getenv('TOKEN')
 NUMBER_USERS_TO_SEND = 30
+BOT_PERSISTENCE_FILE = os.getenv('PERSISTENCE_FILE')
+
 # ------------------------------
 # Basic application settings
 

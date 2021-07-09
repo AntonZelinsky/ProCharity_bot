@@ -66,7 +66,7 @@ class User(Base):
     first_name = Column(String(32), nullable=True)
     last_name = Column(String(32), nullable=True)
     has_mailing = Column(Boolean, default=True)
-    date_registration = Column(DateTime, default=datetime.now())
+    date_registration = Column(DateTime, server_default=text('now()'), nullable=False)
 
     def __repr__(self):
         return f'<User {self.telegram_id}>'
@@ -99,7 +99,6 @@ class Task(Base):
     archive = Column(Boolean)
     created_date = Column(DateTime, server_default=text('now()'), nullable=False)
     updated_date = Column(DateTime, server_default=text('now()'), nullable=False)
-
 
     def __repr__(self):
         return f'<Task {self.title}>'
@@ -156,4 +155,20 @@ class ReasonCanceling(Base):
     id = Column(Integer, primary_key=True)
     telegram_id = Column(Integer)
     reason_canceling = Column(String(48), nullable=False)
-    added_date = Column(DateTime, default=datetime.now())
+    added_date = Column(DateTime, server_default=text('now()'), nullable=False)
+
+
+class ExternalSiteUser(Base):
+    __tablename__ = 'external_site_users'
+    external_id = Column(Integer, primary_key=True)
+    external_id_hash = Column(String(256), nullable=False)
+    email = Column(String(48), nullable=False)
+    first_name = Column(String(32), nullable=True)
+    last_name = Column(String(32), nullable=True)
+    specializations = Column(String(), nullable=True)
+    created_date = Column(DateTime, server_default=text('now()'), nullable=False)
+    updated_date = Column(DateTime, server_default=text('now()'), nullable=False)
+    source = Column(String())
+
+    def __repr__(self):
+        return f'<SiteUser {self.email}>'

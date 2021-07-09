@@ -15,6 +15,7 @@ def add_user(message):
         user.last_name = last_name
         user.first_name = first_name
         user.username = username
+        user.date_registration = datetime.now()
         db_session.add(user)
         return db_session.commit()
 

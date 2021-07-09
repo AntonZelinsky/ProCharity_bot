@@ -56,6 +56,7 @@ class Login(MethodResource, Resource):
         if not email or not password:
             return make_response(jsonify(message="Необходимо указать <email> и <password>."), 403)
 
+        email = email.lower()
         user = UserAdmin.query.filter_by(email=email).first()
 
         if not user or not user.check_password(password):

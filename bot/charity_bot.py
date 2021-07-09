@@ -51,9 +51,9 @@ logging.basicConfig(
     level=logging.INFO
 )
 
-bot_persistence = PicklePersistence(filename=BOT_PERSISTENCE_FILE)
-updater = Updater(token=os.getenv('TOKEN'), persistence=bot_persistence, use_context=True)
-
+#bot_persistence = PicklePersistence(filename=BOT_PERSISTENCE_FILE)
+#updater = Updater(token=os.getenv('TOKEN'), persistence=bot_persistence, use_context=True)
+updater = Updater(token=os.getenv('TOKEN'), use_context=True)
 MENU_BUTTONS = [
     [
         InlineKeyboardButton(
@@ -612,7 +612,7 @@ def main() -> None:
         },
 
         fallbacks=[CommandHandler('cancel', cancel)],
-        persistent=True,
+        #persistent=True,
         name='conv_handler'
     )
     update_users_category = CallbackQueryHandler(change_user_categories, pattern='^up_cat[0-9]{1,2}$')

@@ -72,6 +72,11 @@ def get_user_active_tasks(telegram_id, shown_task):
     return [[task, category_name] for task, category_name in result]
 
 
+def get_mailing_status(telegram_id):
+    user = User.query.options(load_only('has_mailing')).filter_by(telegram_id=telegram_id).first()
+    return user.has_mailing
+
+
 def change_subscription(telegram_id):
     """
     Update subscription status of user.

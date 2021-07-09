@@ -89,6 +89,18 @@ MENU_BUTTONS = [
 ]
 
 
+def get_subscription_button(context: CallbackContext):
+    if context.user_data[SUBSCRIPTION_FLAG]:
+        return InlineKeyboardButton(
+                text='⏹ Остановить подписку на задания',
+                callback_data='stop_subscription'
+            )
+    return InlineKeyboardButton(
+        text='⏹ Включить подписку на задания',
+        callback_data='start_subscription'
+    )
+
+
 @log_command(command=LOG_COMMANDS_NAME['start'], start_menu=True)
 def start(update: Update, context: CallbackContext) -> int:
     add_user(update.message)
@@ -186,16 +198,7 @@ def after_category_choose(update: Update, context: CallbackContext):
 
 @log_command(command=LOG_COMMANDS_NAME['open_menu'])
 def open_menu(update: Update, context: CallbackContext):
-    if context.user_data[SUBSCRIPTION_FLAG]:
-        subscription_button = InlineKeyboardButton(
-                text='⏹ Остановить подписку на задания',
-                callback_data='stop_subscription'
-            )
-    else:
-        subscription_button = InlineKeyboardButton(
-                text='⏹ Включить подписку на задания',
-                callback_data='start_subscription'
-            )
+    subscription_button = get_subscription_button(context)
     MENU_BUTTONS[-1] = [subscription_button]
     keyboard = InlineKeyboardMarkup(MENU_BUTTONS)
     text = 'Меню'
@@ -521,16 +524,7 @@ def start_task_subscription(update: Update, context: CallbackContext):
 
 
 def cancel_feedback(update: Update, context: CallbackContext):
-    if context.user_data[SUBSCRIPTION_FLAG]:
-        subscription_button = InlineKeyboardButton(
-                text='⏹ Остановить подписку на задания',
-                callback_data='stop_subscription'
-            )
-    else:
-        subscription_button = InlineKeyboardButton(
-                text='⏹ Включить подписку на задания',
-                callback_data='start_subscription'
-            )
+    subscription_button = get_subscription_button(context)
     reason_canceling = update['callback_query']['data']
     telegram_id = update['callback_query']['message']['chat']['id']
     cancel_feedback_stat(telegram_id, reason_canceling)

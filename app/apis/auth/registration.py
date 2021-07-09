@@ -94,33 +94,36 @@ class ExternalUserRegistration(MethodResource, Resource):
 
     @doc(description='Receives user data from the portal for further registration.', tags=['User Registration'])
     @use_kwargs(
-        {'id_hash': fields.Str(description='md5 hash of id', required=True),
+        {'id': fields.Int(required=True),
+         'id_hash': fields.Str(description='md5 hash of external_id', required=True),
          'first_name': fields.Str(required=True),
          'last_name': fields.Str(required=True),
          'email': fields.Str(required=True),
          'specializations': fields.Str(required=True)}
     )
     def post(self, **kwargs):
-        id_hash = kwargs.get('id_hash')
-        messages = {
-            'updated': 'Пользователь обновлен.',
-            'added': 'Пользователь добавлен.'
-        }
+        external_id = kwargs.get('id')
 
-        user = ExternalSiteUser.query.options(load_only('id_hash')).filter_by(id_hash=id_hash).first()
+        user = ExternalSiteUser.query.options(load_only('external_id')).filter_by(external_id=external_id).first()
         if user:
             user.first_name = kwargs.get('first_name')
             user.last_name = kwargs.get('last_name')
             user.specializations = kwargs.get('specializations')
-            response_message = messages.get('updated')
+            user.updated_date = datetime.now()
+
         else:
-            user = ExternalSiteUser(**kwargs)
+            user = ExternalSiteUser(external_id=external_id,
+                                    external_id_hash=kwargs.get('id_hash'),
+                                    first_name=kwargs.get('first_name'),
+                                    last_name=kwargs.get('last_name'),
+                                    email=kwargs.get('email'),
+                                    specializations=kwargs.get('specializations'),
+                                    )
             db_session.add(user)
-            response_message = messages.get('added')
 
         try:
             db_session.commit()
         except IntegrityError:
-            response_message = 'Нарушение ограничения уникальности полей <email> и <id_hash>.'
+            return make_response(jsonify(message='some mistake'), 400)
 
-        return make_response(jsonify(message=response_message), 200)
+        return make_response(jsonify(message='successful'), 200)

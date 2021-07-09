@@ -101,7 +101,6 @@ class Task(Base):
     created_date = Column(DateTime, server_default=text('now()'), nullable=False)
     updated_date = Column(DateTime, server_default=text('now()'), nullable=False)
 
-
     def __repr__(self):
         return f'<Task {self.title}>'
 
@@ -163,13 +162,14 @@ class ReasonCanceling(Base):
 class ExternalSiteUser(Base):
     __tablename__ = 'external_site_users'
     external_id = Column(Integer, primary_key=True)
-    id_hash = Column(String(256), nullable=False)
+    external_id_hash = Column(String(256), nullable=False)
     email = Column(String(48), nullable=False)
     first_name = Column(String(32), nullable=True)
     last_name = Column(String(32), nullable=True)
     specializations = Column(String(), nullable=True)
-
-    __table_args__ = (UniqueConstraint('id_hash', 'email', name='site_users_constr'),)
+    created_date = Column(DateTime, default=datetime.now())
+    updated_date = Column(DateTime)
+    source = Column(String())
 
     def __repr__(self):
         return f'<SiteUser {self.email}>'

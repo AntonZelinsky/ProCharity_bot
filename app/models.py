@@ -6,6 +6,7 @@ from sqlalchemy import (Column,
                         Boolean,
                         DateTime,
                         Date,
+                        UniqueConstraint
                         )
 
 from sqlalchemy.orm import relationship, backref
@@ -158,11 +159,13 @@ class ReasonCanceling(Base):
 class SiteUser(Base):
     __tablename__ = 'site_users'
     id = Column(Integer, primary_key=True)
-    id_hash = Column(String(256), unique=True, nullable=False)
-    email = Column(String(48), unique=True, nullable=False)
+    id_hash = Column(String(256), nullable=False)
+    email = Column(String(48), nullable=False)
     first_name = Column(String(32), nullable=True)
     last_name = Column(String(32), nullable=True)
     specializations = Column(String(), nullable=True)
+
+    __table_args__ = (UniqueConstraint('id_hash', 'email', name='site_users_constr'),)
 
     def __repr__(self):
         return f'<SiteUser {self.email}>'

@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import load_only
 
 from app import password_policy
@@ -93,27 +94,33 @@ class ExternalUserRegistration(MethodResource, Resource):
 
     @doc(description='Receives user data from the portal for further registration.', tags=['User Registration'])
     @use_kwargs(
-        {'id_hash': fields.Str(description='md5 has of id', required=True),
+        {'id_hash': fields.Str(description='md5 hash of id', required=True),
          'first_name': fields.Str(required=True),
          'last_name': fields.Str(required=True),
          'email': fields.Str(required=True),
-         'specializations': fields.List(fields.Integer, description='specializations', required=True)}
+         'specializations': fields.Str(required=True)}
     )
     def post(self, **kwargs):
         id_hash = kwargs.get('id_hash')
+        messages = {
+            'updated': 'Пользователь обновлен.',
+            'added': 'Пользователь добавлен.'
+        }
 
         user = SiteUser.query.options(load_only('id_hash')).filter_by(id_hash=id_hash).first()
-
         if user:
-            return make_response(jsonify(message='Пользователь уже существует'), 400)
-
-        spec = kwargs.get('specializations')
-        if spec:
-            kwargs['specializations'] = ','.join(str(x) for x in spec)
+            user.first_name = kwargs.get('first_name')
+            user.last_name = kwargs.get('last_name')
+            user.specializations = kwargs.get('specializations')
+            response_message = messages.get('updated')
         else:
-            kwargs['specializations'] = None
+            user = SiteUser(**kwargs)
+            db_session.add(user)
+            response_message = messages.get('added')
 
-        user = SiteUser(**kwargs)
-        db_session.add(user)
-        db_session.commit()
-        return make_response(jsonify(message='Пользователь добавлен'), 200)
+        try:
+            db_session.commit()
+        except IntegrityError:
+            response_message = 'Нарушение ограничения уникальности полей <email> и <id_hash>.'
+
+        return make_response(jsonify(message=response_message), 200)

@@ -118,6 +118,7 @@ class ExternalUserRegistration(MethodResource, Resource):
                                     last_name=kwargs.get('last_name'),
                                     email=kwargs.get('email'),
                                     specializations=kwargs.get('specializations'),
+
                                     )
             db_session.add(user)
 

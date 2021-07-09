@@ -46,6 +46,8 @@ PAGE_LIMIT = 10
 # Telegram bot settings
 TELEGRAM_TOKEN = os.getenv('TOKEN')
 NUMBER_USERS_TO_SEND = 30
+BOT_PERSISTENCE_FILE = os.getenv('PERSISTENCE_FILE')
+
 # ------------------------------
 # Basic application settings
 

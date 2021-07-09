@@ -5,7 +5,7 @@ from sqlalchemy.orm import load_only
 
 from app import password_policy
 from app.database import db_session
-from app.models import Register, UserAdmin, SiteUser
+from app.models import Register, UserAdmin, ExternalSiteUser
 from flask import jsonify, make_response
 from flask_apispec import doc, use_kwargs
 from flask_apispec.views import MethodResource
@@ -107,14 +107,14 @@ class ExternalUserRegistration(MethodResource, Resource):
             'added': 'Пользователь добавлен.'
         }
 
-        user = SiteUser.query.options(load_only('id_hash')).filter_by(id_hash=id_hash).first()
+        user = ExternalSiteUser.query.options(load_only('id_hash')).filter_by(id_hash=id_hash).first()
         if user:
             user.first_name = kwargs.get('first_name')
             user.last_name = kwargs.get('last_name')
             user.specializations = kwargs.get('specializations')
             response_message = messages.get('updated')
         else:
-            user = SiteUser(**kwargs)
+            user = ExternalSiteUser(**kwargs)
             db_session.add(user)
             response_message = messages.get('added')
 

@@ -6,7 +6,7 @@ from sqlalchemy import (Column,
                         Boolean,
                         DateTime,
                         Date,
-                        UniqueConstraint
+                        UniqueConstraint,
                         text,
                         )
 
@@ -160,9 +160,9 @@ class ReasonCanceling(Base):
     added_date = Column(DateTime, default=datetime.now())
 
 
-class SiteUser(Base):
-    __tablename__ = 'site_users'
-    id = Column(Integer, primary_key=True)
+class ExternalSiteUser(Base):
+    __tablename__ = 'external_site_users'
+    external_id = Column(Integer, primary_key=True)
     id_hash = Column(String(256), nullable=False)
     email = Column(String(48), nullable=False)
     first_name = Column(String(32), nullable=True)

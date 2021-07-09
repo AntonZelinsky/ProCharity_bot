@@ -54,7 +54,7 @@ logging.basicConfig(
 bot_persistence = PicklePersistence(filename=BOT_PERSISTENCE_FILE)
 updater = Updater(token=os.getenv('TOKEN'), persistence=bot_persistence, use_context=True)
 
-menu_buttons = [
+MENU_BUTTONS = [
     [
         InlineKeyboardButton(
             text='🔎 Посмотреть открытые задания', callback_data='open_task'
@@ -196,8 +196,8 @@ def open_menu(update: Update, context: CallbackContext):
                 text='⏹ Включить подписку на задания',
                 callback_data='start_subscription'
             )
-    menu_buttons[-1] = [subscription_button]
-    keyboard = InlineKeyboardMarkup(menu_buttons)
+    MENU_BUTTONS[-1] = [subscription_button]
+    keyboard = InlineKeyboardMarkup(MENU_BUTTONS)
     text = 'Меню'
     update.callback_query.answer()
     update.callback_query.edit_message_text(text=text, reply_markup=keyboard)
@@ -534,8 +534,8 @@ def cancel_feedback(update: Update, context: CallbackContext):
     reason_canceling = update['callback_query']['data']
     telegram_id = update['callback_query']['message']['chat']['id']
     cancel_feedback_stat(telegram_id, reason_canceling)
-    menu_buttons[-1] = [subscription_button]
-    keyboard = InlineKeyboardMarkup(menu_buttons)
+    MENU_BUTTONS[-1] = [subscription_button]
+    keyboard = InlineKeyboardMarkup(MENU_BUTTONS)
     update.callback_query.edit_message_text(
         text='Спасибо, я передал информацию команде ProCharity!',
         reply_markup=keyboard

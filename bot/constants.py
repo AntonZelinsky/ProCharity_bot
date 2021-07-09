@@ -15,7 +15,7 @@ LOG_COMMANDS_NAME = {
     'add_new_feature': 'Хочу новый функционал бота',
     'after_add_new_feature': 'Меню после добавление функционала',
     'about': 'О платформе',
-    'stop_task_subscription': 'Остановить/включить подписку на задания',
+    'start_task_subscription': 'Включить подписку на задания',
+    'stop_task_subscription': 'Остановить подписку на задания',
     'cancel': 'Отмена',
-
 }

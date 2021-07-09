@@ -11,7 +11,8 @@ from telegram.ext import (Updater,
                           CommandHandler,
                           ConversationHandler,
                           CallbackContext,
-                          CallbackQueryHandler)
+                          CallbackQueryHandler,
+                          PicklePersistence)
 
 from bot.states import (GREETING,
                         CATEGORY,
@@ -36,6 +37,7 @@ from bot.data_to_db import (add_user,
                             cancel_feedback_stat)
 from bot.formatter import display_task
 from bot.constants import LOG_COMMANDS_NAME
+from app.config import BOT_PERSISTENCE_FILE
 
 PAGINATION = 3
 
@@ -47,7 +49,8 @@ logging.basicConfig(
     level=logging.INFO
 )
 
-updater = Updater(token=os.getenv('TOKEN'))
+bot_persistence = PicklePersistence(filename=BOT_PERSISTENCE_FILE)
+updater = Updater(token=os.getenv('TOKEN'), persistence=bot_persistence, use_context=True)
 
 menu_buttons = [
     [
@@ -584,7 +587,9 @@ def main() -> None:
             ]
         },
 
-        fallbacks=[CommandHandler('cancel', cancel)]
+        fallbacks=[CommandHandler('cancel', cancel)],
+        persistent=True,
+        name='conv_handler'
     )
     update_users_category = CallbackQueryHandler(change_user_categories, pattern='^up_cat[0-9]{1,2}$')
 

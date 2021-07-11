@@ -36,7 +36,8 @@ from bot.data_to_db import (add_user,
                             change_user_category,
                             log_command,
                             cancel_feedback_stat,
-                            get_mailing_status)
+                            get_mailing_status,
+                            external_user_registering)
 from bot.formatter import display_task
 from bot.constants import LOG_COMMANDS_NAME
 from app.config import BOT_PERSISTENCE_FILE
@@ -103,7 +104,12 @@ def get_subscription_button(context: CallbackContext):
 
 @log_command(command=LOG_COMMANDS_NAME['start'], start_menu=True)
 def start(update: Update, context: CallbackContext) -> int:
+    deeplink_passed_param = context.args
     add_user(update.message)
+
+    if deeplink_passed_param:
+        external_user_registering(deeplink_passed_param[0], update.message)
+
     context.user_data[SUBSCRIPTION_FLAG] = get_mailing_status(update.effective_user.id)
     button = [
         [

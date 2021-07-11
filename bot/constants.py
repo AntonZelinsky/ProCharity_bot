@@ -19,3 +19,12 @@ LOG_COMMANDS_NAME = {
     'stop_task_subscription': 'Остановить подписку на задания',
     'cancel': 'Отмена',
 }
+
+REASONS = {
+    'many_notification': 'Слишком много уведомлений',
+    'no_time': 'Нет времени на волонтёрство',
+    'no_relevant_task': 'Нет подходящих заданий',
+    'bot_is_bad': 'Бот мне не удобен',
+    'fond_ignore': 'Фонды меня не выбирают',
+    'another': 'Другое'
+}

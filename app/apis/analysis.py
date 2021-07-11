@@ -21,7 +21,7 @@ class Analysis(MethodResource, Resource):
     @doc(description='Analysis statistics',
          tags=['Analysis']
          )
-    #@jwt_required()
+    @jwt_required()
     def get(self):
         users = db_session.query(User.has_mailing).all()
         num_users = len(users)

@@ -50,13 +50,12 @@ class Login(MethodResource, Resource):
         if not kwargs:
             return make_response(jsonify(message="Запрос не может быть пустым."), 403)
 
-        email = kwargs.get("email")
+        email = kwargs.get("email").lower()
         password = kwargs.get("password")
 
         if not email or not password:
             return make_response(jsonify(message="Необходимо указать <email> и <password>."), 403)
 
-        email = email.lower()
         user = UserAdmin.query.filter_by(email=email).first()
 
         if not user or not user.check_password(password):

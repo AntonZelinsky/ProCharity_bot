@@ -21,7 +21,7 @@ PASSWORD_POLICY = {
 
 # ------------------------
 # Registration settings
-REGISTRATION_SUBJECT = 'Registration'
+REGISTRATION_SUBJECT = 'Регистрация на портале ProCharrity bot'
 INVITATION_TEMPLATE = 'email_templates/invitation_email.html'
 
 PASSWORD_RESET_SUBJECT = 'Password Reset'

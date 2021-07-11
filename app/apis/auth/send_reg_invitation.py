@@ -6,7 +6,7 @@ from app.database import db_session
 from app.messages import send_email
 from app.models import Register, UserAdmin
 from email_validator import EmailNotValidError, validate_email
-from flask import jsonify, make_response, render_template
+from flask import jsonify, make_response, render_template, request
 from flask_apispec import doc, use_kwargs
 from flask_apispec.views import MethodResource
 from flask_jwt_extended import jwt_required
@@ -38,9 +38,8 @@ class SendRegistrationInvite(MethodResource, Resource):
     @use_kwargs({'email': fields.Str()})
     # @jwt_required()
     def post(self, **kwargs):
-        email = kwargs.get('email')
+        email = kwargs.get('email').lower()
 
-        # validate of an email if one included in the request.
         if email:
             try:
                 validate_email(email, check_deliverability=False)
@@ -48,36 +47,46 @@ class SendRegistrationInvite(MethodResource, Resource):
             except EmailNotValidError as ex:
                 return make_response(jsonify(message=str(ex)), 400)
 
-        email = email.lower()
-
-        subject = config.REGISTRATION_SUBJECT
-        expiration = config.INV_TOKEN_EXPIRATION
-        token_expiration_date = datetime.now() + timedelta(hours=config.INV_TOKEN_EXPIRATION)
-        token = str(uuid.uuid4())
-        inv_link = f'http://{config.HOST_NAME}/#/register/{token}'
-
-        template = render_template(config.INVITATION_TEMPLATE, inv_link=inv_link, expiration=expiration)
+        token_expiration = config.INV_TOKEN_EXPIRATION
+        invitation_token_expiration_date = datetime.now() + timedelta(hours=config.INV_TOKEN_EXPIRATION)
+        invitation_token = str(uuid.uuid4())
 
         register_record = Register.query.filter_by(email=email).first()
-        # checks if the invitation already sent.
+
         if register_record:
-            # if the invitation request was sent before, update the token and exp. date
-            register_record.token = token
-            register_record.token_expiration_date = token_expiration_date
+            register_record.token = invitation_token
+            register_record.token_expiration_date = invitation_token_expiration_date
             db_session.commit()
         else:
-            # if the invitation exist, try search the user in User Admin db
+
             admin_user = UserAdmin.query.filter_by(email=email).first()
             if admin_user:
                 return make_response(jsonify(
                     message="Пользователь с указанным почтовым адресом уже зарегистрирован."), 400)
 
-            user = Register(email=email, token=token, token_expiration_date=token_expiration_date)
+            user = Register(
+                email=email,
+                token=invitation_token,
+                token_expiration_date=invitation_token_expiration_date
+            )
+
             db_session.add(user)
             db_session.commit()
 
+        invitation_link = f'{request.scheme}://{request.host}/#/register/{invitation_token}'
+
+        email_template = render_template(
+            config.INVITATION_TEMPLATE,
+            inv_link=invitation_link,
+            expiration=token_expiration
+        )
+
         try:
-            send_email(recipients=[email], subject=subject, template=template)
+            send_email(
+                recipients=[email],
+                subject=config.REGISTRATION_SUBJECT,
+                template=email_template
+            )
         except Exception as ex:
             return make_response(jsonify(str(ex)), 500)
 

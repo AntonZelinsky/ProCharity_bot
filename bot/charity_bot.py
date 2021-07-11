@@ -24,10 +24,10 @@ from bot.states import (GREETING,
                         AFTER_NEW_QUESTION,
                         AFTER_ADD_FEATURE,
                         TYPING,
-                        START_OVER,
                         START_SHOW_TASK,
                         CANCEL_FEEDBACK,
-                        SUBSCRIPTION_FLAG)
+                        SUBSCRIPTION_FLAG,
+                        GREETING_MESSAGE)
 
 from bot.data_to_db import (add_user,
                             change_subscription,
@@ -105,18 +105,19 @@ def get_subscription_button(context: CallbackContext):
 def start(update: Update, context: CallbackContext) -> int:
     add_user(update.message)
     context.user_data[SUBSCRIPTION_FLAG] = get_mailing_status(update.effective_user.id)
+    context.user_data[GREETING_MESSAGE] = False
     button = [
         [
-            InlineKeyboardButton(text='Поехали!', callback_data=GREETING)
+            InlineKeyboardButton(text='Начнём', callback_data=GREETING)
         ]
     ]
     keyboard = InlineKeyboardMarkup(button)
-    update.message.reply_text(
-        'Привет! 👋 \n'
-        'Я бот ProCharity -онлайн-платформы интеллектуального волонтёрства.'
-        'Буду держать тебя в курсе новых задач и помогу оперативно связаться '
-        'с командой поддержки.\n\n'
-        'Начнём?',
+    context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text='Привет! 👋 \n\n'
+             'Меня зовут [в процессе придумывания имени]. '
+             'Буду держать тебя в курсе новых задач и помогу '
+             'оперативно связаться с командой поддержки.',
         reply_markup=keyboard
     )
 
@@ -138,9 +139,12 @@ def change_user_categories(update: Update, context: CallbackContext):
 @log_command(command=LOG_COMMANDS_NAME['choose_category'], ignore_func='change_user_categories')
 def choose_category(update: Update, context: CallbackContext):
     """The main function is to select categories for subscribing to them."""
-    # update.callback_query.edit_message_text(
-    #     text=update.callback_query.message.text
-    # )
+    if not context.user_data[GREETING_MESSAGE]:
+        context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=update.effective_message.text
+        )
+        context.user_data[GREETING_MESSAGE] = True
 
     categories = get_category(update.effective_user.id)
 
@@ -161,8 +165,9 @@ def choose_category(update: Update, context: CallbackContext):
         ],
     ]
     keyboard = InlineKeyboardMarkup(buttons)
-
-    update.callback_query.edit_message_text(
+    update.callback_query.delete_message()
+    context.bot.send_message(
+        chat_id=update.effective_chat.id,
         text='Чтобы я знал, с какими задачами ты готов помогать, '
              'выбери свои профессиональные компетенции (можно выбрать '
              'несколько). После этого, нажми на пункт "Готово 👌"',

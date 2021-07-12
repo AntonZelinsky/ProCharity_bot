@@ -112,33 +112,17 @@ def start(update: Update, context: CallbackContext) -> int:
 
     context.user_data[SUBSCRIPTION_FLAG] = get_mailing_status(update.effective_user.id)
     context.user_data[GREETING_MESSAGE] = False
+    callback_data = GREETING
 
     if deeplink_passed_param:
         external_user_registering(deeplink_passed_param[0], update.message)
 
         if check_user_category(update.effective_user.id):
-            button = [
-                [
-                    InlineKeyboardButton(text='Давай', callback_data=GREETING_REGISTERED_USER)
-                ]
-            ]
-            keyboard = InlineKeyboardMarkup(button)
-            context.bot.send_message(
-                chat_id=update.effective_chat.id,
-                text='Привет! 👋 \n\n'
-                     f' Меня зовут {BOT_NAME}. '
-                     'Буду держать тебя в курсе новых задач и помогу '
-                     'оперативно связаться с командой поддержки. '
-                     'Давай проверим, правильную ли информацию о тебе я получил?',
-
-                reply_markup=keyboard
-            )
-
-            return GREETING
+            callback_data = GREETING_REGISTERED_USER
 
     button = [
         [
-            InlineKeyboardButton(text='Начнём', callback_data=GREETING)
+            InlineKeyboardButton(text='Начнем', callback_data=callback_data)
         ]
     ]
     keyboard = InlineKeyboardMarkup(button)
@@ -150,13 +134,17 @@ def start(update: Update, context: CallbackContext) -> int:
              'оперативно связаться с командой поддержки.',
         reply_markup=keyboard
     )
-
     return GREETING
 
 
 @log_command(command=LOG_COMMANDS_NAME['confirm_specializations'])
 def confirm_specializations(update: Update, context: CallbackContext):
-    context.user_data[GREETING_MESSAGE] = False
+    if not context.user_data[GREETING_MESSAGE]:
+        context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=update.effective_message.text
+        )
+        context.user_data[GREETING_MESSAGE] = True
     buttons = [
         [
             InlineKeyboardButton(text='Да', callback_data='ready')
@@ -170,6 +158,7 @@ def confirm_specializations(update: Update, context: CallbackContext):
                                  if spec['user_selected']])
 
     keyboard = InlineKeyboardMarkup(buttons)
+    update.callback_query.delete_message()
     context.bot.send_message(
         chat_id=update.effective_chat.id,
         text='Вот список твоих профессиональных компетенций:'

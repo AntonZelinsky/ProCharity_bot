@@ -28,7 +28,8 @@ from bot.states import (GREETING,
                         CANCEL_FEEDBACK,
                         SUBSCRIPTION_FLAG,
                         GREETING_MESSAGE,
-                        GREETING_REGISTERED_USER)
+                        GREETING_REGISTERED_USER,
+                        CHECK_USER_INFORMATION)
 
 from bot.data_to_db import (add_user,
                             change_subscription,
@@ -118,7 +119,7 @@ def start(update: Update, context: CallbackContext) -> int:
         external_user_registering(deeplink_passed_param[0], update.message)
 
         if check_user_category(update.effective_user.id):
-            callback_data = GREETING_REGISTERED_USER
+            callback_data = CHECK_USER_INFORMATION
 
     button = [
         [
@@ -132,6 +133,29 @@ def start(update: Update, context: CallbackContext) -> int:
              f'Меня зовут {BOT_NAME}. '
              'Буду держать тебя в курсе новых задач и помогу '
              'оперативно связаться с командой поддержки.',
+        reply_markup=keyboard
+    )
+    return GREETING
+
+@log_command(command=LOG_COMMANDS_NAME['confirm_specializations'])
+def check_user_information(update: Update, context: CallbackContext):
+    if not context.user_data[GREETING_MESSAGE]:
+        context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=update.effective_message.text
+        )
+        context.user_data[GREETING_MESSAGE] = True
+
+    button = [
+        [
+            InlineKeyboardButton(text='Давай', callback_data=GREETING_REGISTERED_USER)
+        ]
+    ]
+    keyboard = InlineKeyboardMarkup(button)
+    update.callback_query.delete_message()
+    context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text='Давай проверим, правильную ли информацию о тебе я получил?',
         reply_markup=keyboard
     )
     return GREETING
@@ -582,6 +606,8 @@ def main() -> None:
             GREETING: [
                 CallbackQueryHandler(choose_category, pattern='^' + GREETING + '$'),
                 CallbackQueryHandler(confirm_specializations, pattern='^' + GREETING_REGISTERED_USER + '$'),
+                CallbackQueryHandler(check_user_information, pattern='^' + CHECK_USER_INFORMATION + '$'),
+
             ],
             CATEGORY: [
                 CallbackQueryHandler(choose_category, pattern='^return_chose_category$'),

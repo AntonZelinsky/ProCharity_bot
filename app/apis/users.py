@@ -142,7 +142,6 @@ class User_item(MethodResource, Resource):
         if User.query.filter_by(email=email).first():
             return make_response(jsonify(message='Указанный почтовый адрес уже существует.'), 400)
 
-        # validate of an email if one included in the request.
         if email:
             try:
                 validate_email(email, check_deliverability=False)
@@ -150,9 +149,6 @@ class User_item(MethodResource, Resource):
             except EmailNotValidError as ex:
                 return make_response(jsonify(message=str(ex)), 400)
 
-            # validate of a password if one included in the request.
-
-            # update request to DB
         User.query.filter_by(telegram_id=telegram_id).update(kwargs)
         db_session.commit()
 

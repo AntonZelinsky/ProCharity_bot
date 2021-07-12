@@ -47,7 +47,6 @@ def external_user_registering(external_id_hash, message):
     if not external_user:
         return False
 
-    external_user_specializations = [int(x) for x in external_user.specializations.split(',')]
     user = User.query.filter_by(telegram_id=message.chat.id).first()
 
     user.first_name = external_user.first_name
@@ -55,7 +54,8 @@ def external_user_registering(external_id_hash, message):
     user.external_id = external_user.external_id
     user.email = external_user.email
 
-    if external_user_specializations:
+    if external_user.specializations:
+        external_user_specializations = [int(x) for x in external_user.specializations.split(',')]
         specializations = Category.query.filter(Category.id.in_(external_user_specializations)).all()
         for specialization in specializations:
             user.categories.append(specialization)

@@ -10,7 +10,7 @@ LOG_COMMANDS_NAME = {
     'after_ask_question': 'Меню после вопроса',
     'no_relevant_category': 'Моих компетенций здесь нет',
     'email_feedback': 'Отправка емейла',
-    'add_new_category': 'Добавление новой категории',
+    'ask_new_category': 'Добавление новой категории',
     'after_add_new_category': 'Меню после добавления новой категории',
     'add_new_feature': 'Хочу новый функционал бота',
     'after_add_new_feature': 'Меню после добавление функционала',

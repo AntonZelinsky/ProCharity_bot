@@ -12,7 +12,9 @@ from telegram.ext import (Updater,
                           ConversationHandler,
                           CallbackContext,
                           CallbackQueryHandler,
-                          PicklePersistence)
+                          PicklePersistence,
+                          MessageHandler,
+                          Filters)
 
 from bot.states import (GREETING,
                         CATEGORY,
@@ -27,7 +29,8 @@ from bot.states import (GREETING,
                         START_SHOW_TASK,
                         CANCEL_FEEDBACK,
                         SUBSCRIPTION_FLAG,
-                        GREETING_MESSAGE)
+                        GREETING_MESSAGE,
+                        ASK_EMAIL)
 
 from bot.data_to_db import (add_user,
                             change_subscription,
@@ -36,7 +39,10 @@ from bot.data_to_db import (add_user,
                             change_user_category,
                             log_command,
                             cancel_feedback_stat,
-                            get_mailing_status)
+                            get_mailing_status,
+                            get_user_email,
+                            save_user_email)
+
 from bot.formatter import display_task
 from bot.constants import LOG_COMMANDS_NAME
 from app.config import BOT_PERSISTENCE_FILE
@@ -48,7 +54,7 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
+    level=logging.DEBUG
 )
 
 #bot_persistence = PicklePersistence(filename=BOT_PERSISTENCE_FILE)
@@ -121,7 +127,7 @@ def start(update: Update, context: CallbackContext) -> int:
         reply_markup=keyboard
     )
 
-    return GREETING
+    return CATEGORY
 
 
 @log_command(command=LOG_COMMANDS_NAME['change_user_categories'])
@@ -290,7 +296,7 @@ def ask_question(update: Update, context: CallbackContext):
         text='Напишите свой вопрос', reply_markup=keyboard
     )
 
-    return AFTER_NEW_QUESTION
+    return TYPING
 
 
 @log_command(command=LOG_COMMANDS_NAME['after_ask_question'])
@@ -319,7 +325,7 @@ def no_relevant_category(update: Update, context: CallbackContext):
     buttons = [
         [
             InlineKeyboardButton(
-                text='Предложить компетенции', callback_data='add_new_category'
+                text='Предложить компетенции', callback_data='ask_new_category'
             )
         ],
         [
@@ -360,8 +366,8 @@ def email_feedback(update: Update, context: CallbackContext):
     return MENU
 
 
-@log_command(command=LOG_COMMANDS_NAME['add_new_category'])
-def add_new_category(update: Update, context: CallbackContext):
+@log_command(command=LOG_COMMANDS_NAME['ask_new_category'])
+def ask_new_category(update: Update, context: CallbackContext):
     button = [
         [InlineKeyboardButton(text='Вернуться в меню', callback_data='open_menu')]
     ]
@@ -371,27 +377,58 @@ def add_new_category(update: Update, context: CallbackContext):
         reply_markup=keyboard
     )
 
-    return AFTER_ADD_CATEGORY
+    return TYPING
 
 
-@log_command(command=LOG_COMMANDS_NAME['after_add_new_category'])
-def after_add_new_category(update: Update, context: CallbackContext):
-    buttons = [
-        [
-            InlineKeyboardButton(text='Посмотреть открытые задания', callback_data='open_task')
-        ],
-        [
-            InlineKeyboardButton(text='Открыть меню', callback_data='open_menu')
+def save_user_input(update: Update, context: CallbackContext):
+    user_email = get_user_email(update.effective_user.id)
+    if user_email:
+        return after_ask_new_category(update, context)
+    else:
+        text = 'Пожалуйста, укажи свою почту, если хочешь получить ответ'
+        buttons = [
+            [InlineKeyboardButton(text='Не жду ответ', callback_data='no_wait')],
+            [InlineKeyboardButton(text='Вернуться в меню', callback_data='open_menu')]
         ]
-    ]
-    keyboard = InlineKeyboardMarkup(buttons)
-    update.callback_query.edit_message_text(
-        text='Спасибо, я передал информацию команде ProCharity!'
-             'Ответ придет на почту <email волонтера>',
+        update.message.reply_text(
+            text=text, reply_markup=InlineKeyboardMarkup(buttons)
+        )
+
+        return ASK_EMAIL
+
+
+def no_wait_answer(update: Update, context: CallbackContext):
+    subscription_button = get_subscription_button(context)
+    MENU_BUTTONS[-1] = [subscription_button]
+    keyboard = InlineKeyboardMarkup(MENU_BUTTONS)
+    text = 'Спасибо, я передал информацию команде ProCharity!'
+    update.callback_query.edit_message_text(text=text, reply_markup=keyboard)
+
+    return MENU
+
+
+def save_email(update: Update, context: CallbackContext):
+    user_input_email = update.message.text
+    status = save_user_email(update.effective_user.id, user_input_email)
+    if status:
+        return after_ask_new_category(update, context)
+    else:
+        return save_user_input(update, context)
+
+
+# @log_command(command=LOG_COMMANDS_NAME['after_add_new_category'])
+def after_ask_new_category(update: Update, context: CallbackContext):
+    user_email = get_user_email(update.effective_user.id)
+    subscription_button = get_subscription_button(context)
+    MENU_BUTTONS[-1] = [subscription_button]
+    keyboard = InlineKeyboardMarkup(MENU_BUTTONS)
+    text = f'Спасибо, я передал информацию команде ProCharity! Ответ придет на почту {user_email}'
+    update.message.reply_text(
+        text=text,
         reply_markup=keyboard
     )
 
-    return AFTER_ADD_CATEGORY
+    return MENU
 
 
 @log_command(command=LOG_COMMANDS_NAME['add_new_feature'])
@@ -557,13 +594,36 @@ def cancel(update: Update, context: CallbackContext):
 
 def main() -> None:
     dispatcher = updater.dispatcher
+    dispatcher.add_handler(CommandHandler('start', start))
+
+    feedback_conv = ConversationHandler(
+        entry_points=[
+            CallbackQueryHandler(ask_new_category, pattern='^ask_new_category$')
+        ],
+        states={
+            AFTER_ADD_CATEGORY: [
+                CallbackQueryHandler(open_menu, pattern='^open_menu$')
+            ],
+            TYPING: [
+                MessageHandler(Filters.text & ~Filters.command, save_user_input)
+            ],
+            ASK_EMAIL: [
+                CallbackQueryHandler(open_menu, pattern='^open_menu$'),
+                CallbackQueryHandler(no_wait_answer, pattern='^no_wait$'),
+                MessageHandler(Filters.text & ~Filters.command, save_email)
+            ]
+        },
+        fallbacks=[
+            CallbackQueryHandler(after_ask_new_category, pattern='^ask_new_category$'),
+        ],
+        map_to_parent={
+            MENU: MENU
+        }
+    )
 
     conv_handler = ConversationHandler(
-        entry_points=[CommandHandler('start', start)],
+        entry_points=[CallbackQueryHandler(choose_category, pattern='^' + GREETING + '$')],
         states={
-            GREETING: [
-                CallbackQueryHandler(choose_category, pattern='^' + GREETING + '$')
-            ],
             CATEGORY: [
                 CallbackQueryHandler(choose_category, pattern='^return_chose_category$'),
                 CallbackQueryHandler(after_category_choose, pattern='^ready$'),
@@ -589,11 +649,8 @@ def main() -> None:
                 CallbackQueryHandler(open_menu, pattern='^open_menu$')
             ],
             NO_CATEGORY: [
-                CallbackQueryHandler(email_feedback, pattern='^add_new_category$'),
+                feedback_conv,
                 CallbackQueryHandler(show_open_task, pattern='^open_task$'),
-                CallbackQueryHandler(open_menu, pattern='^open_menu$')
-            ],
-            AFTER_ADD_CATEGORY: [
                 CallbackQueryHandler(open_menu, pattern='^open_menu$')
             ],
             AFTER_NEW_QUESTION: [

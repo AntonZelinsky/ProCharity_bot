@@ -21,4 +21,12 @@ LOG_COMMANDS_NAME = {
     'confirm_specializations': 'Подтверждение специализаций'
 }
 
+REASONS = {
+    'many_notification': 'Слишком много уведомлений',
+    'no_time': 'Нет времени на волонтёрство',
+    'no_relevant_task': 'Нет подходящих заданий',
+    'bot_is_bad': 'Бот мне не удобен',
+    'fond_ignore': 'Фонды меня не выбирают',
+    'another': 'Другое'
+}
 BOT_NAME = '[мы в процессе придумывания имени]'

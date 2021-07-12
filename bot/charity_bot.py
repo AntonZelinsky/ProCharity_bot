@@ -42,7 +42,7 @@ from bot.data_to_db import (add_user,
                             check_user_category,
                             )
 from bot.formatter import display_task
-from bot.constants import LOG_COMMANDS_NAME, BOT_NAME
+from bot.constants import LOG_COMMANDS_NAME, BOT_NAME, REASONS
 from app.config import BOT_PERSISTENCE_FILE
 
 PAGINATION = 3
@@ -494,39 +494,10 @@ def stop_task_subscription(update: Update, context: CallbackContext):
     context.user_data[SUBSCRIPTION_FLAG] = change_subscription(update.effective_user.id)
     cancel_feedback_buttons = [
         [
-            InlineKeyboardButton(
-                text='Слишком много уведомлений',
-                callback_data='many_notification'
-            )
-        ],
-        [
-            InlineKeyboardButton(
-                text='Нет времени на волонтёрство',
-                callback_data='no_time'
-            )
-        ],
-        [
-            InlineKeyboardButton(
-                text='Нет подходящих заданий',
-                callback_data='no_relevant_task'
-            )
-        ],
-        [
-            InlineKeyboardButton(
-                text='Бот мне не удобен',
-                callback_data='bot_is_bad'
-            )
-        ],
-        [
-            InlineKeyboardButton(
-                text='Фонды меня не выбирают',
-                callback_data='fond_ignore'
-            )
-        ],
-        [
-            InlineKeyboardButton(text='Другое', callback_data='another')
-        ],
+            InlineKeyboardButton(text=reason[1], callback_data=reason[0])
+        ] for reason in REASONS.items()
     ]
+    
     cancel_feedback_keyboard = InlineKeyboardMarkup(cancel_feedback_buttons)
 
     answer = ('Ты больше не будешь получать новые задания от фондов, но '

@@ -48,7 +48,7 @@ class SendRegistrationInvite(MethodResource, Resource):
                 return make_response(jsonify(message=str(ex)), 400)
 
         token_expiration = config.INV_TOKEN_EXPIRATION
-        invitation_token_expiration_date = datetime.now() + timedelta(hours=config.INV_TOKEN_EXPIRATION)
+        invitation_token_expiration_date = datetime.now() + timedelta(hours=token_expiration)
         invitation_token = str(uuid.uuid4())
 
         register_record = Register.query.filter_by(email=email).first()

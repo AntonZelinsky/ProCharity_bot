@@ -18,6 +18,7 @@ LOG_COMMANDS_NAME = {
     'start_task_subscription': 'Включить подписку на задания',
     'stop_task_subscription': 'Остановить подписку на задания',
     'cancel': 'Отмена',
+    'confirm_specializations': 'Подтверждение специализаций'
 }
 
 REASONS = {
@@ -28,3 +29,4 @@ REASONS = {
     'fond_ignore': 'Фонды меня не выбирают',
     'another': 'Другое'
 }
+BOT_NAME = '[мы в процессе придумывания имени]'

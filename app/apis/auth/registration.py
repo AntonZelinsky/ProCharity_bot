@@ -112,14 +112,14 @@ class ExternalUserRegistration(MethodResource, Resource):
             user.updated_date = datetime.now()
 
         else:
-            user = ExternalSiteUser(external_id=external_id,
-                                    external_id_hash=kwargs.get('id_hash'),
-                                    first_name=kwargs.get('first_name'),
-                                    last_name=kwargs.get('last_name'),
-                                    email=kwargs.get('email'),
-                                    specializations=kwargs.get('specializations'),
-
-                                    )
+            user = ExternalSiteUser(
+                external_id=external_id,
+                external_id_hash=kwargs.get('id_hash'),
+                first_name=kwargs.get('first_name'),
+                last_name=kwargs.get('last_name'),
+                email=kwargs.get('email'),
+                specializations=kwargs.get('specializations'),
+            )
             db_session.add(user)
 
         try:

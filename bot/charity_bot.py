@@ -51,12 +51,17 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
+    level=logging.DEBUG
 )
 
-# bot_persistence = PicklePersistence(filename=BOT_PERSISTENCE_FILE)
-# updater = Updater(token=os.getenv('TOKEN'), persistence=bot_persistence, use_context=True)
-updater = Updater(token=os.getenv('TOKEN'), use_context=True)
+bot_persistence = PicklePersistence(filename=BOT_PERSISTENCE_FILE,
+                                    store_bot_data=True,
+                                    store_user_data=True,
+                                    store_callback_data=True,
+                                    store_chat_data=True)
+
+updater = Updater(token=os.getenv('TOKEN'), persistence=bot_persistence, use_context=True)
+# updater = Updater(token=os.getenv('TOKEN'), use_context=True)
 MENU_BUTTONS = [
     [
         InlineKeyboardButton(
@@ -229,6 +234,7 @@ def choose_category(update: Update, context: CallbackContext):
              'несколько). После этого, нажми на пункт "Готово 👌"',
         reply_markup=keyboard,
     )
+
     return CATEGORY
 
 
@@ -602,7 +608,7 @@ def cancel_feedback(update: Update, context: CallbackContext):
     return MENU
 
 
-@log_command(command=LOG_COMMANDS_NAME['cancel'])
+# @log_command(command=LOG_COMMANDS_NAME['cancel'])
 def cancel(update: Update, context: CallbackContext):
     user = update.message.from_user
     logger.info("User %s canceled the conversation.", user.first_name)
@@ -616,14 +622,18 @@ def cancel(update: Update, context: CallbackContext):
 
 def main() -> None:
     dispatcher = updater.dispatcher
+    dispatcher.add_handler(CommandHandler('start', start))
 
     conv_handler = ConversationHandler(
-        entry_points=[CommandHandler('start', start)],
+        entry_points=[
+            CallbackQueryHandler(choose_category, pattern='^' + GREETING + '$'),
+            CallbackQueryHandler(confirm_specializations, pattern='^' + GREETING_REGISTERED_USER + '$'),
+        ],
         states={
-            GREETING: [
-                CallbackQueryHandler(choose_category, pattern='^' + GREETING + '$'),
-                CallbackQueryHandler(confirm_specializations, pattern='^' + GREETING_REGISTERED_USER + '$'),
-            ],
+            # GREETING: [
+            #     CallbackQueryHandler(choose_category, pattern='^' + GREETING + '$'),
+            #     CallbackQueryHandler(confirm_specializations, pattern='^' + GREETING_REGISTERED_USER + '$'),
+            # ],
             CATEGORY: [
                 CallbackQueryHandler(choose_category, pattern='^return_chose_category$'),
                 CallbackQueryHandler(after_category_choose, pattern='^ready$'),
@@ -672,10 +682,13 @@ def main() -> None:
             ]
         },
 
-        fallbacks=[CommandHandler('cancel', cancel)],
-        # persistent=True,
+        # fallbacks=[CallbackQueryHandler(end, pattern='^Done$')],
+        fallbacks=[],
+        persistent=True,
         name='conv_handler'
     )
+    dispatcher.add_handler(CommandHandler('cancel', cancel))
+
     update_users_category = CallbackQueryHandler(change_user_categories, pattern='^up_cat[0-9]{1,2}$')
 
     dispatcher.add_handler(conv_handler)

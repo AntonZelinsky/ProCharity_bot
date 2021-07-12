@@ -39,6 +39,7 @@ from bot.data_to_db import (add_user,
                             cancel_feedback_stat,
                             get_mailing_status,
                             external_user_registering,
+                            check_user_category,
                             )
 from bot.formatter import display_task
 from bot.constants import LOG_COMMANDS_NAME, BOT_NAME
@@ -115,24 +116,25 @@ def start(update: Update, context: CallbackContext) -> int:
     if deeplink_passed_param:
         external_user_registering(deeplink_passed_param[0], update.message)
 
-        button = [
-            [
-                InlineKeyboardButton(text='Давай', callback_data=GREETING_REGISTERED_USER)
+        if check_user_category(update.effective_user.id):
+            button = [
+                [
+                    InlineKeyboardButton(text='Давай', callback_data=GREETING_REGISTERED_USER)
+                ]
             ]
-        ]
-        keyboard = InlineKeyboardMarkup(button)
-        context.bot.send_message(
-            chat_id=update.effective_chat.id,
-            text='Привет! 👋 \n\n'
-                 f' Меня зовут {BOT_NAME}. '
-                 'Буду держать тебя в курсе новых задач и помогу '
-                 'оперативно связаться с командой поддержки. '
-                 'Давай проверим, правильную ли информацию о тебе я получил?',
+            keyboard = InlineKeyboardMarkup(button)
+            context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text='Привет! 👋 \n\n'
+                     f' Меня зовут {BOT_NAME}. '
+                     'Буду держать тебя в курсе новых задач и помогу '
+                     'оперативно связаться с командой поддержки. '
+                     'Давай проверим, правильную ли информацию о тебе я получил?',
 
-            reply_markup=keyboard
-        )
+                reply_markup=keyboard
+            )
 
-        return GREETING
+            return GREETING
 
     button = [
         [
@@ -166,9 +168,6 @@ def confirm_specializations(update: Update, context: CallbackContext):
     specializations = ', '.join([spec['name'] for spec
                                  in get_category(update.effective_user.id)
                                  if spec['user_selected']])
-
-    if not specializations:
-        specializations = 'Категории ещё не выбраны'
 
     keyboard = InlineKeyboardMarkup(buttons)
     context.bot.send_message(

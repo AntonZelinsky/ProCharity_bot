@@ -63,6 +63,13 @@ def external_user_registering(external_id_hash, message):
     db_session.commit()
 
 
+def check_user_category(telegram_id):
+    user_categories = User.query.get(telegram_id).categories
+    if not user_categories:
+        return False
+    return True
+
+
 def get_category(telegram_id):
     """
     Returns a collection of categories. If the user has selected one of them, it returns True in dictionary.

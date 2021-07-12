@@ -137,6 +137,7 @@ def start(update: Update, context: CallbackContext) -> int:
     )
     return GREETING
 
+
 @log_command(command=LOG_COMMANDS_NAME['confirm_specializations'])
 def check_user_information(update: Update, context: CallbackContext):
     if not context.user_data[GREETING_MESSAGE]:
@@ -521,7 +522,7 @@ def stop_task_subscription(update: Update, context: CallbackContext):
             InlineKeyboardButton(text=reason[1], callback_data=reason[0])
         ] for reason in REASONS.items()
     ]
-    
+
     cancel_feedback_keyboard = InlineKeyboardMarkup(cancel_feedback_buttons)
 
     answer = ('Ты больше не будешь получать новые задания от фондов, но '

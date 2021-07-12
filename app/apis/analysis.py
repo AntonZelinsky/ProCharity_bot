@@ -2,11 +2,12 @@ from app.models import ReasonCanceling, User, Statistics
 from app.database import db_session
 from datetime import datetime, timedelta
 from flask_apispec.views import MethodResource
-from flask_apispec import doc, use_kwargs
+from flask_apispec import doc
 from flask_restful import Resource
 from sqlalchemy.sql import func
-from flask import request, jsonify, make_response
+from flask import jsonify, make_response
 from flask_jwt_extended import jwt_required
+from bot.constants import REASONS
 
 
 class Analysis(MethodResource, Resource):
@@ -25,10 +26,14 @@ class Analysis(MethodResource, Resource):
         command_stats = db_session.query(
             Statistics.command, func.count(Statistics.command)
         ).group_by(Statistics.command).all()
-        reasons_canceling = db_session.query(
+        reasons_canceling_from_db = db_session.query(
             ReasonCanceling.reason_canceling,
             func.count(ReasonCanceling.reason_canceling)
         ).group_by(ReasonCanceling.reason_canceling).all()
+        reasons_canceling = {
+            REASONS.get(key, 'Другое'):
+            value for key, value in reasons_canceling_from_db
+        }
         return make_response(jsonify(added_users=users_created_date(),
                                      active_users=active_users,
                                      deactivated_users=deactivated_users,

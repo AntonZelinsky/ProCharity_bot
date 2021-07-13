@@ -236,7 +236,7 @@ def choose_category(update: Update, context: CallbackContext, save_prev_msg: boo
 
 
 @log_command(command=LOG_COMMANDS_NAME['after_category_choose'])
-def after_category_choose(update: Update, context: CallbackContext, save_prev_msg: bool = False):
+def after_category_choose(update: Update, context: CallbackContext):
     buttons = [
         [
             InlineKeyboardButton(text='Посмотреть открытые задания', callback_data='open_task')
@@ -254,23 +254,13 @@ def after_category_choose(update: Update, context: CallbackContext, save_prev_ms
     if not user_categories:
         user_categories = 'Категории ещё не выбраны'
 
-    if save_prev_msg:
-        context.bot.send_message(
-            chat_id=update.effective_chat.id,
-            text=f'Отлично! Теперь я буду присылать тебе уведомления о новых '
-                 f'заданиях в категориях: *{user_categories}*.\n\n'
-                 f'А пока можешь посмотреть открытые задания.',
-            parse_mode=ParseMode.MARKDOWN,
-            reply_markup=keyboard,
-        )
-    else:
-        update.callback_query.edit_message_text(
-            text=f'Отлично! Теперь я буду присылать тебе уведомления о новых '
-                 f'заданиях в категориях: *{user_categories}*.\n\n'
-                 f'А пока можешь посмотреть открытые задания.',
-            parse_mode=ParseMode.MARKDOWN,
-            reply_markup=keyboard
-        )
+    update.callback_query.edit_message_text(
+        text=f'Отлично! Теперь я буду присылать тебе уведомления о новых '
+             f'заданиях в категориях: *{user_categories}*.\n\n'
+             f'А пока можешь посмотреть открытые задания.',
+        parse_mode=ParseMode.MARKDOWN,
+        reply_markup=keyboard
+    )
     return AFTER_CATEGORY_REPLY
 
 

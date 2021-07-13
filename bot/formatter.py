@@ -1,7 +1,7 @@
 import locale
 locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
 
-UTM_STAMP = '?utm_source=telegram' \
+UTM_STAMP = '&utm_source=telegram' \
             '&utm_medium=social' \
             '&utm_campaign=bot_procharity'
 
@@ -22,4 +22,3 @@ def display_task_notification(task):
             f'Категория: {task.categories.name}\n'
             f'Срок: {task.deadline.strftime("%d %B %Y")}г.\n\n'
             f'<u><a href="{task.link}{UTM_STAMP}">Посмотреть задание</a></u>')
-

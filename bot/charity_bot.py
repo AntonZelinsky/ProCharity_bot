@@ -29,8 +29,7 @@ from bot.states import (GREETING,
                         CANCEL_FEEDBACK,
                         SUBSCRIPTION_FLAG,
                         GREETING_REGISTERED_USER,
-                        CHECK_USER_INFORMATION,
-                        AFTER_CONFIRM_SPECIALIZATIONS)
+                        )
 
 from bot.data_to_db import (add_user,
                             change_subscription,
@@ -116,15 +115,15 @@ def get_subscription_button(context: CallbackContext):
 def start(update: Update, context: CallbackContext) -> int:
     deeplink_passed_param = context.args
     add_user(update.message)
+    callback_data = GREETING
 
     context.user_data[SUBSCRIPTION_FLAG] = get_mailing_status(update.effective_user.id)
-    callback_data = GREETING
 
     if deeplink_passed_param:
         external_user_registering(deeplink_passed_param[0], update.message)
 
         if check_user_category(update.effective_user.id):
-            callback_data = CHECK_USER_INFORMATION
+            callback_data = GREETING_REGISTERED_USER
 
     button = [
         [
@@ -143,26 +142,6 @@ def start(update: Update, context: CallbackContext) -> int:
     return GREETING
 
 
-@log_command(command=LOG_COMMANDS_NAME['check_user_information'])
-def check_user_information(update: Update, context: CallbackContext):
-    update.callback_query.edit_message_text(
-        text=update.callback_query.message.text
-    )
-
-    button = [
-        [
-            InlineKeyboardButton(text='Давай', callback_data=GREETING_REGISTERED_USER)
-        ]
-    ]
-    keyboard = InlineKeyboardMarkup(button)
-    context.bot.send_message(
-        chat_id=update.effective_chat.id,
-        text='Давай проверим, правильную ли информацию о тебе я получил?',
-        reply_markup=keyboard
-    )
-    return GREETING
-
-
 def choose_category_after_start(update: Update, context: CallbackContext):
     update.callback_query.edit_message_text(
         text=update.callback_query.message.text
@@ -173,9 +152,12 @@ def choose_category_after_start(update: Update, context: CallbackContext):
 
 @log_command(command=LOG_COMMANDS_NAME['confirm_specializations'])
 def confirm_specializations(update: Update, context: CallbackContext):
+    update.callback_query.edit_message_text(
+        text=update.callback_query.message.text
+    )
     buttons = [
         [
-            InlineKeyboardButton(text='Да', callback_data='after_confirm_specializations')
+            InlineKeyboardButton(text='Да', callback_data='ready')
         ],
         [
             InlineKeyboardButton(text='Нет, хочу изменить.', callback_data='return_chose_category')
@@ -190,20 +172,13 @@ def confirm_specializations(update: Update, context: CallbackContext):
 
     keyboard = InlineKeyboardMarkup(buttons)
 
-    update.callback_query.edit_message_text(
+    context.bot.send_message(
+        chat_id=update.effective_chat.id,
         text='Вот список твоих профессиональных компетенций:'
              f' {specializations}. Все верно?',
         reply_markup=keyboard
     )
     return CATEGORY
-
-
-def after_confirm_specializations(update: Update, context: CallbackContext):
-    update.callback_query.edit_message_text(
-        text=update.callback_query.message.text
-    )
-
-    return after_category_choose(update, context, True)
 
 
 @log_command(command=LOG_COMMANDS_NAME['change_user_categories'])
@@ -218,8 +193,9 @@ def change_user_categories(update: Update, context: CallbackContext):
     update.callback_query.answer()
 
 
-# @log_command(command=LOG_COMMANDS_NAME['choose_category'], ignore_func='change_user_categories')
-def choose_category(update: Update, context: CallbackContext, from_start: bool = False):
+@log_command(command=LOG_COMMANDS_NAME['choose_category'],
+             ignore_func=['change_user_categories'])
+def choose_category(update: Update, context: CallbackContext, save_prev_msg: bool = False):
     """The main function is to select categories for subscribing to them."""
     categories = get_category(update.effective_user.id)
 
@@ -240,7 +216,7 @@ def choose_category(update: Update, context: CallbackContext, from_start: bool =
         ],
     ]
     keyboard = InlineKeyboardMarkup(buttons)
-    if from_start:
+    if save_prev_msg:
         context.bot.send_message(
             chat_id=update.effective_chat.id,
             text='Чтобы я знал, с какими задачами ты готов помогать, '
@@ -644,13 +620,10 @@ def main() -> None:
         states={
             GREETING: [
                 CallbackQueryHandler(choose_category_after_start, pattern='^' + GREETING + '$'),
-                CallbackQueryHandler(confirm_specializations, pattern='^' + GREETING_REGISTERED_USER + '$'),
-                CallbackQueryHandler(check_user_information, pattern='^' + CHECK_USER_INFORMATION + '$')
-                ,
+                CallbackQueryHandler(confirm_specializations, pattern='^' + GREETING_REGISTERED_USER + '$')
             ],
             CATEGORY: [
                 CallbackQueryHandler(choose_category, pattern='^return_chose_category$'),
-                CallbackQueryHandler(after_confirm_specializations, pattern='^' + AFTER_CONFIRM_SPECIALIZATIONS + '$'),
                 CallbackQueryHandler(after_category_choose, pattern='^ready$'),
                 CallbackQueryHandler(no_relevant_category, pattern='^no_relevant$')
 

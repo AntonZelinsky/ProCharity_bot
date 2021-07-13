@@ -128,7 +128,7 @@ def change_subscription(telegram_id):
     return user.has_mailing
 
 
-def log_command(command, start_menu=False, ignore_func=None, ):
+def log_command(command, start_menu=False, ignore_func: list = None):
     """
     Add information of using bot commands to DB.
     :param command: Commands passed to the bot for adding to the database
@@ -146,7 +146,7 @@ def log_command(command, start_menu=False, ignore_func=None, ):
                 caller_frame = current_frame.f_back
                 code_obj = caller_frame.f_code
                 code_obj_name = code_obj.co_name
-                if code_obj_name == ignore_func:
+                if code_obj_name in ignore_func:
                     return func(*args, **kwargs)
 
             if start_menu:

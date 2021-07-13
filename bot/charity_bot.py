@@ -1,6 +1,7 @@
 import logging
 import os
 import re
+
 from dotenv import load_dotenv
 from telegram import (ReplyKeyboardRemove,
                       Update,
@@ -27,7 +28,6 @@ from bot.states import (GREETING,
                         START_SHOW_TASK,
                         CANCEL_FEEDBACK,
                         SUBSCRIPTION_FLAG,
-                        GREETING_MESSAGE,
                         GREETING_REGISTERED_USER)
 
 from bot.data_to_db import (add_user,
@@ -51,12 +51,17 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
+    level=logging.DEBUG
 )
 
-# bot_persistence = PicklePersistence(filename=BOT_PERSISTENCE_FILE)
-# updater = Updater(token=os.getenv('TOKEN'), persistence=bot_persistence, use_context=True)
-updater = Updater(token=os.getenv('TOKEN'), use_context=True)
+bot_persistence = PicklePersistence(filename=BOT_PERSISTENCE_FILE,
+                                    store_bot_data=True,
+                                    store_user_data=True,
+                                    store_callback_data=True,
+                                    store_chat_data=True)
+
+updater = Updater(token=os.getenv('TOKEN'), persistence=bot_persistence, use_context=True)
+# updater = Updater(token=os.getenv('TOKEN'), use_context=True)
 MENU_BUTTONS = [
     [
         InlineKeyboardButton(
@@ -110,7 +115,6 @@ def start(update: Update, context: CallbackContext) -> int:
     add_user(update.message)
 
     context.user_data[SUBSCRIPTION_FLAG] = get_mailing_status(update.effective_user.id)
-    context.user_data[GREETING_MESSAGE] = False
 
     if deeplink_passed_param:
         external_user_registering(deeplink_passed_param[0], update.message)
@@ -152,9 +156,16 @@ def start(update: Update, context: CallbackContext) -> int:
     return GREETING
 
 
+def choose_category_after_start(update: Update, context: CallbackContext):
+    update.callback_query.edit_message_text(
+        text=update.callback_query.message.text
+    )
+
+    return choose_category(update, context, True)
+
+
 @log_command(command=LOG_COMMANDS_NAME['confirm_specializations'])
 def confirm_specializations(update: Update, context: CallbackContext):
-    context.user_data[GREETING_MESSAGE] = False
     buttons = [
         [
             InlineKeyboardButton(text='Да', callback_data='ready')
@@ -188,20 +199,13 @@ def change_user_categories(update: Update, context: CallbackContext):
     telegram_id = update.effective_user.id
 
     change_user_category(telegram_id=telegram_id, category_id=category_id)
-    update.callback_query.answer()
     choose_category(update, context)
+    update.callback_query.answer()
 
 
-@log_command(command=LOG_COMMANDS_NAME['choose_category'], ignore_func='change_user_categories')
-def choose_category(update: Update, context: CallbackContext):
+# @log_command(command=LOG_COMMANDS_NAME['choose_category'], ignore_func='change_user_categories')
+def choose_category(update: Update, context: CallbackContext, from_start: bool = False):
     """The main function is to select categories for subscribing to them."""
-    if not context.user_data[GREETING_MESSAGE]:
-        context.bot.send_message(
-            chat_id=update.effective_chat.id,
-            text=update.effective_message.text
-        )
-        context.user_data[GREETING_MESSAGE] = True
-
     categories = get_category(update.effective_user.id)
 
     buttons = []
@@ -221,14 +225,21 @@ def choose_category(update: Update, context: CallbackContext):
         ],
     ]
     keyboard = InlineKeyboardMarkup(buttons)
-    update.callback_query.delete_message()
-    context.bot.send_message(
-        chat_id=update.effective_chat.id,
-        text='Чтобы я знал, с какими задачами ты готов помогать, '
-             'выбери свои профессиональные компетенции (можно выбрать '
-             'несколько). После этого, нажми на пункт "Готово 👌"',
-        reply_markup=keyboard,
-    )
+    if from_start:
+        context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text='Чтобы я знал, с какими задачами ты готов помогать, '
+                 'выбери свои профессиональные компетенции (можно выбрать '
+                 'несколько). После этого, нажми на пункт "Готово 👌"',
+            reply_markup=keyboard,
+        )
+    else:
+        update.callback_query.edit_message_text(
+            text='Чтобы я знал, с какими задачами ты готов помогать, '
+                 'выбери свои профессиональные компетенции (можно выбрать '
+                 'несколько). После этого, нажми на пункт "Готово 👌"',
+            reply_markup=keyboard,
+        )
     return CATEGORY
 
 
@@ -268,6 +279,20 @@ def open_menu(update: Update, context: CallbackContext):
     text = 'Меню'
     update.callback_query.answer()
     update.callback_query.edit_message_text(text=text, reply_markup=keyboard)
+
+    return MENU
+
+
+def open_menu_fall(update: Update, context: CallbackContext):
+    subscription_button = get_subscription_button(context)
+    MENU_BUTTONS[-1] = [subscription_button]
+    keyboard = InlineKeyboardMarkup(MENU_BUTTONS)
+    text = 'Меню'
+    context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text=text,
+        reply_markup=keyboard
+    )
 
     return MENU
 
@@ -509,7 +534,7 @@ def stop_task_subscription(update: Update, context: CallbackContext):
             InlineKeyboardButton(text=reason[1], callback_data=reason[0])
         ] for reason in REASONS.items()
     ]
-    
+
     cancel_feedback_keyboard = InlineKeyboardMarkup(cancel_feedback_buttons)
 
     answer = ('Ты больше не будешь получать новые задания от фондов, но '
@@ -573,7 +598,7 @@ def cancel_feedback(update: Update, context: CallbackContext):
     return MENU
 
 
-@log_command(command=LOG_COMMANDS_NAME['cancel'])
+# @log_command(command=LOG_COMMANDS_NAME['cancel'])
 def cancel(update: Update, context: CallbackContext):
     user = update.message.from_user
     logger.info("User %s canceled the conversation.", user.first_name)
@@ -589,10 +614,12 @@ def main() -> None:
     dispatcher = updater.dispatcher
 
     conv_handler = ConversationHandler(
-        entry_points=[CommandHandler('start', start)],
+        entry_points=[
+            CommandHandler('start', start)
+        ],
         states={
             GREETING: [
-                CallbackQueryHandler(choose_category, pattern='^' + GREETING + '$'),
+                CallbackQueryHandler(choose_category_after_start, pattern='^' + GREETING + '$'),
                 CallbackQueryHandler(confirm_specializations, pattern='^' + GREETING_REGISTERED_USER + '$'),
             ],
             CATEGORY: [
@@ -643,10 +670,15 @@ def main() -> None:
             ]
         },
 
-        fallbacks=[CommandHandler('cancel', cancel)],
-        # persistent=True,
+        fallbacks=[
+            CommandHandler('start', start),
+            CommandHandler('menu', open_menu_fall)
+        ],
+        persistent=True,
         name='conv_handler'
     )
+    dispatcher.add_handler(CommandHandler('cancel', cancel))
+
     update_users_category = CallbackQueryHandler(change_user_categories, pattern='^up_cat[0-9]{1,2}$')
 
     dispatcher.add_handler(conv_handler)

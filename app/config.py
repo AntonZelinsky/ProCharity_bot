@@ -83,3 +83,7 @@ APISPEC_SPEC = {'APISPEC_SPEC':
                 'APISPEC_SWAGGER_UI_URL': SWAGGER_UI,
 
                 }
+
+# -----------------------
+# procharity send email settings
+EMAIL_PROCHARRITY = 'procharity@friends-foundation.com'

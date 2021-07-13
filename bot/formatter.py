@@ -1,7 +1,7 @@
 import locale
 locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
 
-UTM_STAMP = '?utm_source=telegram' \
+UTM_STAMP = '&utm_source=telegram' \
             '&utm_medium=social' \
             '&utm_campaign=bot_procharity'
 

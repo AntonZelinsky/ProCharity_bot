@@ -175,8 +175,9 @@ def confirm_specializations(update: Update, context: CallbackContext):
     context.bot.send_message(
         chat_id=update.effective_chat.id,
         text='Вот список твоих профессиональных компетенций:'
-             f' {specializations}. Все верно?',
-        reply_markup=keyboard
+             f' *{specializations}*. Все верно?',
+        parse_mode=ParseMode.MARKDOWN,
+        reply_markup=keyboard,
     )
     return CATEGORY
 
@@ -257,15 +258,17 @@ def after_category_choose(update: Update, context: CallbackContext, save_prev_ms
         context.bot.send_message(
             chat_id=update.effective_chat.id,
             text=f'Отлично! Теперь я буду присылать тебе уведомления о новых '
-                 f'заданиях в категориях: {user_categories}.\n\n'
+                 f'заданиях в категориях: *{user_categories}*.\n\n'
                  f'А пока можешь посмотреть открытые задания.',
+            parse_mode=ParseMode.MARKDOWN,
             reply_markup=keyboard,
         )
     else:
         update.callback_query.edit_message_text(
             text=f'Отлично! Теперь я буду присылать тебе уведомления о новых '
-                 f'заданиях в категориях: {user_categories}.\n\n'
+                 f'заданиях в категориях: *{user_categories}*.\n\n'
                  f'А пока можешь посмотреть открытые задания.',
+            parse_mode=ParseMode.MARKDOWN,
             reply_markup=keyboard
         )
     return AFTER_CATEGORY_REPLY

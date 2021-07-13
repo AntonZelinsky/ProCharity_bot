@@ -28,7 +28,9 @@ from bot.states import (GREETING,
                         START_SHOW_TASK,
                         CANCEL_FEEDBACK,
                         SUBSCRIPTION_FLAG,
-                        GREETING_REGISTERED_USER)
+                        GREETING_REGISTERED_USER,
+                        CHECK_USER_INFORMATION,
+                        AFTER_CONFIRM_SPECIALIZATIONS)
 
 from bot.data_to_db import (add_user,
                             change_subscription,
@@ -39,6 +41,7 @@ from bot.data_to_db import (add_user,
                             cancel_feedback_stat,
                             get_mailing_status,
                             external_user_registering,
+                            check_user_category,
                             )
 from bot.formatter import display_task
 from bot.constants import LOG_COMMANDS_NAME, BOT_NAME, REASONS
@@ -115,32 +118,17 @@ def start(update: Update, context: CallbackContext) -> int:
     add_user(update.message)
 
     context.user_data[SUBSCRIPTION_FLAG] = get_mailing_status(update.effective_user.id)
+    callback_data = GREETING
 
     if deeplink_passed_param:
         external_user_registering(deeplink_passed_param[0], update.message)
 
-        button = [
-            [
-                InlineKeyboardButton(text='Давай', callback_data=GREETING_REGISTERED_USER)
-            ]
-        ]
-        keyboard = InlineKeyboardMarkup(button)
-        context.bot.send_message(
-            chat_id=update.effective_chat.id,
-            text='Привет! 👋 \n\n'
-                 f' Меня зовут {BOT_NAME}. '
-                 'Буду держать тебя в курсе новых задач и помогу '
-                 'оперативно связаться с командой поддержки. '
-                 'Давай проверим, правильную ли информацию о тебе я получил?',
-
-            reply_markup=keyboard
-        )
-
-        return GREETING
+        if check_user_category(update.effective_user.id):
+            callback_data = CHECK_USER_INFORMATION
 
     button = [
         [
-            InlineKeyboardButton(text='Начнём', callback_data=GREETING)
+            InlineKeyboardButton(text='Начнем', callback_data=callback_data)
         ]
     ]
     keyboard = InlineKeyboardMarkup(button)
@@ -152,7 +140,26 @@ def start(update: Update, context: CallbackContext) -> int:
              'оперативно связаться с командой поддержки.',
         reply_markup=keyboard
     )
+    return GREETING
 
+
+@log_command(command=LOG_COMMANDS_NAME['check_user_information'])
+def check_user_information(update: Update, context: CallbackContext):
+    update.callback_query.edit_message_text(
+        text=update.callback_query.message.text
+    )
+
+    button = [
+        [
+            InlineKeyboardButton(text='Давай', callback_data=GREETING_REGISTERED_USER)
+        ]
+    ]
+    keyboard = InlineKeyboardMarkup(button)
+    context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text='Давай проверим, правильную ли информацию о тебе я получил?',
+        reply_markup=keyboard
+    )
     return GREETING
 
 
@@ -168,7 +175,7 @@ def choose_category_after_start(update: Update, context: CallbackContext):
 def confirm_specializations(update: Update, context: CallbackContext):
     buttons = [
         [
-            InlineKeyboardButton(text='Да', callback_data='ready')
+            InlineKeyboardButton(text='Да', callback_data='after_confirm_specializations')
         ],
         [
             InlineKeyboardButton(text='Нет, хочу изменить.', callback_data='return_chose_category')
@@ -182,13 +189,21 @@ def confirm_specializations(update: Update, context: CallbackContext):
         specializations = 'Категории ещё не выбраны'
 
     keyboard = InlineKeyboardMarkup(buttons)
-    context.bot.send_message(
-        chat_id=update.effective_chat.id,
+
+    update.callback_query.edit_message_text(
         text='Вот список твоих профессиональных компетенций:'
              f' {specializations}. Все верно?',
         reply_markup=keyboard
     )
     return CATEGORY
+
+
+def after_confirm_specializations(update: Update, context: CallbackContext):
+    update.callback_query.edit_message_text(
+        text=update.callback_query.message.text
+    )
+
+    return after_category_choose(update, context, True)
 
 
 @log_command(command=LOG_COMMANDS_NAME['change_user_categories'])
@@ -244,7 +259,7 @@ def choose_category(update: Update, context: CallbackContext, from_start: bool =
 
 
 @log_command(command=LOG_COMMANDS_NAME['after_category_choose'])
-def after_category_choose(update: Update, context: CallbackContext):
+def after_category_choose(update: Update, context: CallbackContext, save_prev_msg: bool = False):
     buttons = [
         [
             InlineKeyboardButton(text='Посмотреть открытые задания', callback_data='open_task')
@@ -262,12 +277,21 @@ def after_category_choose(update: Update, context: CallbackContext):
     if not user_categories:
         user_categories = 'Категории ещё не выбраны'
 
-    update.callback_query.edit_message_text(
-        text=f'Отлично! Теперь я буду присылать тебе уведомления о новых '
-             f'заданиях в категориях: {user_categories}.\n\n'
-             f'А пока можешь посмотреть открытые задания.',
-        reply_markup=keyboard
-    )
+    if save_prev_msg:
+        context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=f'Отлично! Теперь я буду присылать тебе уведомления о новых '
+                 f'заданиях в категориях: {user_categories}.\n\n'
+                 f'А пока можешь посмотреть открытые задания.',
+            reply_markup=keyboard,
+        )
+    else:
+        update.callback_query.edit_message_text(
+            text=f'Отлично! Теперь я буду присылать тебе уведомления о новых '
+                 f'заданиях в категориях: {user_categories}.\n\n'
+                 f'А пока можешь посмотреть открытые задания.',
+            reply_markup=keyboard
+        )
     return AFTER_CATEGORY_REPLY
 
 
@@ -621,9 +645,12 @@ def main() -> None:
             GREETING: [
                 CallbackQueryHandler(choose_category_after_start, pattern='^' + GREETING + '$'),
                 CallbackQueryHandler(confirm_specializations, pattern='^' + GREETING_REGISTERED_USER + '$'),
+                CallbackQueryHandler(check_user_information, pattern='^' + CHECK_USER_INFORMATION + '$')
+                ,
             ],
             CATEGORY: [
                 CallbackQueryHandler(choose_category, pattern='^return_chose_category$'),
+                CallbackQueryHandler(after_confirm_specializations, pattern='^' + AFTER_CONFIRM_SPECIALIZATIONS + '$'),
                 CallbackQueryHandler(after_category_choose, pattern='^ready$'),
                 CallbackQueryHandler(no_relevant_category, pattern='^no_relevant$')
 

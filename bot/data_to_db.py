@@ -1,4 +1,4 @@
-from app.models import ReasonCanceling, User, Category, Task, Statistics, Users_Categories
+from app.models import ReasonCanceling, User, Category, Task, Statistics, Users_Categories, ExternalSiteUser
 from app.database import db_session
 from datetime import datetime
 from sqlalchemy.orm import load_only
@@ -11,24 +11,28 @@ def add_user(message):
     telegram_id = message.chat.id
     last_name, first_name, username = message.chat.last_name, message.chat.first_name, message.chat.username
     user = User.query.filter_by(telegram_id=telegram_id).first()
+
     if not user:
-        user = User(telegram_id=telegram_id)
-        user.last_name = last_name
-        user.first_name = first_name
-        user.username = username
-        user.date_registration = datetime.now()
+        user = User(
+            telegram_id=telegram_id,
+            last_name=last_name,
+            first_name=first_name,
+            username=username,
+            date_registration=datetime.now(),
+        )
         db_session.add(user)
         return db_session.commit()
 
     record_updated = False
 
-    if user.last_name != last_name:
-        user.last_name = last_name
-        record_updated = True
+    if not user.external_id:
+        if user.last_name != last_name:
+            user.last_name = last_name
+            record_updated = True
 
-    if user.first_name != first_name:
-        user.first_name = first_name
-        record_updated = True
+        if user.first_name != first_name:
+            user.first_name = first_name
+            record_updated = True
 
     if user.username != username:
         user.username = username
@@ -36,6 +40,28 @@ def add_user(message):
 
     if record_updated:
         return db_session.commit()
+
+
+def external_user_registering(external_id_hash, message):
+    external_user = ExternalSiteUser.query.filter_by(external_id_hash=external_id_hash).first()
+
+    if not external_user:
+        return False
+
+    user = User.query.filter_by(telegram_id=message.chat.id).first()
+
+    user.first_name = external_user.first_name
+    user.last_name = external_user.last_name
+    user.external_id = external_user.external_id
+    user.email = external_user.email
+
+    if external_user.specializations:
+        external_user_specializations = [int(x) for x in external_user.specializations.split(',')]
+        specializations = Category.query.filter(Category.id.in_(external_user_specializations)).all()
+        for specialization in specializations:
+            user.categories.append(specialization)
+    db_session.add(user)
+    db_session.commit()
 
 
 def get_category(telegram_id):
@@ -131,6 +157,7 @@ def log_command(command, start_menu=False, ignore_func=None, ):
             return func(*args, **kwargs)
 
         return wrapper
+
     return log
 
 

@@ -1,4 +1,5 @@
 GREETING = 'greeting'
+GREETING_REGISTERED_USER = 'greeting_registered_user'
 CATEGORY = 'category'
 AFTER_CATEGORY_REPLY = 'after_category_reply'
 MENU = 'menu'

@@ -63,6 +63,13 @@ def external_user_registering(external_id_hash, message):
     db_session.commit()
 
 
+def check_user_category(telegram_id):
+    user_categories = User.query.get(telegram_id).categories
+    if not user_categories:
+        return False
+    return True
+
+
 def get_category(telegram_id):
     """
     Returns a collection of categories. If the user has selected one of them, it returns True in dictionary.
@@ -121,7 +128,7 @@ def change_subscription(telegram_id):
     return user.has_mailing
 
 
-def log_command(command, start_menu=False, ignore_func=None, ):
+def log_command(command, start_menu=False, ignore_func: list = None):
     """
     Add information of using bot commands to DB.
     :param command: Commands passed to the bot for adding to the database
@@ -139,7 +146,7 @@ def log_command(command, start_menu=False, ignore_func=None, ):
                 caller_frame = current_frame.f_back
                 code_obj = caller_frame.f_code
                 code_obj_name = code_obj.co_name
-                if code_obj_name == ignore_func:
+                if code_obj_name in ignore_func:
                     return func(*args, **kwargs)
 
             if start_menu:

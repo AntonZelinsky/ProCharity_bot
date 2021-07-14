@@ -113,15 +113,13 @@ def get_subscription_button(context: CallbackContext):
 @log_command(command=LOG_COMMANDS_NAME['start'], start_menu=True)
 def start(update: Update, context: CallbackContext) -> int:
     deeplink_passed_param = context.args
-    add_user(update.message, deeplink_passed_param)
-    callback_data = GREETING
-
     context.user_data[SUBSCRIPTION_FLAG] = get_mailing_status(update.effective_user.id)
+    add_user(update.message, deeplink_passed_param)
 
-    if deeplink_passed_param:
-        if check_user_category(update.effective_user.id):
-            callback_data = GREETING_REGISTERED_USER
-
+    callback_data = (GREETING_REGISTERED_USER
+                     if check_user_category(update.effective_user.id)
+                     and deeplink_passed_param
+                     else GREETING)
     button = [
         [
             InlineKeyboardButton(text='Начнем', callback_data=callback_data)

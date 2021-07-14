@@ -14,7 +14,7 @@ from app.apis.analysis import Analysis
 
 # users endpoints
 api.add_resource(UsersList, '/api/v1/users/')
-api.add_resource(User_item, '/api/v1/users/<int:id>/')
+api.add_resource(User_item, '/api/v1/users/<int:telegram_id>/')
 # Auth endpoints
 api.add_resource(InvitationChecker, '/api/v1/auth/invitation_checker/')
 api.add_resource(Login, '/api/v1/auth/login/')

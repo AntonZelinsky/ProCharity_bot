@@ -1,5 +1,5 @@
 from app import docs
-from app.apis.users import UsersList, User_item
+from app.apis.users import UsersList, UserItem
 from app.apis.auth.refresh import Refresh
 from app.apis.auth.login import Login
 from app.apis.auth.password_reset import PasswordReset
@@ -17,7 +17,7 @@ docs.register(Refresh)
 docs.register(UserRegister)
 docs.register(PasswordReset)
 docs.register(UsersList)
-docs.register(User_item)
+docs.register(UserItem)
 docs.register(SendRegistrationInvite)
 docs.register(InvitationChecker)
 docs.register(SendTelegramNotification)

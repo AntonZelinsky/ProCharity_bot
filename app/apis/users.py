@@ -81,7 +81,7 @@ class UsersList(MethodResource, Resource):
         )
 
 
-class User_item(MethodResource, Resource):
+class UserItem(MethodResource, Resource):
     """Provides access to 'get', 'put' and 'delete' requests for items in User model"""
 
     @doc(description="Get one user's record",

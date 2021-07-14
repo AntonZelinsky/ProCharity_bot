@@ -1,5 +1,5 @@
 from app import api
-from app.apis.users import UsersList, User_item
+from app.apis.users import UsersList, UserItem
 from app.apis.categories import CreateCategories
 from app.apis.tasks import CreateTasks
 from app.apis.auth.refresh import Refresh
@@ -14,7 +14,7 @@ from app.apis.analysis import Analysis
 
 # users endpoints
 api.add_resource(UsersList, '/api/v1/users/')
-api.add_resource(User_item, '/api/v1/users/<int:telegram_id>/')
+api.add_resource(UserItem, '/api/v1/users/<int:telegram_id>/')
 # Auth endpoints
 api.add_resource(InvitationChecker, '/api/v1/auth/invitation_checker/')
 api.add_resource(Login, '/api/v1/auth/login/')

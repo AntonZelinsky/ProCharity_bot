@@ -10,6 +10,8 @@ from flask_apispec import doc, use_kwargs, marshal_with
 from email_validator import validate_email, EmailNotValidError
 from marshmallow import fields
 from sqlalchemy_pagination import paginate
+from app.formatter import get_user_information
+
 
 USER_SCHEMA = {
     'username': fields.Str(),
@@ -53,7 +55,7 @@ class UsersList(MethodResource, Resource):
         paginate_page = paginate(db_session.query(User), page, limit)
 
         for item in paginate_page.items:
-            result.append(item.get_user_information())
+            result.append(get_user_information(item))
 
         next_url = None
         previous_url = None
@@ -91,7 +93,7 @@ class User_item(MethodResource, Resource):
         user = User.query.get(telegram_id)
         if not user:
             return make_response(jsonify(message='This user was not found.'), 400)
-        return make_response(jsonify(user.get_user_information()), 200)
+        return make_response(jsonify(get_user_information(user)), 200)
 
     @doc(description="Update user's database information.",
          tags=['Users Control'],

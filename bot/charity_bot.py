@@ -40,6 +40,7 @@ from bot.data_to_db import (add_user,
                             cancel_feedback_stat,
                             get_mailing_status,
                             check_user_category,
+                            check_user_external_id
                             )
 from bot.formatter import display_task
 from bot.constants import LOG_COMMANDS_NAME, BOT_NAME, REASONS
@@ -118,7 +119,7 @@ def start(update: Update, context: CallbackContext) -> int:
 
     callback_data = (GREETING_REGISTERED_USER
                      if check_user_category(update.effective_user.id)
-                     and deeplink_passed_param
+                     and check_user_external_id(update.message, deeplink_passed_param)
                      else GREETING)
     button = [
         [

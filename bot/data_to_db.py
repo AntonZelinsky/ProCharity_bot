@@ -58,6 +58,16 @@ def add_user(message, external_id_hash):
         return db_session.commit()
 
 
+def check_user_external_id(message, external_id_hash):
+    user = User.query.options(load_only('external_id')).filter_by(telegram_id=message.chat.id).first()
+    if external_id_hash:
+        external_user = (ExternalSiteUser.query.
+                         options(load_only('external_id')).filter_by(external_id_hash=external_id_hash[0]).first())
+        if external_user:
+            return user.external_id == external_user.external_id
+    return False
+
+
 def check_user_category(telegram_id):
     user_categories = User.query.get(telegram_id).categories
     if not user_categories:

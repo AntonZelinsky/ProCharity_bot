@@ -9,8 +9,6 @@ import inspect
 def add_user(message, external_id_hash):
     telegram_id = message.chat.id
     username = message.chat.username
-    last_name = message.chat.last_name
-    first_name = message.chat.last_name
     record_updated = False
 
     user = User.query.filter_by(telegram_id=telegram_id).first()
@@ -42,6 +40,9 @@ def add_user(message, external_id_hash):
             return db_session.commit()
 
     if not user.external_id:
+        last_name = message.chat.last_name
+        first_name = message.chat.last_name
+
         if user.last_name != last_name:
             user.last_name = last_name
             record_updated = True

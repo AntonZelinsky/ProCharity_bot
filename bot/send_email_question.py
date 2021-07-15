@@ -1,3 +1,5 @@
+from flask import render_template
+
 from app import app, config
 from app.messages import send_email
 from app.models import User
@@ -9,14 +11,14 @@ def send_question(telegram_id, message, subject):
     email = user.email
     name = user.last_name + ' ' + user.first_name
     id = user.external_id
-    email_message = f'<p>{message}</p>\
-                      <br>\
-                      <p>id волонтёра - {id}</p>\
-                      <p>E-mail - {email}</p>\
-                      <p>Имя - {name}</p>'
-    print(recipients)
-    recipients = ['s.musorin@yandex.ru']
     with app.app_context():
+        email_message = render_template(
+            config.PROCHARRITY_TEMPLATE,
+            message=message,
+            id=id,
+            email=email,
+            name=name
+        )
         send_email(
             recipients=recipients,
             subject=subject,

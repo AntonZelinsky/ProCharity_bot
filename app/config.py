@@ -87,3 +87,4 @@ APISPEC_SPEC = {'APISPEC_SPEC':
 # -----------------------
 # procharity send email settings
 EMAIL_PROCHARRITY = 'procharity@friends-foundation.com'
+PROCHARRITY_TEMPLATE = 'email_templates/send_question.html'

@@ -117,7 +117,6 @@ def start(update: Update, context: CallbackContext) -> int:
 
     callback_data = (GREETING_REGISTERED_USER
                      if check_user_category(update.effective_user.id)
-                     and user.categories
                      else GREETING)
     button = [
         [

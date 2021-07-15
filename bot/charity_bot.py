@@ -112,7 +112,7 @@ def get_subscription_button(context: CallbackContext):
 @log_command(command=LOG_COMMANDS_NAME['start'], start_menu=True)
 def start(update: Update, context: CallbackContext) -> int:
     deeplink_passed_param = context.args
-    user = add_user(update.message, deeplink_passed_param)
+    user = add_user(update.effective_user, deeplink_passed_param)
     context.user_data[SUBSCRIPTION_FLAG] = user.has_mailing
 
     callback_data = (GREETING_REGISTERED_USER

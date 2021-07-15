@@ -6,11 +6,11 @@ from sqlalchemy import select
 import inspect
 
 
-def add_user(message, external_id_hash):
-    telegram_id = message.chat.id
-    username = message.chat.username
-    last_name = message.chat.last_name
-    first_name = message.chat.last_name
+def add_user(telegram_user, external_id_hash):
+    telegram_id = telegram_user.id
+    username = telegram_user.username
+    last_name = telegram_user.last_name
+    first_name = telegram_user.last_name
     record_updated = False
     user = User.query.filter_by(telegram_id=telegram_id).first()
 

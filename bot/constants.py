@@ -20,7 +20,7 @@ LOG_COMMANDS_NAME = {
     'cancel': 'Отмена',
     'confirm_specializations': 'Подтверждение специализаций',
     'check_user_information': 'Проверка информации пользователя',
-
+    # 'save_email': 'Сохранить e-mail'
 }
 
 REASONS = {

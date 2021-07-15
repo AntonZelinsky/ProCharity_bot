@@ -197,7 +197,7 @@ def get_user_email(telegram_id):
     return user.email
 
 
-def save_user_email(telegram_id, email):
+def set_user_email(telegram_id, email):
     user = User.query.filter_by(telegram_id=telegram_id).first()
     try:
         validate_email(email)

@@ -9,41 +9,45 @@ import inspect
 def add_user(message, external_id_hash):
     telegram_id = message.chat.id
     username = message.chat.username
+    last_name = message.chat.last_name
+    first_name = message.chat.last_name
     record_updated = False
-
     user = User.query.filter_by(telegram_id=telegram_id).first()
-
-    if external_id_hash:
-        external_user = ExternalSiteUser.query.filter_by(external_id_hash=external_id_hash[0]).first()
-    else:
-        external_user = None
 
     if not user:
         user = User(
             telegram_id=telegram_id,
             username=username,
-            date_registration=datetime.now())
+            date_registration=datetime.now(),
+            first_name=first_name,
+            last_name=last_name)
         db_session.add(user)
 
-    if external_user:
-        user.first_name = external_user.first_name
-        user.last_name = external_user.last_name
-        user.external_id = external_user.external_id
-        user.email = external_user.email
+    if external_id_hash:
+        external_user = ExternalSiteUser.query.filter_by(external_id_hash=external_id_hash[0]).first()
 
-        if external_user.specializations:
-            external_user_specializations = [int(x) for x in external_user.specializations.split(',')]
-            specializations = Category.query.filter(Category.id.in_(external_user_specializations)).all()
+        if external_user:
+            user.first_name = external_user.first_name
+            user.last_name = external_user.last_name
+            user.external_id = external_user.external_id
+            user.email = external_user.email
 
-            for specialization in specializations:
-                user.categories.append(specialization)
+            if external_user.specializations:
+                external_user_specializations = [int(x) for x in external_user.specializations.split(',')]
+                specializations = Category.query.filter(Category.id.in_(external_user_specializations)).all()
+
+                for specialization in specializations:
+                    user.categories.append(specialization)
+
+            db_session.delete(external_user)
             db_session.commit()
             return user
 
-    if not user.external_id:
-        last_name = message.chat.last_name
-        first_name = message.chat.last_name
+    if user.username != username:
+        user.username = username
+        record_updated = True
 
+    if not user.external_id:
         if user.last_name != last_name:
             user.last_name = last_name
             record_updated = True
@@ -51,10 +55,6 @@ def add_user(message, external_id_hash):
         if user.first_name != first_name:
             user.first_name = first_name
             record_updated = True
-
-    if user.username != username:
-        user.username = username
-        record_updated = True
 
     if record_updated:
         db_session.commit()

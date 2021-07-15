@@ -38,8 +38,6 @@ from bot.data_to_db import (add_user,
                             change_user_category,
                             log_command,
                             cancel_feedback_stat,
-                            get_mailing_status,
-                            external_user_registering,
                             check_user_category,
                             )
 from bot.formatter import display_task
@@ -114,17 +112,12 @@ def get_subscription_button(context: CallbackContext):
 @log_command(command=LOG_COMMANDS_NAME['start'], start_menu=True)
 def start(update: Update, context: CallbackContext) -> int:
     deeplink_passed_param = context.args
-    add_user(update.message)
-    callback_data = GREETING
+    user = add_user(update.effective_user, deeplink_passed_param)
+    context.user_data[SUBSCRIPTION_FLAG] = user.has_mailing
 
-    context.user_data[SUBSCRIPTION_FLAG] = get_mailing_status(update.effective_user.id)
-
-    if deeplink_passed_param:
-        external_user_registering(deeplink_passed_param[0], update.message)
-
-        if check_user_category(update.effective_user.id):
-            callback_data = GREETING_REGISTERED_USER
-
+    callback_data = (GREETING_REGISTERED_USER
+                     if user.categories
+                     else GREETING)
     button = [
         [
             InlineKeyboardButton(text='Начнем', callback_data=callback_data)
@@ -150,11 +143,15 @@ def choose_category_after_start(update: Update, context: CallbackContext):
     return choose_category(update, context, True)
 
 
-@log_command(command=LOG_COMMANDS_NAME['confirm_specializations'])
-def confirm_specializations(update: Update, context: CallbackContext):
+def before_confirm_specializations(update: Update, context: CallbackContext):
     update.callback_query.edit_message_text(
         text=update.callback_query.message.text
     )
+    return confirm_specializations(update, context)
+
+
+@log_command(command=LOG_COMMANDS_NAME['confirm_specializations'])
+def confirm_specializations(update: Update, context: CallbackContext):
     buttons = [
         [
             InlineKeyboardButton(text='Да', callback_data='ready')
@@ -613,7 +610,7 @@ def main() -> None:
         states={
             GREETING: [
                 CallbackQueryHandler(choose_category_after_start, pattern='^' + GREETING + '$'),
-                CallbackQueryHandler(confirm_specializations, pattern='^' + GREETING_REGISTERED_USER + '$')
+                CallbackQueryHandler(before_confirm_specializations, pattern='^' + GREETING_REGISTERED_USER + '$')
             ],
             CATEGORY: [
                 CallbackQueryHandler(choose_category, pattern='^return_chose_category$'),

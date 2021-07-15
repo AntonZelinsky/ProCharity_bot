@@ -34,15 +34,6 @@ class UserAdmin(Base):
     def check_password(self, password):
         return check_password_hash(self.password, password)
 
-    def get_user_information(self):
-        return {
-            'id': self.id,
-            'email': self.email,
-            'first_name': self.first_name,
-            'last_name': self.last_name,
-            'last_logon': self.last_logon.strftime('%Y-%m-%d')
-        }
-
 
 class Register(Base):
     __tablename__ = 'registers'
@@ -70,18 +61,6 @@ class User(Base):
 
     def __repr__(self):
         return f'<User {self.telegram_id}>'
-
-    def get_user_information(self):
-        return {
-            'telegram_id': self.telegram_id,
-            'username': self.username,
-            'email': self.email,
-            'first_name': self.first_name,
-            'last_name': self.last_name,
-            'external_id': self.external_id,
-            'has_mailing': self.has_mailing,
-            'date_registration': self.date_registration.strftime('%Y-%m-%d'),
-        }
 
 
 class Task(Base):

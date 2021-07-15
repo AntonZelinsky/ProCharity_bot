@@ -116,7 +116,7 @@ def start(update: Update, context: CallbackContext) -> int:
     context.user_data[SUBSCRIPTION_FLAG] = user.has_mailing
 
     callback_data = (GREETING_REGISTERED_USER
-                     if check_user_category(update.effective_user.id)
+                     if user.categories
                      else GREETING)
     button = [
         [

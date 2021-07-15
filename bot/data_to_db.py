@@ -37,7 +37,8 @@ def add_user(message, external_id_hash):
 
             for specialization in specializations:
                 user.categories.append(specialization)
-            return db_session.commit()
+            db_session.commit()
+            return user
 
     if not user.external_id:
         last_name = message.chat.last_name
@@ -56,17 +57,8 @@ def add_user(message, external_id_hash):
         record_updated = True
 
     if record_updated:
-        return db_session.commit()
-
-
-def check_user_external_id(message, external_id_hash):
-    user = User.query.options(load_only('external_id')).filter_by(telegram_id=message.chat.id).first()
-    if external_id_hash:
-        external_user = (ExternalSiteUser.query.
-                         options(load_only('external_id')).filter_by(external_id_hash=external_id_hash[0]).first())
-        if external_user:
-            return user.external_id == external_user.external_id
-    return False
+        db_session.commit()
+    return user
 
 
 def check_user_category(telegram_id):
@@ -110,11 +102,6 @@ def get_user_active_tasks(telegram_id, shown_task):
 
     result = db_session.execute(stmt)
     return [[task, category_name] for task, category_name in result]
-
-
-def get_mailing_status(telegram_id):
-    user = User.query.options(load_only('has_mailing')).filter_by(telegram_id=telegram_id).first()
-    return user.has_mailing
 
 
 def change_subscription(telegram_id):
@@ -187,11 +174,10 @@ def change_user_category(telegram_id, category_id):
 
 
 def cancel_feedback_stat(telegram_id, reason_canceling):
-    # reason_canceling = update['callback_query']['data']
-    # telegram_id = update['callback_query']['message']['chat']['id']
     reason = ReasonCanceling(
         telegram_id=telegram_id,
-        reason_canceling=reason_canceling
+        reason_canceling=reason_canceling,
+        added_date=datetime.now()
     )
     db_session.add(reason)
     return db_session.commit()

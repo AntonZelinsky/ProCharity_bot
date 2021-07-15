@@ -22,4 +22,3 @@ def display_task_notification(task):
             f'Категория: {task.categories.name}\n'
             f'Срок: {task.deadline.strftime("%d %B %Y")}г.\n\n'
             f'<u><a href="{task.link}{UTM_STAMP}">Посмотреть задание</a></u>')
-

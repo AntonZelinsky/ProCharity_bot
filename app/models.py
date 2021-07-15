@@ -40,7 +40,7 @@ class UserAdmin(Base):
             'email': self.email,
             'first_name': self.first_name,
             'last_name': self.last_name,
-            'last_logon': self.last_logon
+            'last_logon': self.last_logon.strftime('%Y-%m-%d')
         }
 
 
@@ -80,7 +80,7 @@ class User(Base):
             'last_name': self.last_name,
             'external_id': self.external_id,
             'has_mailing': self.has_mailing,
-            'date_registration': self.date_registration,
+            'date_registration': self.date_registration.strftime('%Y-%m-%d'),
         }
 
 

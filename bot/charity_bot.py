@@ -429,6 +429,7 @@ def email_feedback(update: Update, context: CallbackContext):
 def ask_new_category(update: Update, context: CallbackContext):
     user_data = context.user_data
     user_data[states.ASK_NEW_CATEGORY_MESSAGE_ID] = update.effective_message.message_id
+    user_data[states.ASK_NEW_CATEGORY_TEXT] = update.effective_message.text
     button = [
         [InlineKeyboardButton(text='Вернуться в меню', callback_data='open_menu')]
     ]
@@ -443,24 +444,26 @@ def ask_new_category(update: Update, context: CallbackContext):
 
 def ask_email(update: Update, context: CallbackContext):
     context.user_data[states.ASK_EMAIL_FLAG] = True
-    context.bot.delete_message(
+    context.bot.edit_message_text(
         chat_id=update.effective_chat.id,
-        message_id=context.user_data.get(states.ASK_NEW_CATEGORY_MESSAGE_ID)
+        message_id=context.user_data.get(states.ASK_NEW_CATEGORY_MESSAGE_ID),
+        text=context.user_data.get(states.ASK_NEW_CATEGORY_TEXT)
     )
     del context.user_data[states.ASK_NEW_CATEGORY_MESSAGE_ID]
-    user_data = context.user_data
-    user_data[states.ASK_EMAIL_MESSAGE_ID] = update.effective_message.message_id
 
     text = 'Пожалуйста, укажи свою почту, если хочешь получить ответ'
     buttons = [
         [InlineKeyboardButton(text='Не жду ответ', callback_data='no_wait')],
         [InlineKeyboardButton(text='Вернуться в меню', callback_data='open_menu')]
     ]
-    context.bot.send_message(
+    message = context.bot.send_message(
         chat_id=update.effective_chat.id,
         text=text,
         reply_markup=InlineKeyboardMarkup(buttons)
     )
+
+    context.user_data[states.ASK_EMAIL_MESSAGE_ID] = message.message_id
+    context.user_data[states.ASK_EMAIL_MESSAGE_TEXT] = message.text
 
     return states.ASK_EMAIL
 
@@ -496,17 +499,23 @@ def save_email(update: Update, context: CallbackContext):
 # @log_command(command=LOG_COMMANDS_NAME['after_add_new_category'])
 def after_ask_new_category(update: Update, context: CallbackContext):
     if context.user_data.get(states.ASK_EMAIL_FLAG):
-        context.bot.delete_message(
+        context.bot.edit_message_text(
             chat_id=update.effective_chat.id,
-            message_id=context.user_data[states.ASK_EMAIL_MESSAGE_ID]
+            message_id=context.user_data[states.ASK_EMAIL_MESSAGE_ID],
+            text=context.user_data.get(states.ASK_EMAIL_MESSAGE_TEXT)
         )
         del context.user_data[states.ASK_EMAIL_FLAG]
+        del context.user_data[states.ASK_EMAIL_MESSAGE_ID]
+        del context.user_data[states.ASK_EMAIL_MESSAGE_TEXT]
+
     if context.user_data.get(states.ASK_NEW_CATEGORY_MESSAGE_ID):
-        context.bot.delete_message(
+        context.bot.edit_message_text(
             chat_id=update.effective_chat.id,
-            message_id=context.user_data.get(states.ASK_NEW_CATEGORY_MESSAGE_ID)
+            message_id=context.user_data.get(states.ASK_NEW_CATEGORY_MESSAGE_ID),
+            text=context.user_data.get(states.ASK_NEW_CATEGORY_TEXT)
         )
         del context.user_data[states.ASK_NEW_CATEGORY_MESSAGE_ID]
+        del context.user_data[states.ASK_NEW_CATEGORY_TEXT]
 
     user = get_user(update.effective_user.id)
 

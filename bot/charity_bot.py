@@ -448,6 +448,10 @@ def ask_email(update: Update, context: CallbackContext):
         chat_id=update.effective_chat.id,
         message_id=context.user_data.get(states.ASK_NEW_CATEGORY_MESSAGE_ID)
     )
+    del context.user_data[states.ASK_NEW_CATEGORY_MESSAGE_ID]
+    user_data = context.user_data
+    user_data[states.ASK_EMAIL_MESSAGE_ID] = update.effective_message.message_id
+
     text = 'Пожалуйста, укажи свою почту, если хочешь получить ответ'
     buttons = [
         [InlineKeyboardButton(text='Не жду ответ', callback_data='no_wait')],
@@ -492,12 +496,20 @@ def save_email(update: Update, context: CallbackContext):
 
 # @log_command(command=LOG_COMMANDS_NAME['after_add_new_category'])
 def after_ask_new_category(update: Update, context: CallbackContext):
-    if context.user_data.get('ask_email_flag'):
+    if context.user_data.get(states.ASK_EMAIL_FLAG):
         context.bot.delete_message(
             chat_id=update.effective_chat.id,
-            message_id=(update.effective_message.message_id - 1)  # Это костыль ;(
+            message_id=context.user_data[states.ASK_EMAIL_MESSAGE_ID]
         )
+        del context.user_data[states.ASK_EMAIL_FLAG]
+    if context.user_data.get(states.ASK_NEW_CATEGORY_MESSAGE_ID):
+        context.bot.delete_message(
+            chat_id=update.effective_chat.id,
+            message_id=context.user_data.get(states.ASK_NEW_CATEGORY_MESSAGE_ID)
+        )
+        del context.user_data[states.ASK_NEW_CATEGORY_MESSAGE_ID]
     user_email = get_user_email(update.effective_user.id)
+
     subscription_button = get_subscription_button(context)
     MENU_BUTTONS[-1] = [subscription_button]
     keyboard = InlineKeyboardMarkup(MENU_BUTTONS)

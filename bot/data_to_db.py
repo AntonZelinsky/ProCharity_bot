@@ -184,9 +184,8 @@ def cancel_feedback_stat(telegram_id, reason_canceling):
     return db_session.commit()
 
 
-def get_user_email(telegram_id):
-    user = User.query.filter_by(telegram_id=telegram_id).first()
-    return user.email
+def get_user(telegram_id):
+    return User.query.get(telegram_id)
 
 
 def set_user_email(telegram_id, email):

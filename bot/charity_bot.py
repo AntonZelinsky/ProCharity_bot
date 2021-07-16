@@ -26,8 +26,7 @@ from bot.data_to_db import (add_user,
                             change_user_category,
                             log_command,
                             cancel_feedback_stat,
-                            check_user_category,
-                            get_user_email,
+                            get_user,
                             set_user_email)
 
 from bot.formatter import display_task
@@ -467,8 +466,8 @@ def ask_email(update: Update, context: CallbackContext):
 
 
 def save_user_input(update: Update, context: CallbackContext):
-    user_email = get_user_email(update.effective_user.id)
-    if user_email:
+    user = get_user(update.effective_user.id)
+    if user.email:
         return after_ask_new_category(update, context)
     else:
         return ask_email(update, context)
@@ -508,12 +507,13 @@ def after_ask_new_category(update: Update, context: CallbackContext):
             message_id=context.user_data.get(states.ASK_NEW_CATEGORY_MESSAGE_ID)
         )
         del context.user_data[states.ASK_NEW_CATEGORY_MESSAGE_ID]
-    user_email = get_user_email(update.effective_user.id)
+
+    user = get_user(update.effective_user.id)
 
     subscription_button = get_subscription_button(context)
     MENU_BUTTONS[-1] = [subscription_button]
     keyboard = InlineKeyboardMarkup(MENU_BUTTONS)
-    text = f'Спасибо, я передал информацию команде ProCharity! Ответ придет на почту {user_email}'
+    text = f'Спасибо, я передал информацию команде ProCharity! Ответ придет на почту {user.email}'
     context.bot.send_message(
         chat_id=update.effective_chat.id,
         text=text,

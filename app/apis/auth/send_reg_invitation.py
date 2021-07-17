@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timedelta
-
+from flask import current_app
 from app import config
 from app.database import db_session
 from app.messages import send_email
@@ -73,7 +73,7 @@ class SendRegistrationInvite(MethodResource, Resource):
             db_session.add(user)
             db_session.commit()
 
-        invitation_link = f'{request.scheme}://{request.host}/#/register/{invitation_token}'
+        invitation_link = f'{request.scheme}://{current_app.config["HOST_NAME"]}/#/register/{invitation_token}'
 
         email_template = render_template(
             config.INVITATION_TEMPLATE,

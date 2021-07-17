@@ -1,3 +1,5 @@
+import os
+
 from app.models import User
 from app.database import db_session
 from flask import Flask
@@ -12,7 +14,7 @@ from flask_cors import CORS
 from bot.charity_bot import main
 
 app = Flask(__name__)
-app.config.update(config.APPLICATION_CONFIGURATION)
+app.config.from_object(os.getenv('CONFIG'))
 cors = CORS(app, resource={r"/*": {"origins": "*"}})
 
 jwt = JWTManager(app)

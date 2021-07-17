@@ -12,13 +12,11 @@ load_dotenv(dotenv_path)
 # Basic project settings
 SQL_ALCHEMY_DATABASE_URL = os.getenv('DATABASE_URL')
 PROJECT_NAME = "ProCharrity bot"
-HOST_NAME = '178.154.202.217'
 PASSWORD_POLICY = {
     "min_length": 8,
     "uppercase": 1,
     "max_length": 32,
 }
-
 # ------------------------
 # Registration settings
 REGISTRATION_SUBJECT = 'Регистрация на портале ProCharrity bot'
@@ -48,38 +46,47 @@ TELEGRAM_TOKEN = os.getenv('TOKEN')
 NUMBER_USERS_TO_SEND = 30
 BOT_PERSISTENCE_FILE = os.getenv('PERSISTENCE_FILE')
 
-# ------------------------------
-# Basic application settings
-
-APPLICATION_CONFIGURATION = {
-    'SITE_NAME': 'Test_site',
-    'SECRET_KEY': 'ASDfasdQW4)(83099498&$^%2ewf',
-
-    # Token settings
-    'JWT_ACCESS_TOKEN_EXPIRES': 86400,  # 1 day
-    'JWT_REFRESH_TOKEN_EXPIRES': 172800,  # 2 days
-    'JWT_SECRET_KEY': 'Ad3ewrf#$wqA24&2W24-0)*&)@43',
-    'PROPAGATE_EXCEPTIONS': True,
-    # API rest settings
-    'JSON_SORT_KEYS': False,
-
-    # Mail settings
-    'MAIL_SERVER': 'smtp.gmail.com',
-    'MAIL_PORT': 587,
-    'MAIL_USE_TLS': True,
-    'MAIL_USERNAME': 'tt265323@gmail.com',
-    'MAIL_DEFAULT_SENDER': 'tt265323@gmail.com',
-    'MAIL_PASSWORD': os.getenv('MAIL_PASSWORD'),
-
-}
-
 APISPEC_SPEC = {'APISPEC_SPEC':
-                    APISpec(title=PROJECT_NAME,
-                            version='v1',
-                            plugins=[MarshmallowPlugin()],
-                            openapi_version='2.0.0'
-                            ),
+                APISpec(title=PROJECT_NAME,
+                        version='v1',
+                        plugins=[MarshmallowPlugin()],
+                        openapi_version='2.0.0'
+                        ),
                 'APISPEC_SWAGGER_URL': SWAGGER_JSON,
                 'APISPEC_SWAGGER_UI_URL': SWAGGER_UI,
 
                 }
+
+
+class Config(object):
+    DEBUG = False
+    SITE_NAME = 'Test_site'
+    SECRET_KEY = 'ASDfasdQW4)(83099498&$^%2ewf'
+
+    # Token settings
+    JWT_ACCESS_TOKEN_EXPIRES = 86400,  # 1 day
+    JWT_REFRESH_TOKEN_EXPIRES = 172800,  # 2 days
+    JWT_SECRET_KEY = 'Ad3ewrf#$wqA24&2W24-0)*&)@43'
+    PROPAGATE_EXCEPTIONS = True
+    # API rest settings
+    JSON_SORT_KEYS = False
+
+    # Mail settings
+    MAIL_SERVER = 'smtp.gmail.com'
+    MAIL_PORT = 587
+    MAIL_USE_TLS = True
+    MAIL_USERNAME = 'tt265323@gmail.com'
+    MAIL_DEFAULT_SENDER = 'tt265323@gmail.com'
+    MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
+
+
+class ProductionConfig(Config):
+    DEBUG = False
+    HOST_NAME = '178.154.202.217'
+
+
+class DevelopmentConfig(Config):
+    port = 5000
+    HOST_NAME = f'localhost:{port}'
+    JWT_ACCESS_TOKEN_EXPIRES = 0
+    JWT_REFRESH_TOKEN_EXPIRES = 0

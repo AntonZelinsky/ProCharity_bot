@@ -10,7 +10,7 @@ LOG_COMMANDS_NAME = {
     'after_ask_question': 'Меню после вопроса',
     'no_relevant_category': 'Моих компетенций здесь нет',
     'email_feedback': 'Отправка емейла',
-    'add_new_category': 'Добавление новой категории',
+    'ask_new_category': 'Добавление новой категории',
     'after_add_new_category': 'Меню после добавления новой категории',
     'add_new_feature': 'Хочу новый функционал бота',
     'after_add_new_feature': 'Меню после добавление функционала',
@@ -19,8 +19,7 @@ LOG_COMMANDS_NAME = {
     'stop_task_subscription': 'Остановить подписку на задания',
     'cancel': 'Отмена',
     'confirm_specializations': 'Подтверждение специализаций',
-    'check_user_information': 'Проверка информации пользователя',
-
+    'check_user_information': 'Проверка информации пользователя'
 }
 
 REASONS = {

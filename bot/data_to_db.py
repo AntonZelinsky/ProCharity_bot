@@ -4,6 +4,7 @@ from datetime import datetime
 from sqlalchemy.orm import load_only
 from sqlalchemy import select
 import inspect
+from email_validator import validate_email, EmailNotValidError
 
 
 def add_user(telegram_user, external_id_hash):
@@ -181,3 +182,18 @@ def cancel_feedback_stat(telegram_id, reason_canceling):
     )
     db_session.add(reason)
     return db_session.commit()
+
+
+def get_user(telegram_id):
+    return User.query.get(telegram_id)
+
+
+def set_user_email(telegram_id, email):
+    user = User.query.filter_by(telegram_id=telegram_id).first()
+    try:
+        validate_email(email)
+        user.email = email
+        db_session.commit()
+        return True
+    except EmailNotValidError:
+        return False

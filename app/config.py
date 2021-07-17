@@ -64,11 +64,11 @@ APPLICATION_CONFIGURATION = {
     'JSON_SORT_KEYS': False,
 
     # Mail settings
-    'MAIL_SERVER': 'smtp.gmail.com',
-    'MAIL_PORT': 587,
-    'MAIL_USE_TLS': True,
-    'MAIL_USERNAME': 'tt265323@gmail.com',
-    'MAIL_DEFAULT_SENDER': 'tt265323@gmail.com',
+    'MAIL_SERVER': os.getenv('MAIL_SERVER'),
+    'MAIL_PORT': os.getenv('MAIL_PORT'),
+    'MAIL_USE_TLS': os.getenv('MAIL_USE_TLS'),
+    'MAIL_USERNAME': os.getenv('MAIL_USERNAME'),
+    'MAIL_DEFAULT_SENDER': os.getenv('MAIL_DEFAULT_SENDER'),
     'MAIL_PASSWORD': os.getenv('MAIL_PASSWORD'),
 
 }
@@ -83,3 +83,7 @@ APISPEC_SPEC = {'APISPEC_SPEC':
                 'APISPEC_SWAGGER_UI_URL': SWAGGER_UI,
 
                 }
+
+# -----------------------
+# procharity send email settings
+PROCHARRITY_TEMPLATE = 'email_templates/send_question.html'

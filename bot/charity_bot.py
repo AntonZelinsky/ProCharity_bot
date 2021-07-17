@@ -13,23 +13,11 @@ from telegram.ext import (Updater,
                           ConversationHandler,
                           CallbackContext,
                           CallbackQueryHandler,
-                          PicklePersistence)
+                          PicklePersistence,
+                          MessageHandler,
+                          Filters)
 
-from bot.states import (GREETING,
-                        CATEGORY,
-                        AFTER_CATEGORY_REPLY,
-                        MENU,
-                        OPEN_TASKS,
-                        NO_CATEGORY,
-                        AFTER_ADD_CATEGORY,
-                        AFTER_NEW_QUESTION,
-                        AFTER_ADD_FEATURE,
-                        TYPING,
-                        START_SHOW_TASK,
-                        CANCEL_FEEDBACK,
-                        SUBSCRIPTION_FLAG,
-                        GREETING_REGISTERED_USER,
-                        )
+from bot import states
 
 from bot.data_to_db import (add_user,
                             change_subscription,
@@ -38,8 +26,9 @@ from bot.data_to_db import (add_user,
                             change_user_category,
                             log_command,
                             cancel_feedback_stat,
-                            check_user_category,
-                            )
+                            get_user,
+                            set_user_email)
+
 from bot.formatter import display_task
 from bot.constants import LOG_COMMANDS_NAME, BOT_NAME, REASONS
 from app.config import BOT_PERSISTENCE_FILE
@@ -98,7 +87,7 @@ MENU_BUTTONS = [
 
 
 def get_subscription_button(context: CallbackContext):
-    if context.user_data[SUBSCRIPTION_FLAG]:
+    if context.user_data[states.SUBSCRIPTION_FLAG]:
         return InlineKeyboardButton(
             text='⏹ Остановить подписку на задания',
             callback_data='stop_subscription'
@@ -113,11 +102,11 @@ def get_subscription_button(context: CallbackContext):
 def start(update: Update, context: CallbackContext) -> int:
     deeplink_passed_param = context.args
     user = add_user(update.effective_user, deeplink_passed_param)
-    context.user_data[SUBSCRIPTION_FLAG] = user.has_mailing
+    context.user_data[states.SUBSCRIPTION_FLAG] = user.has_mailing
 
-    callback_data = (GREETING_REGISTERED_USER
+    callback_data = (states.GREETING_REGISTERED_USER
                      if user.categories
-                     else GREETING)
+                     else states.GREETING)
     button = [
         [
             InlineKeyboardButton(text='Начнем', callback_data=callback_data)
@@ -132,7 +121,7 @@ def start(update: Update, context: CallbackContext) -> int:
              'оперативно связаться с командой поддержки.',
         reply_markup=keyboard
     )
-    return GREETING
+    return states.GREETING
 
 
 def choose_category_after_start(update: Update, context: CallbackContext):
@@ -176,7 +165,7 @@ def confirm_specializations(update: Update, context: CallbackContext):
         parse_mode=ParseMode.MARKDOWN,
         reply_markup=keyboard,
     )
-    return CATEGORY
+    return states.CATEGORY
 
 
 @log_command(command=LOG_COMMANDS_NAME['change_user_categories'])
@@ -229,7 +218,8 @@ def choose_category(update: Update, context: CallbackContext, save_prev_msg: boo
                  'несколько). После этого, нажми на пункт "Готово 👌"',
             reply_markup=keyboard,
         )
-    return CATEGORY
+
+    return states.CATEGORY
 
 
 @log_command(command=LOG_COMMANDS_NAME['after_category_choose'])
@@ -258,7 +248,8 @@ def after_category_choose(update: Update, context: CallbackContext):
         parse_mode=ParseMode.MARKDOWN,
         reply_markup=keyboard
     )
-    return AFTER_CATEGORY_REPLY
+
+    return states.AFTER_CATEGORY_REPLY
 
 
 @log_command(command=LOG_COMMANDS_NAME['open_menu'])
@@ -270,7 +261,7 @@ def open_menu(update: Update, context: CallbackContext):
     update.callback_query.answer()
     update.callback_query.edit_message_text(text=text, reply_markup=keyboard)
 
-    return MENU
+    return states.MENU
 
 
 def open_menu_fall(update: Update, context: CallbackContext):
@@ -284,7 +275,7 @@ def open_menu_fall(update: Update, context: CallbackContext):
         reply_markup=keyboard
     )
 
-    return MENU
+    return states.MENU
 
 
 @log_command(command=LOG_COMMANDS_NAME['show_open_task'])
@@ -299,11 +290,11 @@ def show_open_task(update: Update, context: CallbackContext):
     ]
     keyboard = InlineKeyboardMarkup(buttons)
 
-    if not context.user_data.get(START_SHOW_TASK):
-        context.user_data[START_SHOW_TASK] = []
+    if not context.user_data.get(states.START_SHOW_TASK):
+        context.user_data[states.START_SHOW_TASK] = []
 
     tasks = get_user_active_tasks(
-        update.effective_user.id, context.user_data[START_SHOW_TASK]
+        update.effective_user.id, context.user_data[states.START_SHOW_TASK]
     )
     if tasks:
         tasks.sort(key=lambda x: x[0].id)
@@ -326,7 +317,7 @@ def show_open_task(update: Update, context: CallbackContext):
                     chat_id=update.effective_chat.id, text=display_task(task),
                     parse_mode=ParseMode.HTML
                 )
-                context.user_data[START_SHOW_TASK].append(task[0].id)
+                context.user_data[states.START_SHOW_TASK].append(task[0].id)
             else:
                 context.bot.send_message(
                     chat_id=update.effective_chat.id, text=display_task(task),
@@ -341,7 +332,7 @@ def show_open_task(update: Update, context: CallbackContext):
                                                callback_data='open_menu')]]
                     )
                 )
-                return OPEN_TASKS
+                return states.OPEN_TASKS
 
         update.callback_query.delete_message()
 
@@ -351,7 +342,7 @@ def show_open_task(update: Update, context: CallbackContext):
             reply_markup=keyboard
         )
 
-    return OPEN_TASKS
+    return states.OPEN_TASKS
 
 
 @log_command(command=LOG_COMMANDS_NAME['ask_question'])
@@ -364,7 +355,7 @@ def ask_question(update: Update, context: CallbackContext):
         text='Напишите свой вопрос', reply_markup=keyboard
     )
 
-    return AFTER_NEW_QUESTION
+    return states.TYPING
 
 
 @log_command(command=LOG_COMMANDS_NAME['after_ask_question'])
@@ -385,7 +376,7 @@ def after_ask_question(update: Update, context: CallbackContext):
         reply_markup=keyboard
     )
 
-    return AFTER_CATEGORY_REPLY
+    return states.AFTER_CATEGORY_REPLY
 
 
 @log_command(command=LOG_COMMANDS_NAME['no_relevant_category'])
@@ -393,7 +384,7 @@ def no_relevant_category(update: Update, context: CallbackContext):
     buttons = [
         [
             InlineKeyboardButton(
-                text='Предложить компетенции', callback_data='add_new_category'
+                text='Предложить компетенции', callback_data='ask_new_category'
             )
         ],
         [
@@ -414,7 +405,7 @@ def no_relevant_category(update: Update, context: CallbackContext):
         reply_markup=keyboard
     )
 
-    return NO_CATEGORY
+    return states.NO_CATEGORY
 
 
 @log_command(command=LOG_COMMANDS_NAME['email_feedback'])
@@ -431,11 +422,14 @@ def email_feedback(update: Update, context: CallbackContext):
         reply_markup=keyboard
     )
 
-    return MENU
+    return states.MENU
 
 
-@log_command(command=LOG_COMMANDS_NAME['add_new_category'])
-def add_new_category(update: Update, context: CallbackContext):
+@log_command(command=LOG_COMMANDS_NAME['ask_new_category'])
+def ask_new_category(update: Update, context: CallbackContext):
+    user_data = context.user_data
+    user_data[states.ASK_NEW_CATEGORY_MESSAGE_ID] = update.effective_message.message_id
+    user_data[states.ASK_NEW_CATEGORY_TEXT] = update.effective_message.text
     button = [
         [InlineKeyboardButton(text='Вернуться в меню', callback_data='open_menu')]
     ]
@@ -445,27 +439,97 @@ def add_new_category(update: Update, context: CallbackContext):
         reply_markup=keyboard
     )
 
-    return AFTER_ADD_CATEGORY
+    return states.TYPING
 
 
-@log_command(command=LOG_COMMANDS_NAME['after_add_new_category'])
-def after_add_new_category(update: Update, context: CallbackContext):
+def ask_email(update: Update, context: CallbackContext):
+    context.user_data[states.ASK_EMAIL_FLAG] = True
+    context.bot.edit_message_text(
+        chat_id=update.effective_chat.id,
+        message_id=context.user_data.get(states.ASK_NEW_CATEGORY_MESSAGE_ID),
+        text=context.user_data.get(states.ASK_NEW_CATEGORY_TEXT)
+    )
+    del context.user_data[states.ASK_NEW_CATEGORY_MESSAGE_ID]
+
+    text = 'Пожалуйста, укажи свою почту, если хочешь получить ответ'
     buttons = [
-        [
-            InlineKeyboardButton(text='Посмотреть открытые задания', callback_data='open_task')
-        ],
-        [
-            InlineKeyboardButton(text='Открыть меню', callback_data='open_menu')
-        ]
+        [InlineKeyboardButton(text='Не жду ответ', callback_data='no_wait')],
+        [InlineKeyboardButton(text='Вернуться в меню', callback_data='open_menu')]
     ]
-    keyboard = InlineKeyboardMarkup(buttons)
-    update.callback_query.edit_message_text(
-        text='Спасибо, я передал информацию команде ProCharity!'
-             'Ответ придет на почту <email волонтера>',
+    message = context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text=text,
+        reply_markup=InlineKeyboardMarkup(buttons)
+    )
+
+    context.user_data[states.ASK_EMAIL_MESSAGE_ID] = message.message_id
+    context.user_data[states.ASK_EMAIL_MESSAGE_TEXT] = message.text
+
+    return states.ASK_EMAIL
+
+
+def save_user_input(update: Update, context: CallbackContext):
+    user = get_user(update.effective_user.id)
+    if user.email:
+        return after_ask_new_category(update, context)
+    else:
+        return ask_email(update, context)
+
+
+def no_wait_answer(update: Update, context: CallbackContext):
+    subscription_button = get_subscription_button(context)
+    MENU_BUTTONS[-1] = [subscription_button]
+    keyboard = InlineKeyboardMarkup(MENU_BUTTONS)
+    text = 'Спасибо, я передал информацию команде ProCharity!'
+    update.callback_query.edit_message_text(text=text, reply_markup=keyboard)
+
+    return states.MENU
+
+
+# @log_command(command=LOG_COMMANDS_NAME['save_email'])
+def save_email(update: Update, context: CallbackContext):
+    user_input_email = update.message.text
+    email_status = set_user_email(update.effective_user.id, user_input_email)
+    if email_status:
+        return after_ask_new_category(update, context)
+    else:
+        return save_user_input(update, context)
+
+
+# @log_command(command=LOG_COMMANDS_NAME['after_add_new_category'])
+def after_ask_new_category(update: Update, context: CallbackContext):
+    if context.user_data.get(states.ASK_EMAIL_FLAG):
+        context.bot.edit_message_text(
+            chat_id=update.effective_chat.id,
+            message_id=context.user_data[states.ASK_EMAIL_MESSAGE_ID],
+            text=context.user_data.get(states.ASK_EMAIL_MESSAGE_TEXT)
+        )
+        del context.user_data[states.ASK_EMAIL_FLAG]
+        del context.user_data[states.ASK_EMAIL_MESSAGE_ID]
+        del context.user_data[states.ASK_EMAIL_MESSAGE_TEXT]
+
+    if context.user_data.get(states.ASK_NEW_CATEGORY_MESSAGE_ID):
+        context.bot.edit_message_text(
+            chat_id=update.effective_chat.id,
+            message_id=context.user_data.get(states.ASK_NEW_CATEGORY_MESSAGE_ID),
+            text=context.user_data.get(states.ASK_NEW_CATEGORY_TEXT)
+        )
+        del context.user_data[states.ASK_NEW_CATEGORY_MESSAGE_ID]
+        del context.user_data[states.ASK_NEW_CATEGORY_TEXT]
+
+    user = get_user(update.effective_user.id)
+
+    subscription_button = get_subscription_button(context)
+    MENU_BUTTONS[-1] = [subscription_button]
+    keyboard = InlineKeyboardMarkup(MENU_BUTTONS)
+    text = f'Спасибо, я передал информацию команде ProCharity! Ответ придет на почту {user.email}'
+    context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text=text,
         reply_markup=keyboard
     )
 
-    return AFTER_ADD_CATEGORY
+    return states.MENU
 
 
 @log_command(command=LOG_COMMANDS_NAME['add_new_feature'])
@@ -475,7 +539,7 @@ def add_new_feature(update: Update, context: CallbackContext):
         text='Расскажи, какого функционала тебе не хватает?'
     )
 
-    return TYPING
+    return states.TYPING
 
 
 @log_command(command=LOG_COMMANDS_NAME['after_add_new_feature'])
@@ -495,7 +559,7 @@ def after_add_new_feature(update: Update, context: CallbackContext):
         reply_markup=keyboard
     )
 
-    return AFTER_ADD_FEATURE
+    return states.MENU
 
 
 @log_command(command=LOG_COMMANDS_NAME['about'])
@@ -513,12 +577,12 @@ def about(update: Update, context: CallbackContext):
         reply_markup=keyboard
     )
 
-    return MENU
+    return states.MENU
 
 
 @log_command(command=LOG_COMMANDS_NAME['stop_task_subscription'])
 def stop_task_subscription(update: Update, context: CallbackContext):
-    context.user_data[SUBSCRIPTION_FLAG] = change_subscription(update.effective_user.id)
+    context.user_data[states.SUBSCRIPTION_FLAG] = change_subscription(update.effective_user.id)
     cancel_feedback_buttons = [
         [
             InlineKeyboardButton(text=reason[1], callback_data=reason[0])
@@ -535,12 +599,12 @@ def stop_task_subscription(update: Update, context: CallbackContext):
         text=answer, reply_markup=cancel_feedback_keyboard
     )
 
-    return CANCEL_FEEDBACK
+    return states.CANCEL_FEEDBACK
 
 
 @log_command(command=LOG_COMMANDS_NAME['start_task_subscription'])
 def start_task_subscription(update: Update, context: CallbackContext):
-    context.user_data[SUBSCRIPTION_FLAG] = change_subscription(update.effective_user.id)
+    context.user_data[states.SUBSCRIPTION_FLAG] = change_subscription(update.effective_user.id)
 
     button = [
         [
@@ -570,7 +634,7 @@ def start_task_subscription(update: Update, context: CallbackContext):
                                             reply_markup=keyboard
                                             )
 
-    return AFTER_CATEGORY_REPLY
+    return states.AFTER_CATEGORY_REPLY
 
 
 def cancel_feedback(update: Update, context: CallbackContext):
@@ -585,7 +649,7 @@ def cancel_feedback(update: Update, context: CallbackContext):
         reply_markup=keyboard
     )
 
-    return MENU
+    return states.MENU
 
 
 # @log_command(command=LOG_COMMANDS_NAME['cancel'])
@@ -603,26 +667,50 @@ def cancel(update: Update, context: CallbackContext):
 def main() -> None:
     dispatcher = updater.dispatcher
 
+    feedback_conv = ConversationHandler(
+        entry_points=[
+            CallbackQueryHandler(ask_new_category, pattern='^ask_new_category$')
+        ],
+        states={
+            states.TYPING: [
+                MessageHandler(Filters.text & ~Filters.command, save_user_input),
+                CallbackQueryHandler(open_menu, pattern='^open_menu$')
+            ],
+            states.ASK_EMAIL: [
+                CallbackQueryHandler(open_menu, pattern='^open_menu$'),
+                CallbackQueryHandler(no_wait_answer, pattern='^no_wait$'),
+                MessageHandler(Filters.text & ~Filters.command, save_email)
+            ]
+        },
+        fallbacks=[
+            CommandHandler('start', start),
+            CommandHandler('menu', open_menu_fall)
+        ],
+        map_to_parent={
+            states.MENU: states.MENU
+        }
+    )
+
     conv_handler = ConversationHandler(
         entry_points=[
             CommandHandler('start', start)
         ],
         states={
-            GREETING: [
-                CallbackQueryHandler(choose_category_after_start, pattern='^' + GREETING + '$'),
-                CallbackQueryHandler(before_confirm_specializations, pattern='^' + GREETING_REGISTERED_USER + '$')
+            states.GREETING: [
+                CallbackQueryHandler(choose_category_after_start, pattern='^' + states.GREETING + '$'),
+                CallbackQueryHandler(before_confirm_specializations, pattern='^' + states.GREETING_REGISTERED_USER + '$')
             ],
-            CATEGORY: [
+            states.CATEGORY: [
                 CallbackQueryHandler(choose_category, pattern='^return_chose_category$'),
                 CallbackQueryHandler(after_category_choose, pattern='^ready$'),
                 CallbackQueryHandler(no_relevant_category, pattern='^no_relevant$')
 
             ],
-            AFTER_CATEGORY_REPLY: [
+            states.AFTER_CATEGORY_REPLY: [
                 CallbackQueryHandler(show_open_task, pattern='^open_task$'),
                 CallbackQueryHandler(open_menu, pattern='^open_menu$')
             ],
-            MENU: [
+            states.MENU: [
                 CallbackQueryHandler(show_open_task, pattern='^open_task$'),
                 CallbackQueryHandler(email_feedback, pattern='^ask_question$'),
                 CallbackQueryHandler(about, pattern='^about$'),
@@ -632,25 +720,22 @@ def main() -> None:
                 CallbackQueryHandler(start_task_subscription, pattern='^start_subscription$'),
                 CallbackQueryHandler(open_menu, pattern='^open_menu$')
             ],
-            OPEN_TASKS: [
+            states.OPEN_TASKS: [
                 CallbackQueryHandler(show_open_task, pattern='^open_task$'),
                 CallbackQueryHandler(open_menu, pattern='^open_menu$')
             ],
-            NO_CATEGORY: [
-                CallbackQueryHandler(email_feedback, pattern='^add_new_category$'),
+            states.NO_CATEGORY: [
+                feedback_conv,
                 CallbackQueryHandler(show_open_task, pattern='^open_task$'),
                 CallbackQueryHandler(open_menu, pattern='^open_menu$')
             ],
-            AFTER_ADD_CATEGORY: [
-                CallbackQueryHandler(open_menu, pattern='^open_menu$')
-            ],
-            AFTER_NEW_QUESTION: [
+            states.AFTER_NEW_QUESTION: [
                 CallbackQueryHandler(email_feedback, pattern='^open_menu$')
             ],
-            AFTER_ADD_FEATURE: [
+            states.AFTER_ADD_FEATURE: [
                 CallbackQueryHandler(email_feedback, pattern='^open_menu$')
             ],
-            CANCEL_FEEDBACK: [
+            states.CANCEL_FEEDBACK: [
                 CallbackQueryHandler(cancel_feedback, pattern='^many_notification$'),
                 CallbackQueryHandler(cancel_feedback, pattern='^no_time$'),
                 CallbackQueryHandler(cancel_feedback, pattern='^no_relevant_task$'),

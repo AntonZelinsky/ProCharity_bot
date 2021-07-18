@@ -1,7 +1,4 @@
-import os
-
 from app.models import User
-from app.database import db_session
 from flask import Flask
 from app import config
 from app.config import PASSWORD_POLICY
@@ -11,10 +8,9 @@ from flask_apispec.extension import FlaskApiSpec
 from password_validation import PasswordPolicy
 from flask_mail import Mail
 from flask_cors import CORS
-from bot.charity_bot import main
 
 app = Flask(__name__)
-app.config.from_object(os.getenv('CONFIG'))
+app.config.update(config.APPLICATION_CONFIGURATION)
 cors = CORS(app, resource={r"/*": {"origins": "*"}})
 
 jwt = JWTManager(app)
@@ -27,4 +23,5 @@ app.config.update(**config.APISPEC_SPEC)
 docs = FlaskApiSpec(app)
 
 from . import api, routers, swagger
+from bot.charity_bot import main
 main()  # bot  initialization

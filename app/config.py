@@ -15,11 +15,12 @@ WORKING_MODE_ENV = {
     'dev': '.env.dev',
 }
 load_dotenv(os.path.join(BASE_DIR, WORKING_MODE_ENV[WORKING_MODE]))
-SQL_ALCHEMY_DATABASE_URL = os.getenv('DATABASE_URL')
-HOST_NAME = os.getenv('HOST_NAME')
+
 # -----------------------
 # Basic project settings
 PROJECT_NAME = "ProCharrity bot"
+SQL_ALCHEMY_DATABASE_URL = os.getenv('DATABASE_URL')
+HOST_NAME = os.getenv('HOST_NAME')
 
 PASSWORD_POLICY = {
     "min_length": 8,

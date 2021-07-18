@@ -31,9 +31,18 @@ from bot.data_to_db import (add_user,
 
 from bot.formatter import display_task
 from bot.constants import LOG_COMMANDS_NAME, BOT_NAME, REASONS
+from bot.email_client import send_competence
 from app.config import BOT_PERSISTENCE_FILE
 
 PAGINATION = 3
+
+ASK_EMAIL = 'ask_email'
+ASK_EMAIL_FLAG = 'ask_email_flag'
+ASK_EMAIL_MESSAGE_ID = 'ask_email_message_id'
+ASK_NEW_CATEGORY_MESSAGE_ID = 'ask_new_category_message_id'
+ASK_NEW_CATEGORY_TEXT = 'ask_new_category_text'
+ASK_EMAIL_MESSAGE_TEXT = 'ask_email_message_text'
+USER_CATEGORY_MESSAGE = 'user_category_message'
 
 load_dotenv()
 
@@ -428,8 +437,8 @@ def email_feedback(update: Update, context: CallbackContext):
 @log_command(command=LOG_COMMANDS_NAME['ask_new_category'])
 def ask_new_category(update: Update, context: CallbackContext):
     user_data = context.user_data
-    user_data[states.ASK_NEW_CATEGORY_MESSAGE_ID] = update.effective_message.message_id
-    user_data[states.ASK_NEW_CATEGORY_TEXT] = update.effective_message.text
+    user_data[ASK_NEW_CATEGORY_MESSAGE_ID] = update.effective_message.message_id
+    user_data[ASK_NEW_CATEGORY_TEXT] = update.effective_message.text
     button = [
         [InlineKeyboardButton(text='Вернуться в меню', callback_data='open_menu')]
     ]
@@ -443,13 +452,13 @@ def ask_new_category(update: Update, context: CallbackContext):
 
 
 def ask_email(update: Update, context: CallbackContext):
-    context.user_data[states.ASK_EMAIL_FLAG] = True
+    context.user_data[ASK_EMAIL_FLAG] = True
     context.bot.edit_message_text(
         chat_id=update.effective_chat.id,
-        message_id=context.user_data.get(states.ASK_NEW_CATEGORY_MESSAGE_ID),
-        text=context.user_data.get(states.ASK_NEW_CATEGORY_TEXT)
+        message_id=context.user_data.get(ASK_NEW_CATEGORY_MESSAGE_ID),
+        text=context.user_data.get(ASK_NEW_CATEGORY_TEXT)
     )
-    del context.user_data[states.ASK_NEW_CATEGORY_MESSAGE_ID]
+    del context.user_data[ASK_NEW_CATEGORY_MESSAGE_ID]
 
     text = 'Пожалуйста, укажи свою почту, если хочешь получить ответ'
     buttons = [
@@ -462,14 +471,15 @@ def ask_email(update: Update, context: CallbackContext):
         reply_markup=InlineKeyboardMarkup(buttons)
     )
 
-    context.user_data[states.ASK_EMAIL_MESSAGE_ID] = message.message_id
-    context.user_data[states.ASK_EMAIL_MESSAGE_TEXT] = message.text
+    context.user_data[ASK_EMAIL_MESSAGE_ID] = message.message_id
+    context.user_data[ASK_EMAIL_MESSAGE_TEXT] = message.text
 
-    return states.ASK_EMAIL
+    return ASK_EMAIL
 
 
 def save_user_input(update: Update, context: CallbackContext):
     user = get_user(update.effective_user.id)
+    context.user_data['user_category_message'] = update.message.text
     if user.email:
         return after_ask_new_category(update, context)
     else:
@@ -477,6 +487,8 @@ def save_user_input(update: Update, context: CallbackContext):
 
 
 def no_wait_answer(update: Update, context: CallbackContext):
+    send_competence(update.effective_user.id, context.user_data.get('user_category_message'))
+
     subscription_button = get_subscription_button(context)
     MENU_BUTTONS[-1] = [subscription_button]
     keyboard = InlineKeyboardMarkup(MENU_BUTTONS)
@@ -498,26 +510,28 @@ def save_email(update: Update, context: CallbackContext):
 
 # @log_command(command=LOG_COMMANDS_NAME['after_add_new_category'])
 def after_ask_new_category(update: Update, context: CallbackContext):
-    if context.user_data.get(states.ASK_EMAIL_FLAG):
+    if context.user_data.get(ASK_EMAIL_FLAG):
         context.bot.edit_message_text(
             chat_id=update.effective_chat.id,
-            message_id=context.user_data[states.ASK_EMAIL_MESSAGE_ID],
-            text=context.user_data.get(states.ASK_EMAIL_MESSAGE_TEXT)
+            message_id=context.user_data[ASK_EMAIL_MESSAGE_ID],
+            text=context.user_data.get(ASK_EMAIL_MESSAGE_TEXT)
         )
-        del context.user_data[states.ASK_EMAIL_FLAG]
-        del context.user_data[states.ASK_EMAIL_MESSAGE_ID]
-        del context.user_data[states.ASK_EMAIL_MESSAGE_TEXT]
+        del context.user_data[ASK_EMAIL_FLAG]
+        del context.user_data[ASK_EMAIL_MESSAGE_ID]
+        del context.user_data[ASK_EMAIL_MESSAGE_TEXT]
 
-    if context.user_data.get(states.ASK_NEW_CATEGORY_MESSAGE_ID):
+    if context.user_data.get(ASK_NEW_CATEGORY_MESSAGE_ID):
         context.bot.edit_message_text(
             chat_id=update.effective_chat.id,
-            message_id=context.user_data.get(states.ASK_NEW_CATEGORY_MESSAGE_ID),
-            text=context.user_data.get(states.ASK_NEW_CATEGORY_TEXT)
+            message_id=context.user_data.get(ASK_NEW_CATEGORY_MESSAGE_ID),
+            text=context.user_data.get(ASK_NEW_CATEGORY_TEXT)
         )
-        del context.user_data[states.ASK_NEW_CATEGORY_MESSAGE_ID]
-        del context.user_data[states.ASK_NEW_CATEGORY_TEXT]
+        del context.user_data[ASK_NEW_CATEGORY_MESSAGE_ID]
+        del context.user_data[ASK_NEW_CATEGORY_TEXT]
 
     user = get_user(update.effective_user.id)
+
+    send_competence(update.effective_user.id, context.user_data.get(USER_CATEGORY_MESSAGE))
 
     subscription_button = get_subscription_button(context)
     MENU_BUTTONS[-1] = [subscription_button]

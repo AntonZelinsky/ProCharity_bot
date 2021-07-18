@@ -1,4 +1,5 @@
 from app.models import User
+from app.database import db_session
 from flask import Flask
 from app import config
 from app.config import PASSWORD_POLICY

@@ -10,7 +10,6 @@ from password_validation import PasswordPolicy
 from flask_mail import Mail
 from flask_cors import CORS
 
-
 app = Flask(__name__)
 app.config.update(config.APPLICATION_CONFIGURATION)
 cors = CORS(app, resource={r"/*": {"origins": "*"}})

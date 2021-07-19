@@ -6,11 +6,11 @@ from app import config, api
 from app.database import db_session
 from flask_restful import Resource
 from flask_apispec.views import MethodResource
-from flask_apispec import doc, use_kwargs, marshal_with
+from flask_apispec import doc, use_kwargs
 from email_validator import validate_email, EmailNotValidError
 from marshmallow import fields
 from sqlalchemy_pagination import paginate
-from app.formatter import get_user_information
+from app import formatter
 
 
 USER_SCHEMA = {
@@ -55,7 +55,7 @@ class UsersList(MethodResource, Resource):
         paginate_page = paginate(db_session.query(User), page, limit)
 
         for item in paginate_page.items:
-            result.append(get_user_information(item))
+            result.append(formatter.user_formatter(item))
 
         next_url = None
         previous_url = None
@@ -92,8 +92,8 @@ class UserItem(MethodResource, Resource):
     def get(self, telegram_id):
         user = User.query.get(telegram_id)
         if not user:
-            return make_response(jsonify(message='This user was not found.'), 400)
-        return make_response(jsonify(get_user_information(user)), 200)
+            return make_response(jsonify(message='Данный пользователь не найден.'), 400)
+        return make_response(jsonify(formatter.user_formatter(user)), 200)
 
     @doc(description="Update user's database information.",
          tags=['Users Control'],
@@ -153,7 +153,6 @@ class UserItem(MethodResource, Resource):
 
         User.query.filter_by(telegram_id=telegram_id).update(kwargs)
         db_session.commit()
-
         return make_response(jsonify(message='Информация о пользователе успешно обновлена.'), 200)
 
     @doc(description="Delete user record.",

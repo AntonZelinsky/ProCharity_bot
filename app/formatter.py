@@ -1,4 +1,4 @@
-def get_user_information(user):
+def user_formatter(user):
     return {
         'telegram_id': user.telegram_id,
         'username': user.username,

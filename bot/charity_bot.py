@@ -31,9 +31,7 @@ from bot.data_to_db import (add_user,
 
 from bot.formatter import display_task
 from bot.constants import LOG_COMMANDS_NAME, BOT_NAME, REASONS
-from bot.email_client import (send_competence,
-                              send_question,
-                              send_functional)
+from bot.email_client import send_email
 
 from app.config import BOT_PERSISTENCE_FILE
 
@@ -41,12 +39,8 @@ PAGINATION = 3
 
 ASK_EMAIL_FLAG = 'ask_email_flag'
 ASK_EMAIL_MESSAGE_ID = 'ask_email_message_id'
-ASK_NEW_CATEGORY_MESSAGE_ID = 'ask_new_category_message_id'
-ASK_NEW_CATEGORY_TEXT = 'ask_new_category_text'
 ASK_EMAIL_MESSAGE_TEXT = 'ask_email_message_text'
 USER_MSG = 'user_msg'
-ASK_QUESTION_ID = 'ask_question_id'
-ASK_QUESTION_TEXT = 'ask_question_text'
 FEEDBACK_TYPE = 'feedback_type'
 
 MSG_ID = 'msg_id'
@@ -380,38 +374,6 @@ def ask_question(update: Update, context: CallbackContext):
     return states.TYPING
 
 
-# @log_command(command=LOG_COMMANDS_NAME['after_ask_question'])
-def after_ask_question(update: Update, context: CallbackContext):
-    if context.user_data.get(ASK_QUESTION_TEXT):
-        context.bot.edit_message_text(
-            chat_id=update.effective_chat.id,
-            text=context.user_data.get(ASK_QUESTION_TEXT),
-            message_id=context.user_data.get(ASK_QUESTION_ID)
-        )
-        del context.user_data[ASK_QUESTION_TEXT]
-        del context.user_data[ASK_QUESTION_ID]
-
-    subscription_button = get_subscription_button(context)
-    MENU_BUTTONS[-1] = [subscription_button]
-    keyboard = InlineKeyboardMarkup(MENU_BUTTONS)
-
-    user = get_user(update.effective_user.id)
-
-    context.bot.send_message(
-        chat_id=update.effective_chat.id,
-        text=f'Спасибо, я уже передал информацию коллегам! '
-             f'Ответ придёт на твою почту {user.email}',
-        reply_markup=keyboard
-    )
-    # update.callback_query.edit_message_text(
-    #     text='Спасибо, я уже передал информацию коллегам! '
-    #          'Ответ придёт на твою почту <почта волонтёра>',
-    #     reply_markup=keyboard
-    # )
-
-    return states.MENU
-
-
 @log_command(command=LOG_COMMANDS_NAME['no_relevant_category'])
 def no_relevant_category(update: Update, context: CallbackContext):
     buttons = [
@@ -439,23 +401,6 @@ def no_relevant_category(update: Update, context: CallbackContext):
     )
 
     return states.NO_CATEGORY
-
-
-@log_command(command=LOG_COMMANDS_NAME['email_feedback'])
-def email_feedback(update: Update, context: CallbackContext):
-    button = [
-        [
-            InlineKeyboardButton(text='Вернуться в меню', callback_data='open_menu')
-        ]
-    ]
-    keyboard = InlineKeyboardMarkup(button)
-    update.callback_query.edit_message_text(
-        text='Будем рады ответить на любые вопросы по '
-             'почте procharity@friends-foundation.com',
-        reply_markup=keyboard
-    )
-
-    return states.MENU
 
 
 @log_command(command=LOG_COMMANDS_NAME['ask_new_category'])
@@ -507,13 +452,15 @@ def save_user_input(update: Update, context: CallbackContext):
     user = get_user(update.effective_user.id)
     context.user_data[USER_MSG] = update.message.text
     if user.email:
-        return after_ask_new_category(update, context)
+        return after_get_feedback(update, context)
     else:
         return ask_email(update, context)
 
 
 def no_wait_answer(update: Update, context: CallbackContext):
-    #send_competence(update.effective_user.id, context.user_data.get(USER_MSG))
+    send_email(
+        update.effective_user.id, context.user_data.get(USER_MSG), context.user_data.get(FEEDBACK_TYPE)
+    )
 
     subscription_button = get_subscription_button(context)
     MENU_BUTTONS[-1] = [subscription_button]
@@ -529,13 +476,13 @@ def save_email(update: Update, context: CallbackContext):
     user_input_email = update.message.text
     email_status = set_user_email(update.effective_user.id, user_input_email)
     if email_status:
-        return after_ask_new_category(update, context)
+        return after_get_feedback(update, context)
     else:
         return save_user_input(update, context)
 
 
 # @log_command(command=LOG_COMMANDS_NAME['after_add_new_category'])
-def after_ask_new_category(update: Update, context: CallbackContext):
+def after_get_feedback(update: Update, context: CallbackContext):
     if context.user_data.get(ASK_EMAIL_FLAG):
         context.bot.edit_message_text(
             chat_id=update.effective_chat.id,
@@ -558,12 +505,11 @@ def after_ask_new_category(update: Update, context: CallbackContext):
     user = get_user(update.effective_user.id)
 
     feedback_type = context.user_data.get(FEEDBACK_TYPE)
-    if feedback_type == 'category':
-        send_competence(update.effective_user.id, context.user_data.get(USER_MSG))
-    elif feedback_type == 'question':
-        send_question(update.effective_user.id, context.user_data.get(USER_MSG))
-    elif feedback_type == 'feature':
-        send_functional(update.effective_user.id, context.user_data.get(USER_MSG))
+
+    send_email(
+        update.effective_user.id, context.user_data.get(USER_MSG), feedback_type
+    )
+    del context.user_data[FEEDBACK_TYPE]
 
     subscription_button = get_subscription_button(context)
     MENU_BUTTONS[-1] = [subscription_button]
@@ -595,26 +541,6 @@ def add_new_feature(update: Update, context: CallbackContext):
     user_data[FEEDBACK_TYPE] = 'feature'
 
     return states.TYPING
-
-
-@log_command(command=LOG_COMMANDS_NAME['after_add_new_feature'])
-def after_add_new_feature(update: Update, context: CallbackContext):
-    buttons = [
-        [
-            InlineKeyboardButton(text='Посмотреть открытые задания', callback_data='open_task')
-        ],
-        [
-            InlineKeyboardButton(text='Открыть меню', callback_data='open_menu')
-        ]
-    ]
-    keyboard = InlineKeyboardMarkup(buttons)
-    update.callback_query.edit_message_text(
-        text='Спасибо, я уже передал информацию коллегам! '
-             'Ответ придёт на твою почту <почта волонтёра>',
-        reply_markup=keyboard
-    )
-
-    return states.MENU
 
 
 @log_command(command=LOG_COMMANDS_NAME['about'])
@@ -769,11 +695,9 @@ def main() -> None:
             ],
             states.MENU: [
                 CallbackQueryHandler(show_open_task, pattern='^open_task$'),
-                # CallbackQueryHandler(email_feedback, pattern='^ask_question$'),
                 feedback_conv,
                 CallbackQueryHandler(about, pattern='^about$'),
                 CallbackQueryHandler(choose_category, pattern='^change_category$'),
-                # CallbackQueryHandler(email_feedback, pattern='^new_feature$'),
                 CallbackQueryHandler(stop_task_subscription, pattern='^stop_subscription$'),
                 CallbackQueryHandler(start_task_subscription, pattern='^start_subscription$'),
                 CallbackQueryHandler(open_menu, pattern='^open_menu$')
@@ -786,12 +710,6 @@ def main() -> None:
                 feedback_conv,
                 CallbackQueryHandler(show_open_task, pattern='^open_task$'),
                 CallbackQueryHandler(open_menu, pattern='^open_menu$')
-            ],
-            states.AFTER_NEW_QUESTION: [
-                CallbackQueryHandler(email_feedback, pattern='^open_menu$')
-            ],
-            states.AFTER_ADD_FEATURE: [
-                CallbackQueryHandler(email_feedback, pattern='^open_menu$')
             ],
             states.CANCEL_FEEDBACK: [
                 CallbackQueryHandler(cancel_feedback, pattern='^many_notification$'),

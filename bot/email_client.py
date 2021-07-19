@@ -6,6 +6,12 @@ from flask_mail import Message
 from app import app, config, mail
 from app.models import User
 
+SUBJECT_FEEDBACK = {
+    'category': 'Запрос на новые компетенции',
+    'question': 'Вопрос из бота',
+    'feature': 'Запрос на новый функционал для бота'
+}
+
 
 def send_email(telegram_id, message, subject):
     recipients = [os.getenv('EMAIL_PROCHARRITY')]
@@ -23,24 +29,9 @@ def send_email(telegram_id, message, subject):
             name=name
         )
         msg = Message(
-            subject=subject,
+            subject=SUBJECT_FEEDBACK[subject],
             recipients=recipients,
             html=template
         )
         mail.send(msg)
     return
-
-
-def send_question(telegram_id, message):
-    subject = 'Вопрос из бота'
-    return send_email(telegram_id, message, subject)
-
-
-def send_competence(telegram_id, message):
-    subject = 'Запрос на новые компетенции'
-    return send_email(telegram_id, message, subject)
-
-
-def send_functional(telegram_id, message):
-    subject = 'Запрос на новый функционал для бота'
-    return send_email(telegram_id, message, subject)

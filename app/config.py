@@ -5,16 +5,7 @@ from apispec.ext.marshmallow import MarshmallowPlugin
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
-# prod - production | test - testing | dev - development
-WORKING_MODE = 'dev'
-
-WORKING_MODE_ENV = {
-    'prod': '.env.prod',
-    'test': '.env.test',
-    'dev': '.env.dev',
-}
-load_dotenv(os.path.join(BASE_DIR, WORKING_MODE_ENV[WORKING_MODE]))
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 # -----------------------
 # Basic project settings
@@ -58,7 +49,7 @@ PAGE_LIMIT = 10
 # Telegram bot settings
 TELEGRAM_TOKEN = os.getenv('TOKEN')
 NUMBER_USERS_TO_SEND = 30
-BOT_PERSISTENCE_FILE = os.getenv('PERSISTENCE_FILE')
+BOT_PERSISTENCE_FILE = os.path.join(BASE_DIR, 'bot_persistence_data')
 
 APISPEC_SPEC = {'APISPEC_SPEC':
                     APISpec(title=PROJECT_NAME,

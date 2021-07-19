@@ -436,17 +436,18 @@ def email_feedback(update: Update, context: CallbackContext):
 
 @log_command(command=LOG_COMMANDS_NAME['ask_new_category'])
 def ask_new_category(update: Update, context: CallbackContext):
-    user_data = context.user_data
-    user_data[ASK_NEW_CATEGORY_MESSAGE_ID] = update.effective_message.message_id
-    user_data[ASK_NEW_CATEGORY_TEXT] = update.effective_message.text
     button = [
         [InlineKeyboardButton(text='Вернуться в меню', callback_data='open_menu')]
     ]
     keyboard = InlineKeyboardMarkup(button)
-    update.callback_query.edit_message_text(
+    message = update.callback_query.edit_message_text(
         text='Напиши, в какой профессиональной сфере ты бы хотел помогать?',
         reply_markup=keyboard
     )
+
+    user_data = context.user_data
+    user_data[ASK_NEW_CATEGORY_MESSAGE_ID] = message.message_id
+    user_data[ASK_NEW_CATEGORY_TEXT] = message.text
 
     return states.TYPING
 
@@ -474,7 +475,7 @@ def ask_email(update: Update, context: CallbackContext):
     context.user_data[ASK_EMAIL_MESSAGE_ID] = message.message_id
     context.user_data[ASK_EMAIL_MESSAGE_TEXT] = message.text
 
-    return ASK_EMAIL
+    return states.ASK_EMAIL
 
 
 def save_user_input(update: Update, context: CallbackContext):

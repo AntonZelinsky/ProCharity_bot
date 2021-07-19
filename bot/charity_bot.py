@@ -35,6 +35,9 @@ from app.config import BOT_PERSISTENCE_FILE
 
 PAGINATION = 3
 
+ASK_QUESTION_ID = 'ask_question_id'
+ASK_QUESTION_TEXT = 'ask_question_text'
+
 load_dotenv()
 
 logger = logging.getLogger(__name__)
@@ -345,8 +348,12 @@ def show_open_task(update: Update, context: CallbackContext):
     return states.OPEN_TASKS
 
 
-@log_command(command=LOG_COMMANDS_NAME['ask_question'])
+# @log_command(command=LOG_COMMANDS_NAME['ask_question'])
 def ask_question(update: Update, context: CallbackContext):
+    user_data = context.user_data
+    user_data[ASK_QUESTION_ID] = update.effective_message.message_id
+    user_data[ASK_QUESTION_TEXT] = update.effective_message.text
+
     button = [
         [InlineKeyboardButton(text='Вернуться в меню', callback_data='open_menu')]
     ]
@@ -355,28 +362,30 @@ def ask_question(update: Update, context: CallbackContext):
         text='Напишите свой вопрос', reply_markup=keyboard
     )
 
-    return states.TYPING
+    return states.TYPING_QUESTION
 
 
-@log_command(command=LOG_COMMANDS_NAME['after_ask_question'])
+# @log_command(command=LOG_COMMANDS_NAME['after_ask_question'])
 def after_ask_question(update: Update, context: CallbackContext):
-    buttons = [
-        [
-            InlineKeyboardButton(text='Посмотреть открытые задания', callback_data='open_task')
-        ],
-        [
-            InlineKeyboardButton(text='Открыть меню', callback_data='open_menu')
-        ]
-    ]
-    keyboard = InlineKeyboardMarkup(buttons)
-    update.callback_query.answer()
-    update.callback_query.edit_message_text(
-        text='Спасибо, я уже передал информацию коллегам! '
-             'Ответ придёт на твою почту <почта волонтёра>',
+    subscription_button = get_subscription_button(context)
+    MENU_BUTTONS[-1] = [subscription_button]
+    keyboard = InlineKeyboardMarkup(MENU_BUTTONS)
+
+    user = get_user(update.effective_user.id)
+
+    context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text=f'Спасибо, я уже передал информацию коллегам! '
+             f'Ответ придёт на твою почту {user.email}',
         reply_markup=keyboard
     )
+    # update.callback_query.edit_message_text(
+    #     text='Спасибо, я уже передал информацию коллегам! '
+    #          'Ответ придёт на твою почту <почта волонтёра>',
+    #     reply_markup=keyboard
+    # )
 
-    return states.AFTER_CATEGORY_REPLY
+    return states.MENU
 
 
 @log_command(command=LOG_COMMANDS_NAME['no_relevant_category'])
@@ -472,6 +481,14 @@ def save_user_input(update: Update, context: CallbackContext):
     user = get_user(update.effective_user.id)
     if user.email:
         return after_ask_new_category(update, context)
+    else:
+        return ask_email(update, context)
+
+
+def save_user_question_input(update: Update, context: CallbackContext):
+    user = get_user(update.effective_user.id)
+    if user.email:
+        return after_ask_question(update, context)
     else:
         return ask_email(update, context)
 
@@ -669,7 +686,8 @@ def main() -> None:
 
     feedback_conv = ConversationHandler(
         entry_points=[
-            CallbackQueryHandler(ask_new_category, pattern='^ask_new_category$')
+            CallbackQueryHandler(ask_new_category, pattern='^ask_new_category$'),
+            CallbackQueryHandler(ask_question, pattern='^ask_question')
         ],
         states={
             states.TYPING: [
@@ -680,6 +698,10 @@ def main() -> None:
                 CallbackQueryHandler(open_menu, pattern='^open_menu$'),
                 CallbackQueryHandler(no_wait_answer, pattern='^no_wait$'),
                 MessageHandler(Filters.text & ~Filters.command, save_email)
+            ],
+            states.TYPING_QUESTION: [
+                MessageHandler(Filters.text & ~Filters.command, save_user_question_input),
+                CallbackQueryHandler(open_menu, pattern='^open_menu$')
             ]
         },
         fallbacks=[
@@ -712,7 +734,8 @@ def main() -> None:
             ],
             states.MENU: [
                 CallbackQueryHandler(show_open_task, pattern='^open_task$'),
-                CallbackQueryHandler(email_feedback, pattern='^ask_question$'),
+                # CallbackQueryHandler(email_feedback, pattern='^ask_question$'),
+                feedback_conv,
                 CallbackQueryHandler(about, pattern='^about$'),
                 CallbackQueryHandler(choose_category, pattern='^change_category$'),
                 CallbackQueryHandler(email_feedback, pattern='^new_feature$'),

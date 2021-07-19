@@ -36,7 +36,6 @@ from app.config import BOT_PERSISTENCE_FILE
 
 PAGINATION = 3
 
-ASK_EMAIL = 'ask_email'
 ASK_EMAIL_FLAG = 'ask_email_flag'
 ASK_EMAIL_MESSAGE_ID = 'ask_email_message_id'
 ASK_NEW_CATEGORY_MESSAGE_ID = 'ask_new_category_message_id'
@@ -482,12 +481,12 @@ def ask_email(update: Update, context: CallbackContext):
     context.user_data[ASK_EMAIL_MESSAGE_ID] = message.message_id
     context.user_data[ASK_EMAIL_MESSAGE_TEXT] = message.text
 
-    return ASK_EMAIL
+    return states.ASK_EMAIL
 
 
 def save_user_input(update: Update, context: CallbackContext):
     user = get_user(update.effective_user.id)
-    context.user_data['user_category_message'] = update.message.text
+    context.user_data[USER_CATEGORY_MESSAGE] = update.message.text
     if user.email:
         return after_ask_new_category(update, context)
     else:
@@ -503,7 +502,7 @@ def save_user_question_input(update: Update, context: CallbackContext):
 
 
 def no_wait_answer(update: Update, context: CallbackContext):
-    send_competence(update.effective_user.id, context.user_data.get('user_category_message'))
+    #send_competence(update.effective_user.id, context.user_data.get(USER_CATEGORY_MESSAGE))
 
     subscription_button = get_subscription_button(context)
     MENU_BUTTONS[-1] = [subscription_button]
@@ -547,7 +546,7 @@ def after_ask_new_category(update: Update, context: CallbackContext):
 
     user = get_user(update.effective_user.id)
 
-    send_competence(update.effective_user.id, context.user_data.get(USER_CATEGORY_MESSAGE))
+    # send_competence(update.effective_user.id, context.user_data.get(USER_CATEGORY_MESSAGE))
 
     subscription_button = get_subscription_button(context)
     MENU_BUTTONS[-1] = [subscription_button]

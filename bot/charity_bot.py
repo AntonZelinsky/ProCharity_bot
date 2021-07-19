@@ -356,7 +356,7 @@ def show_open_task(update: Update, context: CallbackContext):
     return states.OPEN_TASKS
 
 
-# @log_command(command=LOG_COMMANDS_NAME['ask_question'])
+@log_command(command=LOG_COMMANDS_NAME['ask_question'])
 def ask_question(update: Update, context: CallbackContext):
     button = [
         [InlineKeyboardButton(text='Вернуться в меню', callback_data='open_menu')]
@@ -422,6 +422,7 @@ def ask_new_category(update: Update, context: CallbackContext):
     return states.TYPING
 
 
+# @log_command(command=LOG_COMMANDS_NAME['ask_email'])
 def ask_email(update: Update, context: CallbackContext):
     context.user_data[ASK_EMAIL_FLAG] = True
     context.bot.edit_message_text(
@@ -448,6 +449,7 @@ def ask_email(update: Update, context: CallbackContext):
     return states.ASK_EMAIL
 
 
+# @log_command(command=LOG_COMMANDS_NAME['save_user_input'])
 def save_user_input(update: Update, context: CallbackContext):
     user = get_user(update.effective_user.id)
     context.user_data[USER_MSG] = update.message.text
@@ -457,6 +459,7 @@ def save_user_input(update: Update, context: CallbackContext):
         return ask_email(update, context)
 
 
+@log_command(command=LOG_COMMANDS_NAME['no_wait_answer'])
 def no_wait_answer(update: Update, context: CallbackContext):
     send_email(
         update.effective_user.id, context.user_data.get(USER_MSG), context.user_data.get(FEEDBACK_TYPE)
@@ -481,7 +484,7 @@ def save_email(update: Update, context: CallbackContext):
         return save_user_input(update, context)
 
 
-# @log_command(command=LOG_COMMANDS_NAME['after_add_new_category'])
+@log_command(command=LOG_COMMANDS_NAME['after_add_new_category'])
 def after_get_feedback(update: Update, context: CallbackContext):
     if context.user_data.get(ASK_EMAIL_FLAG):
         context.bot.edit_message_text(
@@ -618,6 +621,7 @@ def start_task_subscription(update: Update, context: CallbackContext):
     return states.AFTER_CATEGORY_REPLY
 
 
+@log_command(command=LOG_COMMANDS_NAME['cancel_feedback'])
 def cancel_feedback(update: Update, context: CallbackContext):
     subscription_button = get_subscription_button(context)
     reason_canceling = update['callback_query']['data']

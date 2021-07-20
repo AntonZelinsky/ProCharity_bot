@@ -19,7 +19,11 @@ LOG_COMMANDS_NAME = {
     'stop_task_subscription': 'Остановить подписку на задания',
     'cancel': 'Отмена',
     'confirm_specializations': 'Подтверждение специализаций',
-    'check_user_information': 'Проверка информации пользователя'
+    'check_user_information': 'Проверка информации пользователя',
+    'ask_email': 'Спросить e-mail',
+    'save_user_input': 'Сохранить ввод пользователя',
+    'no_wait_answer': 'Не ожидает ввода e-mail от пользователя',
+    'cancel_feedback': 'Отзыв при отписке'
 }
 
 REASONS = {

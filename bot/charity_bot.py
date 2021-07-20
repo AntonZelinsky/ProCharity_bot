@@ -43,6 +43,10 @@ ASK_EMAIL_MESSAGE_TEXT = 'ask_email_message_text'
 USER_MSG = 'user_msg'
 FEEDBACK_TYPE = 'feedback_type'
 
+QUESTION_TYPE = 'question'
+CATEGORY_TYPE = 'category'
+FEATURE_TYPE = 'feature'
+
 MSG_ID = 'msg_id'
 MSG_TEXT = 'msg_text'
 
@@ -369,7 +373,7 @@ def ask_question(update: Update, context: CallbackContext):
     user_data = context.user_data
     user_data[MSG_ID] = message.message_id
     user_data[MSG_TEXT] = message.text
-    user_data[FEEDBACK_TYPE] = 'question'
+    user_data[FEEDBACK_TYPE] = QUESTION_TYPE
 
     return states.TYPING
 
@@ -417,7 +421,7 @@ def ask_new_category(update: Update, context: CallbackContext):
     user_data = context.user_data
     user_data[MSG_ID] = message.message_id
     user_data[MSG_TEXT] = message.text
-    user_data[FEEDBACK_TYPE] = 'category'
+    user_data[FEEDBACK_TYPE] = CATEGORY_TYPE
 
     return states.TYPING
 
@@ -541,7 +545,7 @@ def add_new_feature(update: Update, context: CallbackContext):
     user_data = context.user_data
     user_data[MSG_ID] = message.message_id
     user_data[MSG_TEXT] = message.text
-    user_data[FEEDBACK_TYPE] = 'feature'
+    user_data[FEEDBACK_TYPE] = FEATURE_TYPE
 
     return states.TYPING
 

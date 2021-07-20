@@ -108,7 +108,7 @@ def get_subscription_button(context: CallbackContext):
             callback_data='stop_subscription'
         )
     return InlineKeyboardButton(
-        text='⏹ Включить подписку на задания',
+        text='▶️ Включить подписку на задания',
         callback_data='start_subscription'
     )
 
@@ -338,6 +338,7 @@ def show_open_task(update: Update, context: CallbackContext):
                     chat_id=update.effective_chat.id, text=display_task(task),
                     parse_mode=ParseMode.HTML
                 )
+                context.user_data[states.START_SHOW_TASK].append(task[0].id)
                 update.callback_query.delete_message()
                 context.bot.send_message(
                     chat_id=update.effective_chat.id,

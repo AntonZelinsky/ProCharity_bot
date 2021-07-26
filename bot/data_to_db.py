@@ -138,20 +138,12 @@ def log_command(command, ignore_func: list = None):
                 if code_obj_name in ignore_func:
                     return func(*args, **kwargs)
 
-            if update:
-                if update.message:
-                    telegram_id = update.message.chat.id
-                else:
-                    telegram_id = update.callback_query.message.chat.id
+            statistic = Statistics(telegram_id=update.effective_user.id,
+                                   command=command,
+                                   added_date=datetime.now())
 
-                statistic = Statistics(telegram_id=telegram_id,
-                                       command=command,
-                                       added_date=datetime.now())
-
-                db_session.add(statistic)
-                db_session.commit()
-            else:
-                pass  # TODO Needs add logging if the log_command not record in the statistics table
+            db_session.add(statistic)
+            db_session.commit()
 
             return func(*args, **kwargs)
 

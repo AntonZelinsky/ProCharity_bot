@@ -1,17 +1,19 @@
-from app.models import ReasonCanceling, User, Category, Task, Statistics, Users_Categories, ExternalSiteUser
-from app.database import db_session
-from datetime import datetime
-from sqlalchemy.orm import load_only
-from sqlalchemy import select
 import inspect
+from datetime import datetime
+
 from email_validator import validate_email, EmailNotValidError
+from sqlalchemy import select
+from sqlalchemy.orm import load_only
+
+from app.database import db_session
+from app.models import ReasonCanceling, User, Category, Task, Statistics, Users_Categories, ExternalSiteUser
 
 
 def add_user(telegram_user, external_id_hash):
     telegram_id = telegram_user.id
     username = telegram_user.username
     last_name = telegram_user.last_name
-    first_name = telegram_user.last_name
+    first_name = telegram_user.first_name
     record_updated = False
     user = User.query.filter_by(telegram_id=telegram_id).first()
 
@@ -122,38 +124,27 @@ def change_subscription(telegram_id):
     return user.has_mailing
 
 
-def log_command(command, start_menu=False, ignore_func: list = None):
-    """
-    Add information of using bot commands to DB.
-    :param command: Commands passed to the bot for adding to the database
-    :param start_menu: It should be set True if the first call to the bot
-     is being made and the callback is not used to get the response data.
-    :param ignore_func: Ignoring logging based on the name of the called function.
-    :return:
-    """
-
+def log_command(command, ignore_func: list = None):
     def log(func):
         def wrapper(*args, **kwargs):
+            update = args[0]
 
             if ignore_func:
                 current_frame = inspect.currentframe()
                 caller_frame = current_frame.f_back
                 code_obj = caller_frame.f_code
                 code_obj_name = code_obj.co_name
+
                 if code_obj_name in ignore_func:
                     return func(*args, **kwargs)
 
-            if start_menu:
-                telegram_id = args[0].message.chat.id
-            else:
-                telegram_id = args[0].callback_query.message.chat.id
-
-            statistic = Statistics(telegram_id=telegram_id,
+            statistic = Statistics(telegram_id=update.effective_user.id,
                                    command=command,
                                    added_date=datetime.now())
 
             db_session.add(statistic)
             db_session.commit()
+
             return func(*args, **kwargs)
 
         return wrapper

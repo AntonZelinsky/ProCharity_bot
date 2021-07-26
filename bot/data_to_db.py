@@ -124,28 +124,35 @@ def change_subscription(telegram_id):
     return user.has_mailing
 
 
-def log_command(command, callback: bool = True, ignore_func: list = None):
+def log_command(command, ignore_func: list = None):
     def log(func):
         def wrapper(*args, **kwargs):
+            telegram_args = args[0]
 
             if ignore_func:
                 current_frame = inspect.currentframe()
                 caller_frame = current_frame.f_back
                 code_obj = caller_frame.f_code
                 code_obj_name = code_obj.co_name
+
                 if code_obj_name in ignore_func:
                     return func(*args, **kwargs)
-            if not callback:
-                telegram_id = args[0].message.chat.id
+
+            if telegram_args:
+                if telegram_args.message:
+                    telegram_id = telegram_args.message.chat.id
+                else:
+                    telegram_id = telegram_args.callback_query.message.chat.id
+
+                statistic = Statistics(telegram_id=telegram_id,
+                                       command=command,
+                                       added_date=datetime.now())
+
+                db_session.add(statistic)
+                db_session.commit()
             else:
-                telegram_id = args[0].callback_query.message.chat.id
+                pass  # TODO Needs add logging if the log_command not record in the statistics table
 
-            statistic = Statistics(telegram_id=telegram_id,
-                                   command=command,
-                                   added_date=datetime.now())
-
-            db_session.add(statistic)
-            db_session.commit()
             return func(*args, **kwargs)
 
         return wrapper

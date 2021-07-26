@@ -113,7 +113,7 @@ def get_subscription_button(context: CallbackContext):
     )
 
 
-@log_command(command=LOG_COMMANDS_NAME['start'], callback=False)
+@log_command(command=LOG_COMMANDS_NAME['start'])
 def start(update: Update, context: CallbackContext) -> int:
     deeplink_passed_param = context.args
     user = add_user(update.effective_user, deeplink_passed_param)
@@ -489,7 +489,7 @@ def save_email(update: Update, context: CallbackContext):
         return save_user_input(update, context)
 
 
-@log_command(command=LOG_COMMANDS_NAME['after_get_feedback'], callback=False)
+@log_command(command=LOG_COMMANDS_NAME['after_get_feedback'])
 def after_get_feedback(update: Update, context: CallbackContext):
     if context.user_data.get(ASK_EMAIL_FLAG):
         context.bot.edit_message_text(
@@ -642,7 +642,7 @@ def cancel_feedback(update: Update, context: CallbackContext):
     return states.MENU
 
 
-# @log_command(command=LOG_COMMANDS_NAME['cancel'])
+@log_command(command=LOG_COMMANDS_NAME['cancel'])
 def cancel(update: Update, context: CallbackContext):
     user = update.message.from_user
     logger.info("User %s canceled the conversation.", user.first_name)

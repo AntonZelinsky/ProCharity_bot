@@ -258,9 +258,13 @@ def after_category_choose(update: Update, context: CallbackContext):
 
     update.callback_query.edit_message_text(
         text=f'Отлично! Теперь я буду присылать тебе уведомления о новых '
-             f'заданиях в категориях: *{user_categories}*.\n\n'
-             f'А пока можешь посмотреть открытые задания.',
-        parse_mode=ParseMode.MARKDOWN,
+             f'заданиях в категориях: *{user_categories}*.\n\n',
+        parse_mode=ParseMode.MARKDOWN
+    )
+
+    context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text='А пока можешь посмотреть открытые задания.',
         reply_markup=keyboard
     )
 

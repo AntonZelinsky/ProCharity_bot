@@ -127,7 +127,7 @@ def change_subscription(telegram_id):
 def log_command(command, ignore_func: list = None):
     def log(func):
         def wrapper(*args, **kwargs):
-            telegram_args = args[0]
+            update = args[0]
 
             if ignore_func:
                 current_frame = inspect.currentframe()
@@ -138,11 +138,11 @@ def log_command(command, ignore_func: list = None):
                 if code_obj_name in ignore_func:
                     return func(*args, **kwargs)
 
-            if telegram_args:
-                if telegram_args.message:
-                    telegram_id = telegram_args.message.chat.id
+            if update:
+                if update.message:
+                    telegram_id = update.message.chat.id
                 else:
-                    telegram_id = telegram_args.callback_query.message.chat.id
+                    telegram_id = update.callback_query.message.chat.id
 
                 statistic = Statistics(telegram_id=telegram_id,
                                        command=command,

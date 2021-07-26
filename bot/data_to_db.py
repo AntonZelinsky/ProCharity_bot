@@ -6,15 +6,14 @@ from sqlalchemy import select
 from sqlalchemy.orm import load_only
 
 from app.database import db_session
-from app.models import ReasonCanceling, User, Category, Task, Statistics, \
-    Users_Categories, ExternalSiteUser
+from app.models import ReasonCanceling, User, Category, Task, Statistics, Users_Categories, ExternalSiteUser
 
 
 def add_user(telegram_user, external_id_hash):
     telegram_id = telegram_user.id
     username = telegram_user.username
     last_name = telegram_user.last_name
-    first_name = telegram_user.first_name
+    first_name = telegram_user.last_name
     record_updated = False
     user = User.query.filter_by(telegram_id=telegram_id).first()
 
@@ -28,8 +27,7 @@ def add_user(telegram_user, external_id_hash):
         db_session.add(user)
 
     if external_id_hash:
-        external_user = ExternalSiteUser.query.filter_by(
-            external_id_hash=external_id_hash[0]).first()
+        external_user = ExternalSiteUser.query.filter_by(external_id_hash=external_id_hash[0]).first()
 
         if external_user:
             user.first_name = external_user.first_name
@@ -38,11 +36,8 @@ def add_user(telegram_user, external_id_hash):
             user.email = external_user.email
 
             if external_user.specializations:
-                external_user_specializations = [int(x) for x in
-                                                 external_user.specializations.split(
-                                                     ',')]
-                specializations = Category.query.filter(
-                    Category.id.in_(external_user_specializations)).all()
+                external_user_specializations = [int(x) for x in external_user.specializations.split(',')]
+                specializations = Category.query.filter(Category.id.in_(external_user_specializations)).all()
 
                 for specialization in specializations:
                     user.categories.append(specialization)
@@ -83,10 +78,8 @@ def get_category(telegram_id):
     :return:
     """
     result = []
-    user_categories = [cat.id for cat in User.query.filter_by(
-        telegram_id=telegram_id).first().categories]
-    all_categories = Category.query.options(load_only('id')).filter_by(
-        archive=False)
+    user_categories = [cat.id for cat in User.query.filter_by(telegram_id=telegram_id).first().categories]
+    all_categories = Category.query.options(load_only('id')).filter_by(archive=False)
     for category in all_categories:
         cat = {}
         cat['category_id'] = category.id
@@ -107,8 +100,7 @@ def get_user_active_tasks(telegram_id, shown_task):
     stmt = select(Task, Category.name). \
         where(Users_Categories.telegram_id == telegram_id). \
         where(Task.archive == False).where(~Task.id.in_(shown_task)). \
-        join(Users_Categories,
-             Users_Categories.category_id == Task.category_id). \
+        join(Users_Categories, Users_Categories.category_id == Task.category_id). \
         join(Category, Category.id == Users_Categories.category_id)
 
     result = db_session.execute(stmt)
@@ -121,8 +113,7 @@ def change_subscription(telegram_id):
     :param telegram_id: Chat id of current user from the telegram update obj.
     :return:
     """
-    user = User.query.options(load_only('has_mailing')).filter_by(
-        telegram_id=telegram_id).first()
+    user = User.query.options(load_only('has_mailing')).filter_by(telegram_id=telegram_id).first()
 
     if user.has_mailing:
         user.has_mailing = False

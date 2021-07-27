@@ -5,7 +5,7 @@ from app.database import db_session
 from datetime import datetime
 
 
-def log_command(command, ignore_func: list = None):
+def log_command(command, start_menu=False, ignore_func: list = None):
     def log(func):
         def wrapper(*args, **kwargs):
             update = args[0]

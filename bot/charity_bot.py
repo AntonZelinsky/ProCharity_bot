@@ -19,7 +19,7 @@ from telegram.ext import (Updater,
 
 from bot import states
 
-from bot.data_to_db import log_command
+from bot.logger import log_command
 
 from bot.formatter import display_task
 from bot.constants import LOG_COMMANDS_NAME, BOT_NAME, REASONS

@@ -1,4 +1,5 @@
 import inspect
+import logging
 
 from app.models import Statistics
 from app.database import db_session
@@ -27,8 +28,8 @@ def log_command(command, ignore_func: list = None):
                 db_session.commit()
 
                 return func(*args, **kwargs)
-            except Exception:
-                pass
+            except Exception as e:
+                logging.getLogger(__name__).error(f"Ошибка {e} после команды '{ command }'")
         return wrapper
 
     return log

@@ -23,7 +23,8 @@ LOG_COMMANDS_NAME = {
     'ask_email': 'Спросить e-mail',
     'save_user_input': 'Сохранить ввод пользователя',
     'no_wait_answer': 'Не ожидает ввода e-mail от пользователя',
-    'cancel_feedback': 'Отзыв при отписке'
+    'cancel_feedback': 'Отзыв при отписке',
+    'after_get_feedback': 'Сохранена почта пользователя.'
 }
 
 REASONS = {

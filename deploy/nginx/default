@@ -1,0 +1,24 @@
+server {
+    server_name 178.154.254.19 bot.procharity.ru;
+
+     location / {
+                root /code/frontend;
+        }
+        location /api/ {
+        proxy_pass http://localhost:8000;
+
+        }
+
+ listen 443 ssl;
+ ssl_certificate /etc/nginx/ssl/fullchain.pem;
+    ssl_certificate_key /etc/nginx/ssl/cert.pem;
+}
+server {
+    if ($host = bot.procharity.ru) {
+        return 301 https://$host$request_uri;
+    }
+        listen 80;
+        server_name 178.154.254.19 bot.procharity.ru;
+    return 404;
+
+}

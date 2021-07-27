@@ -19,19 +19,12 @@ from telegram.ext import (Updater,
 
 from bot import states
 
-from bot.data_to_db import (add_user,
-                            change_subscription,
-                            get_user_active_tasks,
-                            get_category,
-                            change_user_category,
-                            log_command,
-                            cancel_feedback_stat,
-                            get_user,
-                            set_user_email)
+from bot.logger import log_command
 
 from bot.formatter import display_task
 from bot.constants import LOG_COMMANDS_NAME, BOT_NAME, REASONS
 from bot.email_client import send_email
+from bot.user_db import UserDB
 
 from app.config import BOT_PERSISTENCE_FILE
 
@@ -65,6 +58,8 @@ bot_persistence = PicklePersistence(filename=BOT_PERSISTENCE_FILE,
                                     store_chat_data=True)
 
 updater = Updater(token=os.getenv('TOKEN'), persistence=bot_persistence, use_context=True)
+
+user_db = UserDB()
 
 MENU_BUTTONS = [
     [
@@ -116,7 +111,7 @@ def get_subscription_button(context: CallbackContext):
 @log_command(command=LOG_COMMANDS_NAME['start'])
 def start(update: Update, context: CallbackContext) -> int:
     deeplink_passed_param = context.args
-    user = add_user(update.effective_user, deeplink_passed_param)
+    user = user_db.add_user(update.effective_user, deeplink_passed_param)
     context.user_data[states.SUBSCRIPTION_FLAG] = user.has_mailing
 
     callback_data = (states.GREETING_REGISTERED_USER
@@ -165,7 +160,7 @@ def confirm_specializations(update: Update, context: CallbackContext):
         ]
     ]
     specializations = ', '.join([spec['name'] for spec
-                                 in get_category(update.effective_user.id)
+                                 in user_db.get_category(update.effective_user.id)
                                  if spec['user_selected']])
 
     if not specializations:
@@ -190,7 +185,7 @@ def change_user_categories(update: Update, context: CallbackContext):
     category_id = int(pattern_id[0])
     telegram_id = update.effective_user.id
 
-    change_user_category(telegram_id=telegram_id, category_id=category_id)
+    user_db.change_user_category(telegram_id=telegram_id, category_id=category_id)
     choose_category(update, context)
     update.callback_query.answer()
 
@@ -199,7 +194,7 @@ def change_user_categories(update: Update, context: CallbackContext):
              ignore_func=['change_user_categories'])
 def choose_category(update: Update, context: CallbackContext, save_prev_msg: bool = False):
     """The main function is to select categories for subscribing to them."""
-    categories = get_category(update.effective_user.id)
+    categories = user_db.get_category(update.effective_user.id)
 
     buttons = []
     for cat in categories:
@@ -250,7 +245,7 @@ def after_category_choose(update: Update, context: CallbackContext):
     keyboard = InlineKeyboardMarkup(buttons)
 
     user_categories = ', '.join([spec['name'] for spec
-                                 in get_category(update.effective_user.id)
+                                 in user_db.get_category(update.effective_user.id)
                                  if spec['user_selected']])
 
     if not user_categories:
@@ -312,7 +307,7 @@ def show_open_task(update: Update, context: CallbackContext):
     if not context.user_data.get(states.START_SHOW_TASK):
         context.user_data[states.START_SHOW_TASK] = []
 
-    tasks = get_user_active_tasks(
+    tasks = user_db.get_user_active_tasks(
         update.effective_user.id, context.user_data[states.START_SHOW_TASK]
     )
     if tasks:
@@ -460,7 +455,7 @@ def ask_email(update: Update, context: CallbackContext):
 
 # @log_command(command=LOG_COMMANDS_NAME['save_user_input'])
 def save_user_input(update: Update, context: CallbackContext):
-    user = get_user(update.effective_user.id)
+    user = user_db.get_user(update.effective_user.id)
     context.user_data[USER_MSG] = update.message.text
     if user.email:
         return after_get_feedback(update, context)
@@ -486,7 +481,7 @@ def no_wait_answer(update: Update, context: CallbackContext):
 # @log_command(command=LOG_COMMANDS_NAME['save_email'])
 def save_email(update: Update, context: CallbackContext):
     user_input_email = update.message.text
-    email_status = set_user_email(update.effective_user.id, user_input_email)
+    email_status = user_db.set_user_email(update.effective_user.id, user_input_email)
     if email_status:
         return after_get_feedback(update, context)
     else:
@@ -514,7 +509,7 @@ def after_get_feedback(update: Update, context: CallbackContext):
         del context.user_data[MSG_ID]
         del context.user_data[MSG_TEXT]
 
-    user = get_user(update.effective_user.id)
+    user = user_db.get_user(update.effective_user.id)
 
     feedback_type = context.user_data.get(FEEDBACK_TYPE)
 
@@ -575,7 +570,7 @@ def about(update: Update, context: CallbackContext):
 
 @log_command(command=LOG_COMMANDS_NAME['stop_task_subscription'])
 def stop_task_subscription(update: Update, context: CallbackContext):
-    context.user_data[states.SUBSCRIPTION_FLAG] = change_subscription(update.effective_user.id)
+    context.user_data[states.SUBSCRIPTION_FLAG] = user_db.change_subscription(update.effective_user.id)
     cancel_feedback_buttons = [
         [
             InlineKeyboardButton(text=reason[1], callback_data=reason[0])
@@ -597,7 +592,7 @@ def stop_task_subscription(update: Update, context: CallbackContext):
 
 @log_command(command=LOG_COMMANDS_NAME['start_task_subscription'])
 def start_task_subscription(update: Update, context: CallbackContext):
-    context.user_data[states.SUBSCRIPTION_FLAG] = change_subscription(update.effective_user.id)
+    context.user_data[states.SUBSCRIPTION_FLAG] = user_db.change_subscription(update.effective_user.id)
 
     button = [
         [
@@ -614,7 +609,7 @@ def start_task_subscription(update: Update, context: CallbackContext):
     keyboard = InlineKeyboardMarkup(button)
 
     user_categories = [
-        c['name'] for c in get_category(update.effective_user.id)
+        c['name'] for c in user_db.get_category(update.effective_user.id)
         if c['user_selected']
     ]
 
@@ -635,7 +630,7 @@ def cancel_feedback(update: Update, context: CallbackContext):
     subscription_button = get_subscription_button(context)
     reason_canceling = update['callback_query']['data']
     telegram_id = update['callback_query']['message']['chat']['id']
-    cancel_feedback_stat(telegram_id, reason_canceling)
+    user_db.cancel_feedback_stat(telegram_id, reason_canceling)
     MENU_BUTTONS[-1] = [subscription_button]
     keyboard = InlineKeyboardMarkup(MENU_BUTTONS)
     update.callback_query.edit_message_text(

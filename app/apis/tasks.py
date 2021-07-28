@@ -12,7 +12,6 @@ from app.models import Task, User
 from bot.formatter import display_task_notification
 from bot.messages import TelegramNotification
 
-
 # class Task_schema(Schema):
 #     id = fields.Int()
 #     title = fields.Str()
@@ -45,9 +44,9 @@ class CreateTasks(MethodResource, Resource):
 
         tasks = request.json
         tasks_db = Task.query.options(load_only('archive')).all()
-        task_id_json = [int(member['id']) for member in tasks]
-        task_id_db = [member.id for member in tasks_db]
-        task_id_db_not_archive = [member.id for member in tasks_db if member.archive == False]
+        task_id_json = [int(task['id']) for task in tasks]
+        task_id_db = [task.id for task in tasks_db]
+        task_id_db_not_archive = [task.id for task in tasks_db if task.archive == False]
         task_id_db_archive = list(
             set(task_id_db) - set(task_id_db_not_archive)
         )
@@ -61,6 +60,7 @@ class CreateTasks(MethodResource, Resource):
             set(task_id_db_not_archive) - set(task_id_json)
         )
         task_to_send = []
+
         for task in tasks:
             if int(task['id']) in task_for_adding_db:
                 t = Task(
@@ -79,22 +79,31 @@ class CreateTasks(MethodResource, Resource):
                 )
                 db_session.add(t)
                 task_to_send.append(t)
+
         archive_records = [task for task in tasks_db if task.id in task_for_archive]
+
         for task in archive_records:
             task.archive = True
             task.updated_date = datetime.now()
+
         unarchive_records = [task for task in tasks_db if task.id in task_for_unarchive]
 
-        for task in unarchive_records:
-            task.archive = False
-            task.updated_date = datetime.now()
-
         try:
+            for task in tasks:
+                for unarchive_task in unarchive_records:
+                    if unarchive_task.id == int(task['id']):
+                        del task['category']
+                        task['archive'] = False
+                        task['updated_date'] = datetime.now()
+                        Task.query.filter_by(id=int(unarchive_task.id)).update(task)
+
             db_session.commit()
             self.send_task(task_to_send)
-        except exc.SQLAlchemyError:
+
+        except exc.SQLAlchemyError as ex:
             db_session.rollback()
-            return make_response(jsonify(result='request error'), 400)
+            return make_response(jsonify(result=f'request error {str(ex)}'), 400)
+
         return make_response(jsonify(result='ok'), 200)
 
     def send_task(self, task_to_send):

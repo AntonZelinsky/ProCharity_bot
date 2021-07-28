@@ -19,9 +19,9 @@ class Analysis(MethodResource, Resource):
     @jwt_required()
     def get(self):
         users = (db_session.query(User.has_mailing).all())
-        num_users = len(users)
-        subscribed_users = len([user for user in users if user['has_mailing']])
-        not_subscribed_users = num_users - subscribed_users
+        number_users = len(users)
+        number_subscribed_users = len([user for user in users if user['has_mailing']])
+        number_not_subscribed_users = number_users - number_subscribed_users
         command_stats = db_session.query(
             Statistics.command, func.count(Statistics.command)
         ).group_by(Statistics.command).all()
@@ -34,8 +34,8 @@ class Analysis(MethodResource, Resource):
                 value for key, value in reasons_canceling_from_db
         }
         return make_response(jsonify(added_users=users_created_date(),
-                                     subscribed_users=subscribed_users,
-                                     not_subscribed_users=not_subscribed_users,
+                                     number_subscribed_users=number_subscribed_users,
+                                     number_not_subscribed_users=number_not_subscribed_users,
                                      command_stats=dict(command_stats),
                                      reasons_canceling=dict(reasons_canceling)), 200)
 

@@ -41,7 +41,7 @@ class CreateTasks(MethodResource, Resource):
     # @use_kwargs(Task_schema, location=('json'))
     def post(self):
         if not request.json:
-            make_response(jsonify(result='the request cannot be empty'), 400)
+            return make_response(jsonify(result='the request cannot be empty'), 400)
 
         tasks = request.json
         tasks_db = Task.query.options(load_only('archive')).all()

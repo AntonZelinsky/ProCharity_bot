@@ -71,7 +71,8 @@ class TelegramNotification:
 
         for user in chats:
             try:
-                bot.send_message(chat_id=user.telegram_id, text=message, parse_mode=ParseMode.HTML)
+                bot.send_message(chat_id=user.telegram_id, text=message,
+                                 parse_mode=ParseMode.HTML, disable_web_page_preview=True)
             except error.BadRequest as ex:
                 logger.error(str(ex), user.telegram_id)
 

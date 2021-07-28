@@ -329,13 +329,13 @@ def show_open_task(update: Update, context: CallbackContext):
             if task[0].id != tasks[-1][0].id:
                 context.bot.send_message(
                     chat_id=update.effective_chat.id, text=display_task(task),
-                    parse_mode=ParseMode.HTML
+                    parse_mode=ParseMode.HTML, disable_web_page_preview=True
                 )
                 context.user_data[states.START_SHOW_TASK].append(task[0].id)
             else:
                 context.bot.send_message(
                     chat_id=update.effective_chat.id, text=display_task(task),
-                    parse_mode=ParseMode.HTML
+                    parse_mode=ParseMode.HTML, disable_web_page_preview=True
                 )
                 context.user_data[states.START_SHOW_TASK].append(task[0].id)
                 update.callback_query.delete_message()

@@ -34,8 +34,8 @@ class AdminUser(Base):
         return check_password_hash(self.password, password)
 
 
-class AdminRegisterRequest(Base):
-    __tablename__ = 'admin_register_requests'
+class AdminRegistrationRequest(Base):
+    __tablename__ = 'admin_registration_requests'
 
     id = Column(Integer, primary_key=True)
     email = Column(String(48), unique=True, nullable=False)

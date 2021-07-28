@@ -5,7 +5,7 @@ from sqlalchemy.orm import load_only
 
 from app import password_policy
 from app.database import db_session
-from app.models import AdminRegisterRequest, AdminUser,ExternalSiteUser
+from app.models import AdminRegistrationRequest, AdminUser,ExternalSiteUser
 from flask import jsonify, make_response
 from flask_apispec import doc, use_kwargs
 from flask_apispec.views import MethodResource
@@ -63,7 +63,7 @@ class UserRegister(MethodResource, Resource):
     def post(self, **kwargs):
         token = kwargs.get("token")
         password = kwargs.get("password")
-        registration_record = AdminRegisterRequest.query.filter_by(token=token).first()
+        registration_record = AdminRegistrationRequest.query.filter_by(token=token).first()
 
         if (not registration_record
                 or registration_record.token_expiration_date < datetime.now()):

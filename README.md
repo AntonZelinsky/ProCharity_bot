@@ -15,8 +15,10 @@
 
 ### Создать базу и применить миграции:
 - alembic upgrade head
-### Для информации:
-- Создание новой миграции в случае изменения базы: alembic revision --autogenerate -m "message"
+### Создание новой миграции в случае изменения базы:
+```
+alembic revision --autogenerate -m "<описание миграции>"
+```
 
 ### Документация API:
 - <http://127.0.0.1:5000/api/doc/swagger-ui/>

@@ -1,7 +1,7 @@
 import datetime
 
 from app.database import db_session
-from app.models import UserAdmin
+from app.models import AdminUser
 from flask import jsonify, make_response
 from flask_apispec import doc, use_kwargs
 from flask_apispec.views import MethodResource
@@ -56,7 +56,7 @@ class Login(MethodResource, Resource):
         if not email or not password:
             return make_response(jsonify(message="Необходимо указать <email> и <password>."), 403)
 
-        user = UserAdmin.query.filter_by(email=email).first()
+        user = AdminUser.query.filter_by(email=email).first()
 
         if not user or not user.check_password(password):
             return make_response(jsonify(message="Неверный почтовый адрес или пароль."), 403)
@@ -65,7 +65,7 @@ class Login(MethodResource, Resource):
         refresh_token = create_refresh_token(identity=email)
 
         # update last logon
-        user = UserAdmin.query.get(user.id)
+        user = AdminUser.query.get(user.id)
         user.last_logon = datetime.datetime.now()
         db_session.commit()
 

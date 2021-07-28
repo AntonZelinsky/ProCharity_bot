@@ -4,7 +4,7 @@ import string
 from app import config
 from app.database import db_session
 from app.messages import send_email
-from app.models import UserAdmin
+from app.models import AdminUser
 from flask import jsonify, make_response, render_template
 from flask_apispec import doc, use_kwargs
 from flask_apispec.views import MethodResource
@@ -33,7 +33,7 @@ class PasswordReset(MethodResource, Resource):
     @use_kwargs({'email': fields.Email()})
     def post(self, **kwargs):
         email = kwargs.get('email')
-        user = UserAdmin.query.filter_by(email=email).first()
+        user = AdminUser.query.filter_by(email=email).first()
 
         if not user:
             return make_response(jsonify(message="Указанный пользователь не существует."), 400)

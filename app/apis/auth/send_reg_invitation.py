@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from app import config
 from app.database import db_session
 from app.messages import send_email
-from app.models import Register, UserAdmin
+from app.models import AdminRegisterRequest, AdminUser
 from email_validator import EmailNotValidError, validate_email
 from flask import jsonify, make_response, render_template, request
 from flask_apispec import doc, use_kwargs
@@ -50,7 +50,7 @@ class SendRegistrationInvite(MethodResource, Resource):
         invitation_token_expiration_date = datetime.now() + timedelta(hours=token_expiration)
         invitation_token = str(uuid.uuid4())
 
-        register_record = Register.query.filter_by(email=email).first()
+        register_record = AdminRegisterRequest.query.filter_by(email=email).first()
 
         if register_record:
             register_record.token = invitation_token
@@ -58,12 +58,12 @@ class SendRegistrationInvite(MethodResource, Resource):
             db_session.commit()
         else:
 
-            admin_user = UserAdmin.query.filter_by(email=email).first()
+            admin_user = AdminUser.query.filter_by(email=email).first()
             if admin_user:
                 return make_response(jsonify(
                     message="Пользователь с указанным почтовым адресом уже зарегистрирован."), 400)
 
-            user = Register(
+            user = AdminRegisterRequest(
                 email=email,
                 token=invitation_token,
                 token_expiration_date=invitation_token_expiration_date

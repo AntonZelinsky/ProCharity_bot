@@ -15,7 +15,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 Base = declarative_base()
 
 
-class UserAdmin(Base):
+class AdminUser(Base):
     __tablename__ = 'admin_users'
     id = Column(Integer, primary_key=True)
     email = Column(String(48), unique=True, nullable=False)
@@ -34,8 +34,8 @@ class UserAdmin(Base):
         return check_password_hash(self.password, password)
 
 
-class Register(Base):
-    __tablename__ = 'registers'
+class AdminRegisterRequest(Base):
+    __tablename__ = 'admin_register_requests'
 
     id = Column(Integer, primary_key=True)
     email = Column(String(48), unique=True, nullable=False)

@@ -5,7 +5,7 @@ from sqlalchemy.orm import load_only
 
 from app import password_policy
 from app.database import db_session
-from app.models import Register, UserAdmin, ExternalSiteUser
+from app.models import AdminRegisterRequest, AdminUser,ExternalSiteUser
 from flask import jsonify, make_response
 from flask_apispec import doc, use_kwargs
 from flask_apispec.views import MethodResource
@@ -63,7 +63,7 @@ class UserRegister(MethodResource, Resource):
     def post(self, **kwargs):
         token = kwargs.get("token")
         password = kwargs.get("password")
-        registration_record = Register.query.filter_by(token=token).first()
+        registration_record = AdminRegisterRequest.query.filter_by(token=token).first()
 
         if (not registration_record
                 or registration_record.token_expiration_date < datetime.now()):
@@ -82,7 +82,7 @@ class UserRegister(MethodResource, Resource):
             return make_response(jsonify(message="Введенный пароль не соответствует политике паролей."), 400)
 
         # Create a new Admin user
-        db_session.add(UserAdmin(**kwargs))
+        db_session.add(AdminUser(**kwargs))
         # delete invitation
         db_session.delete(registration_record)
         db_session.commit()

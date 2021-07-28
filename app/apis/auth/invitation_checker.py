@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from app.models import Register
+from app.models import AdminRegisterRequest
 from flask import jsonify, make_response
 from flask_apispec import doc, use_kwargs
 from flask_apispec.views import MethodResource
@@ -29,7 +29,7 @@ class InvitationChecker(MethodResource, Resource):
     @use_kwargs({'token': fields.Str()})
     def post(self, **kwargs):
         token = kwargs.get('token')
-        record = Register.query.filter_by(token=token).first()
+        record = AdminRegisterRequest.query.filter_by(token=token).first()
 
         if not record or record.token_expiration_date < datetime.now():
             return make_response(jsonify(message="Приглашение не было найдено или просрочено. "

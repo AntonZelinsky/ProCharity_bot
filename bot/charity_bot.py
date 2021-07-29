@@ -584,7 +584,7 @@ def stop_task_subscription(update: Update, context: CallbackContext):
               'Поделись, пожалуйста, почему ты решил отписаться?')
 
     update.callback_query.edit_message_text(
-        text=answer, reply_markup=cancel_feedback_keyboard
+        text=answer, reply_markup=cancel_feedback_keyboard, disable_web_page_preview=True
     )
 
     return states.CANCEL_FEEDBACK

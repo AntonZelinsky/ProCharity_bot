@@ -9,7 +9,7 @@ from app.apis.auth.send_reg_invitation import SendRegistrationInvite
 from app.apis.messages import SendTelegramNotification
 from app.apis.categories import CreateCategories
 from app.apis.tasks import CreateTasks
-from app.apis.analysis import Analysis
+from app.apis.analytics import Analytics
 
 
 docs.register(Login)
@@ -23,6 +23,6 @@ docs.register(InvitationChecker)
 docs.register(SendTelegramNotification)
 docs.register(CreateCategories)
 docs.register(CreateTasks)
-docs.register(Analysis)
+docs.register(Analytics)
 docs.register(ExternalUserRegistration)
 

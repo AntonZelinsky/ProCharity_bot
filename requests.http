@@ -75,7 +75,7 @@ Content-Type: application/json
     ]
 
 ###
-GET  http://localhost:5000/api/v1/analysis/   
+GET  http://localhost:5000/api/v1/analytics/   
 
 ###
 

@@ -12,11 +12,11 @@ from datetime import datetime, timedelta
 from bot.constants import REASONS
 
 
-class Analysis(MethodResource, Resource):
+class Analytics(MethodResource, Resource):
     @doc(description='Analysis statistics',
          tags=['Analysis']
          )
-    @jwt_required()
+    # @jwt_required()
     def get(self):
         users = (db_session.query(User.has_mailing).all())
         number_users = len(users)
@@ -37,7 +37,8 @@ class Analysis(MethodResource, Resource):
                                      number_subscribed_users=number_subscribed_users,
                                      number_not_subscribed_users=number_not_subscribed_users,
                                      command_stats=dict(command_stats),
-                                     reasons_canceling=dict(reasons_canceling)), 200)
+                                     reasons_canceling=dict(reasons_canceling),
+                                     users_unsubscribed = users_unsubscribed_date()), 200)
 
 
 def users_created_date():
@@ -54,6 +55,25 @@ def users_created_date():
     return {
         (date_begin + timedelta(days=n)).strftime('%Y-%m-%d'):
             added_users.get((date_begin + timedelta(days=n)).strftime(
+                '%Y-%m-%d'
+            ), 0) for n in range(1, 31)
+    }
+
+
+def users_unsubscribed_date():
+    today = datetime.now().date()
+    date_begin = today - timedelta(days=30)
+    unsubscribed_users = dict(
+        db_session.query(
+            func.to_char(ReasonCanceling.added_date, 'YYYY-MM-DD'),
+            func.count(ReasonCanceling.added_date)
+            ).filter(ReasonCanceling.added_date > date_begin
+            ).group_by(func.to_char(ReasonCanceling.added_date, 'YYYY-MM-DD')
+        ).all())
+    
+    return {
+        (date_begin + timedelta(days=n)).strftime('%Y-%m-%d'):
+            unsubscribed_users.get((date_begin + timedelta(days=n)).strftime(
                 '%Y-%m-%d'
             ), 0) for n in range(1, 31)
     }

@@ -9,7 +9,7 @@ from app.apis.auth.registration import UserRegister, ExternalUserRegistration
 from app.apis.auth.invitation_checker import InvitationChecker
 from app.apis.auth.send_reg_invitation import SendRegistrationInvite
 from app.apis.messages import SendTelegramNotification
-from app.apis.analysis import Analysis
+from app.apis.analysis import Analytics
 
 
 # users endpoints
@@ -28,4 +28,4 @@ api.add_resource(SendTelegramNotification, '/api/v1/send_telegram_notification/'
 # Webhooks
 api.add_resource(CreateTasks, '/api/v1/tasks/')
 api.add_resource(CreateCategories, '/api/v1/categories/')
-api.add_resource(Analysis, '/api/v1/analysis/')
+api.add_resource(Analytics, '/api/v1/analytics/')

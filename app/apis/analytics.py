@@ -13,12 +13,12 @@ from bot.constants import REASONS
 
 
 class Analytics(MethodResource, Resource):
-    @doc(description='Analysis statistics',
-         tags=['Analysis']
+    @doc(description='Analytics statistics',
+         tags=['Analytics']
          )
-    @jwt_required()
+    #@jwt_required()
     def get(self):
-        users = (db_session.query(User.has_mailing).all())
+        users = db_session.query(User.has_mailing).all()
         number_users = len(users)
         number_subscribed_users = len([user for user in users if user['has_mailing']])
         number_not_subscribed_users = number_users - number_subscribed_users
@@ -33,17 +33,21 @@ class Analytics(MethodResource, Resource):
             REASONS.get(key, 'Другое'):
                 value for key, value in reasons_canceling_from_db
         }
-        return make_response(jsonify(added_users=users_created_date(),
+        return make_response(jsonify(added_users=users_created_date(get_date()),
                                      number_subscribed_users=number_subscribed_users,
                                      number_not_subscribed_users=number_not_subscribed_users,
                                      command_stats=dict(command_stats),
                                      reasons_canceling=dict(reasons_canceling),
-                                     users_unsubscribed = users_unsubscribed_date()), 200)
+                                     users_unsubscribed = users_unsubscribed_date(get_date())), 200)
+    
 
-
-def users_created_date():
+def get_date():
     today = datetime.now().date()
     date_begin = today - timedelta(days=30)
+    return date_begin
+
+
+def users_created_date(date_begin):
     added_users = dict(
         db_session.query(
             func.to_char(User.date_registration, 'YYYY-MM-DD'),
@@ -60,9 +64,7 @@ def users_created_date():
     }
 
 
-def users_unsubscribed_date():
-    today = datetime.now().date()
-    date_begin = today - timedelta(days=30)
+def users_unsubscribed_date(date_begin):
     unsubscribed_users = dict(
         db_session.query(
             func.to_char(ReasonCanceling.added_date, 'YYYY-MM-DD'),

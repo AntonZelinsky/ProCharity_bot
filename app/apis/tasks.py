@@ -12,6 +12,7 @@ from app.models import Task, User
 from bot.formatter import display_task_notification
 from bot.messages import TelegramNotification
 
+
 # class Task_schema(Schema):
 #     id = fields.Int()
 #     title = fields.Str()
@@ -84,9 +85,12 @@ class CreateTasks(MethodResource, Resource):
                 for unarchive_task in unarchive_records:
                     if unarchive_task.id == int(task['id']):
                         del task['category']
-                        task['archive'] = False
-                        task['updated_date'] = datetime.now()
-                        Task.query.filter_by(id=int(unarchive_task.id)).update(task)
+                        Task.query.filter_by(id=unarchive_task.id).update(
+                            {
+                                **task,
+                                'updated_date': datetime.now(),
+                                'archive': False}
+                        )
                         task_to_send.append(unarchive_task)
             db_session.commit()
             self.send_task(task_to_send)

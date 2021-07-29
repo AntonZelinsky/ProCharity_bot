@@ -653,6 +653,11 @@ def cancel(update: Update, context: CallbackContext):
     return ConversationHandler.END
 
 
+def error_handler(update: object, context: CallbackContext) -> None:
+    text = (f"Error '{context.error}', user id: {update.effective_user.id}," )
+    logger.error(msg=text, exc_info=context.error)
+
+
 def main() -> None:
     dispatcher = updater.dispatcher
 
@@ -742,4 +747,5 @@ def main() -> None:
 
     dispatcher.add_handler(conv_handler)
     dispatcher.add_handler(update_users_category)
+    dispatcher.add_error_handler(error_handler)
     updater.start_polling()

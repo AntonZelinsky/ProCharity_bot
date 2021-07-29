@@ -89,7 +89,8 @@ class CreateTasks(MethodResource, Resource):
                             {
                                 **task,
                                 'updated_date': datetime.now(),
-                                'archive': False}
+                                'archive': False
+                            }
                         )
                         task_to_send.append(unarchive_task)
             db_session.commit()

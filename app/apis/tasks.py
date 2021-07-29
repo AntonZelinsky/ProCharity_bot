@@ -63,22 +63,13 @@ class CreateTasks(MethodResource, Resource):
 
         for task in tasks:
             if int(task['id']) in task_for_adding_db:
-                t = Task(
-                    id=task['id'],
-                    title=task['title'],
-                    name_organization=task['name_organization'],
-                    deadline=datetime.strptime(
-                        task['deadline'], '%d.%m.%Y'
-                    ).date(),
-                    category_id=task['category_id'],
-                    bonus=task['bonus'],
-                    location=task['location'],
-                    link=task['link'],
-                    description=task['description'],
-                    archive=False
-                )
-                db_session.add(t)
-                task_to_send.append(t)
+                task['deadline'] = datetime.strptime(task['deadline'], '%d.%m.%Y').date()
+                task['archive'] = False
+                del task['category']
+
+                new_task = Task(**task)
+                db_session.add(new_task)
+                task_to_send.append(new_task)
 
         archive_records = [task for task in tasks_db if task.id in task_for_archive]
 

@@ -87,7 +87,7 @@ class CreateTasks(MethodResource, Resource):
                         task['archive'] = False
                         task['updated_date'] = datetime.now()
                         Task.query.filter_by(id=int(unarchive_task.id)).update(task)
-
+                        task_to_send.append(unarchive_task)
             db_session.commit()
             self.send_task(task_to_send)
 

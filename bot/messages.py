@@ -1,9 +1,10 @@
-from app.database import db_session
-from app.models import User
 from telegram import Bot, ParseMode, error
-from bot.charity_bot import updater, logger
+from telegram.error import Unauthorized
 
 from app import config
+from app.database import db_session
+from app.models import User
+from bot.charity_bot import updater, logger
 
 bot = Bot(config.TELEGRAM_TOKEN)
 
@@ -73,7 +74,11 @@ class TelegramNotification:
             try:
                 bot.send_message(chat_id=user.telegram_id, text=message, parse_mode=ParseMode.HTML)
             except error.BadRequest as ex:
-                logger.error(str(ex), user.telegram_id)
+                logger.error(f'{str(ex.message)}, telegram_id: {user.telegram_id}')
+            except Unauthorized as ex:
+                logger.error(f'{str(ex.message)}: {user.telegram_id}')
+                User.query.filter_by(telegram_id=user.telegram_id).update({'has_mailing': False})
+                db_session.commit()
 
     @staticmethod
     def __split_chats(array, size):

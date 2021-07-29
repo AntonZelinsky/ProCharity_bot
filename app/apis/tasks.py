@@ -65,9 +65,9 @@ class CreateTasks(MethodResource, Resource):
         for task in tasks:
             if int(task['id']) in task_for_adding_db:
                 del task['category']
+                task['deadline'] = datetime.strptime(task['deadline'], '%d.%m.%Y').date()
 
                 new_task = Task(**task)
-                new_task.deadline = datetime.strptime(task['deadline'], '%d.%m.%Y').date()
                 new_task.archive = False
 
                 db_session.add(new_task)

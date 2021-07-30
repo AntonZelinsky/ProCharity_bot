@@ -12,7 +12,7 @@ from bot import states
 from bot import common_comands
 from bot.logger import log_command
 from bot.constants import LOG_COMMANDS_NAME
-from bot.email_client import send_email
+from bot import email_client 
 from bot.user_db import UserDB
 
 ASK_EMAIL_FLAG = 'ask_email_flag'
@@ -121,7 +121,7 @@ def ask_email(update: Update, context: CallbackContext):
 
 @log_command(command=LOG_COMMANDS_NAME['no_wait_answer'])
 def no_wait_answer(update: Update, context: CallbackContext):
-    send_email(
+    email_client.send_email(
         update.effective_user.id, context.user_data.get(USER_MSG),
         context.user_data.get(FEEDBACK_TYPE)
     )
@@ -167,7 +167,7 @@ def after_get_feedback(update: Update, context: CallbackContext):
 
     feedback_type = context.user_data.get(FEEDBACK_TYPE)
 
-    send_email(
+    email_client.send_email(
         update.effective_user.id, context.user_data.get(USER_MSG), feedback_type
     )
     del context.user_data[FEEDBACK_TYPE]

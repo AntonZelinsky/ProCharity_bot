@@ -82,7 +82,7 @@ def add_new_feature(update: Update, context: CallbackContext):
     return states.TYPING
 
 
-# @log_command(command=LOG_COMMANDS_NAME['save_user_input'])
+@log_command(command=LOG_COMMANDS_NAME['save_user_input'])
 def save_user_input(update: Update, context: CallbackContext):
     user = user_db.get_user(update.effective_user.id)
     context.user_data[USER_MSG] = update.message.text
@@ -92,7 +92,7 @@ def save_user_input(update: Update, context: CallbackContext):
         return ask_email(update, context)
 
 
-# @log_command(command=LOG_COMMANDS_NAME['ask_email'])
+@log_command(command=LOG_COMMANDS_NAME['ask_email'])
 def ask_email(update: Update, context: CallbackContext):
     context.user_data[ASK_EMAIL_FLAG] = True
     context.bot.edit_message_text(

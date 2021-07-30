@@ -74,9 +74,7 @@ def start(update: Update, context: CallbackContext) -> int:
 
 @log_command(command=LOG_COMMANDS_NAME['open_menu'])
 def open_menu(update: Update, context: CallbackContext):
-    subscription_button = get_subscription_button(context)
-    MENU_BUTTONS[-1] = [subscription_button]
-    keyboard = InlineKeyboardMarkup(MENU_BUTTONS)
+    keyboard = get_menu_buttons(context)
     text = 'Меню'
     update.callback_query.answer()
     update.callback_query.edit_message_text(text=text, reply_markup=keyboard)
@@ -85,9 +83,7 @@ def open_menu(update: Update, context: CallbackContext):
 
 
 def open_menu_fall(update: Update, context: CallbackContext):
-    subscription_button = get_subscription_button(context)
-    MENU_BUTTONS[-1] = [subscription_button]
-    keyboard = InlineKeyboardMarkup(MENU_BUTTONS)
+    keyboard = get_menu_buttons(context)
     text = 'Меню'
     context.bot.send_message(
         chat_id=update.effective_chat.id,
@@ -95,6 +91,13 @@ def open_menu_fall(update: Update, context: CallbackContext):
         reply_markup=keyboard
     )
     return states.MENU
+
+
+def get_menu_buttons(context: CallbackContext):
+    subscription_button = get_subscription_button(context)
+    MENU_BUTTONS[-1] = [subscription_button]
+    keyboard = InlineKeyboardMarkup(MENU_BUTTONS)
+    return keyboard
 
 
 def get_subscription_button(context: CallbackContext):

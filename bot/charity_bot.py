@@ -18,9 +18,7 @@ from telegram.ext import (Updater,
 from app.config import BOT_PERSISTENCE_FILE
 
 from bot import states
-from bot.common_comands import (open_menu, open_menu_fall,
-                                get_subscription_button, start,
-                                MENU_BUTTONS)
+from bot import common_comands
 from bot.constants import LOG_COMMANDS_NAME, REASONS
 from bot.formatter import display_task
 from bot.handlers.feedback_handler import feedback_conv
@@ -352,17 +350,15 @@ def start_task_subscription(update: Update, context: CallbackContext):
 
 @log_command(command=LOG_COMMANDS_NAME['cancel_feedback'])
 def cancel_feedback(update: Update, context: CallbackContext):
-    subscription_button = get_subscription_button(context)
+    keyboard = common_comands.get_menu_buttons(context)
     reason_canceling = update['callback_query']['data']
     telegram_id = update['callback_query']['message']['chat']['id']
     user_db.cancel_feedback_stat(telegram_id, reason_canceling)
-    MENU_BUTTONS[-1] = [subscription_button]
-    keyboard = InlineKeyboardMarkup(MENU_BUTTONS)
+    
     update.callback_query.edit_message_text(
         text='Спасибо, я передал информацию команде ProCharity!',
         reply_markup=keyboard
     )
-
     return states.MENU
 
 
@@ -387,7 +383,7 @@ def init() -> None:
 
     conv_handler = ConversationHandler(
         entry_points=[
-            CommandHandler('start', start)
+            CommandHandler('start', common_comands.start)
         ],
         states={
             states.GREETING: [
@@ -403,7 +399,7 @@ def init() -> None:
             ],
             states.AFTER_CATEGORY_REPLY: [
                 CallbackQueryHandler(show_open_task, pattern='^open_task$'),
-                CallbackQueryHandler(open_menu, pattern='^open_menu$')
+                CallbackQueryHandler(common_comands.open_menu, pattern='^open_menu$')
             ],
             states.MENU: [
                 CallbackQueryHandler(show_open_task, pattern='^open_task$'),
@@ -412,16 +408,16 @@ def init() -> None:
                 CallbackQueryHandler(choose_category, pattern='^change_category$'),
                 CallbackQueryHandler(stop_task_subscription, pattern='^stop_subscription$'),
                 CallbackQueryHandler(start_task_subscription, pattern='^start_subscription$'),
-                CallbackQueryHandler(open_menu, pattern='^open_menu$')
+                CallbackQueryHandler(common_comands.open_menu, pattern='^open_menu$')
             ],
             states.OPEN_TASKS: [
                 CallbackQueryHandler(show_open_task, pattern='^open_task$'),
-                CallbackQueryHandler(open_menu, pattern='^open_menu$')
+                CallbackQueryHandler(common_comands.open_menu, pattern='^open_menu$')
             ],
             states.NO_CATEGORY: [
                 feedback_conv,
                 CallbackQueryHandler(show_open_task, pattern='^open_task$'),
-                CallbackQueryHandler(open_menu, pattern='^open_menu$')
+                CallbackQueryHandler(common_comands.open_menu, pattern='^open_menu$')
             ],
             states.CANCEL_FEEDBACK: [
                 CallbackQueryHandler(cancel_feedback, pattern='^many_notification$'),
@@ -434,8 +430,8 @@ def init() -> None:
         },
 
         fallbacks=[
-            CommandHandler('start', start),
-            CommandHandler('menu', open_menu_fall)
+            CommandHandler('start', common_comands.start),
+            CommandHandler('menu', common_comands.open_menu_fall)
         ],
         persistent=True,
         name='conv_handler'

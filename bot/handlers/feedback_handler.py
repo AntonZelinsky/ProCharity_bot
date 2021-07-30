@@ -9,9 +9,7 @@ from telegram.ext import (CommandHandler,
                           Filters)
 
 from bot import states
-from bot.common_comands import (open_menu, open_menu_fall,
-                                start, get_subscription_button,
-                                MENU_BUTTONS)
+from bot import common_comands
 from bot.logger import log_command
 from bot.constants import LOG_COMMANDS_NAME
 from bot.email_client import send_email
@@ -127,9 +125,7 @@ def no_wait_answer(update: Update, context: CallbackContext):
         update.effective_user.id, context.user_data.get(USER_MSG),
         context.user_data.get(FEEDBACK_TYPE)
     )
-    subscription_button = get_subscription_button(context)
-    MENU_BUTTONS[-1] = [subscription_button]
-    keyboard = InlineKeyboardMarkup(MENU_BUTTONS)
+    keyboard = common_comands.get_menu_buttons(context)
     text = 'Спасибо, я передал информацию команде ProCharity!'
     update.callback_query.edit_message_text(text=text, reply_markup=keyboard)
 
@@ -176,9 +172,7 @@ def after_get_feedback(update: Update, context: CallbackContext):
     )
     del context.user_data[FEEDBACK_TYPE]
 
-    subscription_button = get_subscription_button(context)
-    MENU_BUTTONS[-1] = [subscription_button]
-    keyboard = InlineKeyboardMarkup(MENU_BUTTONS)
+    keyboard = common_comands.get_menu_buttons(context)
     text = f'Спасибо, я передал информацию команде ProCharity! Ответ придет на почту {user.email}'
     context.bot.send_message(
         chat_id=update.effective_chat.id,
@@ -197,17 +191,17 @@ feedback_conv = ConversationHandler(
     states={
         states.TYPING: [
             MessageHandler(Filters.text & ~Filters.command, save_user_input),
-            CallbackQueryHandler(open_menu, pattern='^open_menu$')
+            CallbackQueryHandler(common_comands.open_menu, pattern='^open_menu$')
         ],
         states.ASK_EMAIL: [
-            CallbackQueryHandler(open_menu, pattern='^open_menu$'),
+            CallbackQueryHandler(common_comands.open_menu, pattern='^open_menu$'),
             CallbackQueryHandler(no_wait_answer, pattern='^no_wait$'),
             MessageHandler(Filters.text & ~Filters.command, save_email)
         ]
     },
     fallbacks=[
-        CommandHandler('start', start),
-        CommandHandler('menu', open_menu_fall)
+        CommandHandler('start', common_comands.start),
+        CommandHandler('menu', common_comands.open_menu_fall)
     ],
     map_to_parent={
         states.MENU: states.MENU

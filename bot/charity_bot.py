@@ -27,7 +27,6 @@ from bot.handlers.feedback_handler import feedback_conv
 from bot.logger import log_command
 from bot.user_db import UserDB
 
-
 PAGINATION = 3
 
 load_dotenv()
@@ -346,8 +345,7 @@ def start_task_subscription(update: Update, context: CallbackContext):
              f'А пока можешь посмотреть открытые задания.'
 
     update.callback_query.edit_message_text(text=answer,
-                                            reply_markup=keyboard
-                                            )
+                                            reply_markup=keyboard)
 
     return states.AFTER_CATEGORY_REPLY
 
@@ -380,12 +378,12 @@ def cancel(update: Update, context: CallbackContext):
 
 
 def error_handler(update: object, context: CallbackContext) -> None:
-    text = (f"Error '{context.error}', user id: {update.effective_user.id}," )
+    text = (f"Error '{context.error}', user id: {update.effective_user.id},")
     logger.error(msg=text, exc_info=context.error)
 
 
 def main() -> None:
-    dispatcher = updater.dispatcher    
+    dispatcher = updater.dispatcher
 
     conv_handler = ConversationHandler(
         entry_points=[
@@ -394,7 +392,8 @@ def main() -> None:
         states={
             states.GREETING: [
                 CallbackQueryHandler(choose_category_after_start, pattern='^' + states.GREETING + '$'),
-                CallbackQueryHandler(before_confirm_specializations, pattern='^' + states.GREETING_REGISTERED_USER + '$')
+                CallbackQueryHandler(before_confirm_specializations,
+                                     pattern='^' + states.GREETING_REGISTERED_USER + '$')
             ],
             states.CATEGORY: [
                 CallbackQueryHandler(choose_category, pattern='^return_chose_category$'),

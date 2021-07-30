@@ -17,7 +17,6 @@ from bot.constants import LOG_COMMANDS_NAME
 from bot.email_client import send_email
 from bot.user_db import UserDB
 
-
 ASK_EMAIL_FLAG = 'ask_email_flag'
 ASK_EMAIL_MESSAGE_ID = 'ask_email_message_id'
 ASK_EMAIL_MESSAGE_TEXT = 'ask_email_message_text'
@@ -125,7 +124,8 @@ def ask_email(update: Update, context: CallbackContext):
 @log_command(command=LOG_COMMANDS_NAME['no_wait_answer'])
 def no_wait_answer(update: Update, context: CallbackContext):
     send_email(
-        update.effective_user.id, context.user_data.get(USER_MSG), context.user_data.get(FEEDBACK_TYPE)
+        update.effective_user.id, context.user_data.get(USER_MSG),
+        context.user_data.get(FEEDBACK_TYPE)
     )
     subscription_button = get_subscription_button(context)
     MENU_BUTTONS[-1] = [subscription_button]
@@ -189,27 +189,27 @@ def after_get_feedback(update: Update, context: CallbackContext):
 
 
 feedback_conv = ConversationHandler(
-        entry_points=[
-            CallbackQueryHandler(ask_new_category, pattern='^ask_new_category$'),
-            CallbackQueryHandler(ask_question, pattern='^ask_question$'),
-            CallbackQueryHandler(add_new_feature, pattern='^new_feature$')
+    entry_points=[
+        CallbackQueryHandler(ask_new_category, pattern='^ask_new_category$'),
+        CallbackQueryHandler(ask_question, pattern='^ask_question$'),
+        CallbackQueryHandler(add_new_feature, pattern='^new_feature$')
+    ],
+    states={
+        states.TYPING: [
+            MessageHandler(Filters.text & ~Filters.command, save_user_input),
+            CallbackQueryHandler(open_menu, pattern='^open_menu$')
         ],
-        states={
-            states.TYPING: [
-                MessageHandler(Filters.text & ~Filters.command, save_user_input),
-                CallbackQueryHandler(open_menu, pattern='^open_menu$')
-            ],
-            states.ASK_EMAIL: [
-                CallbackQueryHandler(open_menu, pattern='^open_menu$'),
-                CallbackQueryHandler(no_wait_answer, pattern='^no_wait$'),
-                MessageHandler(Filters.text & ~Filters.command, save_email)
-            ]
-        },
-        fallbacks=[
-            CommandHandler('start', start),
-            CommandHandler('menu', open_menu_fall)
-        ],
-        map_to_parent={
-            states.MENU: states.MENU
-        }
-    )
+        states.ASK_EMAIL: [
+            CallbackQueryHandler(open_menu, pattern='^open_menu$'),
+            CallbackQueryHandler(no_wait_answer, pattern='^no_wait$'),
+            MessageHandler(Filters.text & ~Filters.command, save_email)
+        ]
+    },
+    fallbacks=[
+        CommandHandler('start', start),
+        CommandHandler('menu', open_menu_fall)
+    ],
+    map_to_parent={
+        states.MENU: states.MENU
+    }
+)

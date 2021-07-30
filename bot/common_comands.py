@@ -2,13 +2,12 @@ from telegram import (Update,
                       InlineKeyboardMarkup,
                       InlineKeyboardButton)
 from telegram.ext import CallbackContext
-                          
+
 from telegram import InlineKeyboardButton
 from bot import states
 from bot.logger import log_command
-from bot.constants import  BOT_NAME, LOG_COMMANDS_NAME
+from bot.constants import BOT_NAME, LOG_COMMANDS_NAME
 from bot.user_db import UserDB
-
 
 MENU_BUTTONS = [
     [

@@ -382,7 +382,7 @@ def error_handler(update: object, context: CallbackContext) -> None:
     logger.error(msg=text, exc_info=context.error)
 
 
-def main() -> None:
+def init() -> None:
     dispatcher = updater.dispatcher
 
     conv_handler = ConversationHandler(

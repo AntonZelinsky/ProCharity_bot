@@ -3,8 +3,7 @@ import os
 import re
 
 from dotenv import load_dotenv
-from telegram import (ReplyKeyboardRemove,
-                      Update,
+from telegram import (Update,
                       InlineKeyboardMarkup,
                       InlineKeyboardButton,
                       ParseMode)
@@ -19,11 +18,12 @@ from app.config import BOT_PERSISTENCE_FILE
 
 from bot import states
 from bot import common_comands
-from bot.constants import LOG_COMMANDS_NAME, REASONS
-from bot.formatter import display_task
+from bot import constants
+from bot import formatter
 from bot.handlers.feedback_handler import feedback_conv
 from bot.logger import log_command
 from bot.user_db import UserDB
+from bot import task_subscription
 
 PAGINATION = 3
 
@@ -60,7 +60,7 @@ def before_confirm_specializations(update: Update, context: CallbackContext):
     return confirm_specializations(update, context)
 
 
-@log_command(command=LOG_COMMANDS_NAME['confirm_specializations'])
+@log_command(command=constants.LOG_COMMANDS_NAME['confirm_specializations'])
 def confirm_specializations(update: Update, context: CallbackContext):
     buttons = [
         [
@@ -89,7 +89,7 @@ def confirm_specializations(update: Update, context: CallbackContext):
     return states.CATEGORY
 
 
-@log_command(command=LOG_COMMANDS_NAME['change_user_categories'])
+@log_command(command=constants.LOG_COMMANDS_NAME['change_user_categories'])
 def change_user_categories(update: Update, context: CallbackContext):
     """Auxiliary function for selecting a category and changing the status of subscriptions."""
     pattern_id = re.findall(r'\d+', update.callback_query.data)
@@ -101,7 +101,7 @@ def change_user_categories(update: Update, context: CallbackContext):
     update.callback_query.answer()
 
 
-@log_command(command=LOG_COMMANDS_NAME['choose_category'],
+@log_command(command=constants.LOG_COMMANDS_NAME['choose_category'],
              ignore_func=['change_user_categories'])
 def choose_category(update: Update, context: CallbackContext, save_prev_msg: bool = False):
     """The main function is to select categories for subscribing to them."""
@@ -143,17 +143,8 @@ def choose_category(update: Update, context: CallbackContext, save_prev_msg: boo
     return states.CATEGORY
 
 
-@log_command(command=LOG_COMMANDS_NAME['after_category_choose'])
-def after_category_choose(update: Update, context: CallbackContext):
-    buttons = [
-        [
-            InlineKeyboardButton(text='Посмотреть открытые задания', callback_data='open_task')
-        ],
-        [
-            InlineKeyboardButton(text='Открыть меню', callback_data='open_menu')
-        ]
-    ]
-    keyboard = InlineKeyboardMarkup(buttons)
+@log_command(command=constants.LOG_COMMANDS_NAME['after_category_choose'])
+def after_category_choose(update: Update, context: CallbackContext):   
 
     user_categories = ', '.join([spec['name'] for spec
                                  in user_db.get_category(update.effective_user.id)
@@ -171,13 +162,13 @@ def after_category_choose(update: Update, context: CallbackContext):
     context.bot.send_message(
         chat_id=update.effective_chat.id,
         text='А пока можешь посмотреть открытые задания.',
-        reply_markup=keyboard
+        reply_markup=common_comands.get_menu_and_tasks_buttons()
     )
 
     return states.AFTER_CATEGORY_REPLY
 
 
-@log_command(command=LOG_COMMANDS_NAME['show_open_task'])
+@log_command(command=constants.LOG_COMMANDS_NAME['show_open_task'])
 def show_open_task(update: Update, context: CallbackContext):
     buttons = [
         [
@@ -213,13 +204,13 @@ def show_open_task(update: Update, context: CallbackContext):
             """
             if task[0].id != tasks[-1][0].id:
                 context.bot.send_message(
-                    chat_id=update.effective_chat.id, text=display_task(task),
+                    chat_id=update.effective_chat.id, text=formatter.display_task(task),
                     parse_mode=ParseMode.HTML, disable_web_page_preview=True
                 )
                 context.user_data[states.START_SHOW_TASK].append(task[0].id)
             else:
                 context.bot.send_message(
-                    chat_id=update.effective_chat.id, text=display_task(task),
+                    chat_id=update.effective_chat.id, text=formatter.display_task(task),
                     parse_mode=ParseMode.HTML, disable_web_page_preview=True
                 )
                 context.user_data[states.START_SHOW_TASK].append(task[0].id)
@@ -245,7 +236,7 @@ def show_open_task(update: Update, context: CallbackContext):
     return states.OPEN_TASKS
 
 
-@log_command(command=LOG_COMMANDS_NAME['no_relevant_category'])
+@log_command(command=constants.LOG_COMMANDS_NAME['no_relevant_category'])
 def no_relevant_category(update: Update, context: CallbackContext):
     buttons = [
         [
@@ -274,7 +265,7 @@ def no_relevant_category(update: Update, context: CallbackContext):
     return states.NO_CATEGORY
 
 
-@log_command(command=LOG_COMMANDS_NAME['about'])
+@log_command(command=constants.LOG_COMMANDS_NAME['about'])
 def about(update: Update, context: CallbackContext):
     button = [
         [InlineKeyboardButton(text='Вернуться в меню', callback_data='open_menu')]
@@ -292,87 +283,6 @@ def about(update: Update, context: CallbackContext):
     return states.MENU
 
 
-@log_command(command=LOG_COMMANDS_NAME['stop_task_subscription'])
-def stop_task_subscription(update: Update, context: CallbackContext):
-    context.user_data[states.SUBSCRIPTION_FLAG] = user_db.change_subscription(update.effective_user.id)
-    cancel_feedback_buttons = [
-        [
-            InlineKeyboardButton(text=reason[1], callback_data=reason[0])
-        ] for reason in REASONS.items()
-    ]
-
-    cancel_feedback_keyboard = InlineKeyboardMarkup(cancel_feedback_buttons)
-
-    answer = ('Ты больше не будешь получать новые задания от фондов, но '
-              'всегда сможешь найти их на сайте https://procharity.ru\n\n'
-              'Поделись, пожалуйста, почему ты решил отписаться?')
-
-    update.callback_query.edit_message_text(
-        text=answer, reply_markup=cancel_feedback_keyboard, disable_web_page_preview=True
-    )
-
-    return states.CANCEL_FEEDBACK
-
-
-@log_command(command=LOG_COMMANDS_NAME['start_task_subscription'])
-def start_task_subscription(update: Update, context: CallbackContext):
-    context.user_data[states.SUBSCRIPTION_FLAG] = user_db.change_subscription(update.effective_user.id)
-
-    button = [
-        [
-            InlineKeyboardButton(
-                text='Посмотреть открытые задания', callback_data='open_task'
-            )
-        ],
-        [
-            InlineKeyboardButton(
-                text='Открыть меню', callback_data='open_menu'
-            )
-        ]
-    ]
-    keyboard = InlineKeyboardMarkup(button)
-
-    user_categories = [
-        c['name'] for c in user_db.get_category(update.effective_user.id)
-        if c['user_selected']
-    ]
-
-    answer = f'Отлично! Теперь я буду присылать тебе уведомления о ' \
-             f'новых заданиях в ' \
-             f'категориях: {", ".join(user_categories)}.\n\n' \
-             f'А пока можешь посмотреть открытые задания.'
-
-    update.callback_query.edit_message_text(text=answer,
-                                            reply_markup=keyboard)
-
-    return states.AFTER_CATEGORY_REPLY
-
-
-@log_command(command=LOG_COMMANDS_NAME['cancel_feedback'])
-def cancel_feedback(update: Update, context: CallbackContext):
-    keyboard = common_comands.get_menu_buttons(context)
-    reason_canceling = update['callback_query']['data']
-    telegram_id = update['callback_query']['message']['chat']['id']
-    user_db.cancel_feedback_stat(telegram_id, reason_canceling)
-    
-    update.callback_query.edit_message_text(
-        text='Спасибо, я передал информацию команде ProCharity!',
-        reply_markup=keyboard
-    )
-    return states.MENU
-
-
-@log_command(command=LOG_COMMANDS_NAME['cancel'])
-def cancel(update: Update, context: CallbackContext):
-    user = update.message.from_user
-    logger.info("User %s canceled the conversation.", user.first_name)
-    update.message.reply_text(
-        'Bye! I hope we can talk again some day.',
-        reply_markup=ReplyKeyboardRemove()
-    )
-    return ConversationHandler.END
-
-
 def error_handler(update: object, context: CallbackContext) -> None:
     text = (f"Error '{context.error}', user id: {update.effective_user.id},")
     logger.error(msg=text, exc_info=context.error)
@@ -380,7 +290,6 @@ def error_handler(update: object, context: CallbackContext) -> None:
 
 def init() -> None:
     dispatcher = updater.dispatcher
-
     conv_handler = ConversationHandler(
         entry_points=[
             CommandHandler('start', common_comands.start)
@@ -406,8 +315,8 @@ def init() -> None:
                 feedback_conv,
                 CallbackQueryHandler(about, pattern='^about$'),
                 CallbackQueryHandler(choose_category, pattern='^change_category$'),
-                CallbackQueryHandler(stop_task_subscription, pattern='^stop_subscription$'),
-                CallbackQueryHandler(start_task_subscription, pattern='^start_subscription$'),
+                CallbackQueryHandler(task_subscription.stop_task_subscription, pattern='^stop_subscription$'),
+                CallbackQueryHandler(task_subscription.start_task_subscription, pattern='^start_subscription$'),
                 CallbackQueryHandler(common_comands.open_menu, pattern='^open_menu$')
             ],
             states.OPEN_TASKS: [
@@ -420,12 +329,12 @@ def init() -> None:
                 CallbackQueryHandler(common_comands.open_menu, pattern='^open_menu$')
             ],
             states.CANCEL_FEEDBACK: [
-                CallbackQueryHandler(cancel_feedback, pattern='^many_notification$'),
-                CallbackQueryHandler(cancel_feedback, pattern='^no_time$'),
-                CallbackQueryHandler(cancel_feedback, pattern='^no_relevant_task$'),
-                CallbackQueryHandler(cancel_feedback, pattern='^bot_is_bad$'),
-                CallbackQueryHandler(cancel_feedback, pattern='^fond_ignore'),
-                CallbackQueryHandler(cancel_feedback, pattern='^another')
+                CallbackQueryHandler(task_subscription.cancel_feedback, pattern='^many_notification$'),
+                CallbackQueryHandler(task_subscription.cancel_feedback, pattern='^no_time$'),
+                CallbackQueryHandler(task_subscription.cancel_feedback, pattern='^no_relevant_task$'),
+                CallbackQueryHandler(task_subscription.cancel_feedback, pattern='^bot_is_bad$'),
+                CallbackQueryHandler(task_subscription.cancel_feedback, pattern='^fond_ignore'),
+                CallbackQueryHandler(task_subscription.cancel_feedback, pattern='^another')
             ]
         },
 
@@ -436,7 +345,6 @@ def init() -> None:
         persistent=True,
         name='conv_handler'
     )
-    dispatcher.add_handler(CommandHandler('cancel', cancel))
 
     update_users_category = CallbackQueryHandler(change_user_categories, pattern='^up_cat[0-9]{1,2}$')
 

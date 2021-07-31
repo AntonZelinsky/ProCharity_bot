@@ -125,7 +125,7 @@ def no_wait_answer(update: Update, context: CallbackContext):
         update.effective_user.id, context.user_data.get(USER_MSG),
         context.user_data.get(FEEDBACK_TYPE)
     )
-    keyboard = common_comands.get_menu_buttons(context)
+    keyboard = common_comands.get_full_menu_buttons(context)
     text = 'Спасибо, я передал информацию команде ProCharity!'
     update.callback_query.edit_message_text(text=text, reply_markup=keyboard)
 
@@ -172,7 +172,7 @@ def after_get_feedback(update: Update, context: CallbackContext):
     )
     del context.user_data[FEEDBACK_TYPE]
 
-    keyboard = common_comands.get_menu_buttons(context)
+    keyboard = common_comands.get_full_menu_buttons(context)
     text = f'Спасибо, я передал информацию команде ProCharity! Ответ придет на почту {user.email}'
     context.bot.send_message(
         chat_id=update.effective_chat.id,

@@ -74,7 +74,7 @@ def start(update: Update, context: CallbackContext) -> int:
 
 @log_command(command=LOG_COMMANDS_NAME['open_menu'])
 def open_menu(update: Update, context: CallbackContext):
-    keyboard = get_menu_buttons(context)
+    keyboard = get_full_menu_buttons(context)
     text = 'Меню'
     update.callback_query.answer()
     update.callback_query.edit_message_text(text=text, reply_markup=keyboard)
@@ -83,7 +83,7 @@ def open_menu(update: Update, context: CallbackContext):
 
 
 def open_menu_fall(update: Update, context: CallbackContext):
-    keyboard = get_menu_buttons(context)
+    keyboard = get_full_menu_buttons(context)
     text = 'Меню'
     context.bot.send_message(
         chat_id=update.effective_chat.id,
@@ -93,7 +93,7 @@ def open_menu_fall(update: Update, context: CallbackContext):
     return states.MENU
 
 
-def get_menu_buttons(context: CallbackContext):
+def get_full_menu_buttons(context: CallbackContext):
     subscription_button = get_subscription_button(context)
     MENU_BUTTONS[-1] = [subscription_button]
     keyboard = InlineKeyboardMarkup(MENU_BUTTONS)
@@ -110,3 +110,16 @@ def get_subscription_button(context: CallbackContext):
         text='▶️ Включить подписку на задания',
         callback_data='start_subscription'
     )
+
+
+def get_menu_and_tasks_buttons():
+    buttons = [
+        [
+            InlineKeyboardButton(text='Посмотреть открытые задания', callback_data='open_task')
+        ],
+        [
+            InlineKeyboardButton(text='Открыть меню', callback_data='open_menu')
+        ]
+    ]
+    keyboard = InlineKeyboardMarkup(buttons)
+    return keyboard

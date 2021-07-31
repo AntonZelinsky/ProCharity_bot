@@ -4,12 +4,12 @@ from telegram import (Update,
 from telegram.ext import CallbackContext
 
 from telegram import InlineKeyboardButton
+from bot import common_comands
+from bot import constants
 from bot import states
 from bot import user_db
 from bot.logger import log_command
-from bot import constants
 from bot.user_db import UserDB
-from bot import common_comands
 
 user_db = UserDB()
 

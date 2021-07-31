@@ -19,9 +19,9 @@ from bot import states
 from bot import common_comands
 from bot import constants
 from bot import formatter
-from bot import task_subscription
 from bot import categories_selection
 from bot.handlers.feedback_handler import feedback_conv
+from bot.handlers.stop_subscription_handler import stop_subscription_conv
 from bot.logger import log_command
 from bot.user_db import UserDB
 
@@ -46,6 +46,24 @@ updater = Updater(token=os.getenv('TOKEN'), persistence=bot_persistence, use_con
 
 user_db = UserDB()
 
+
+@log_command(command=constants.LOG_COMMANDS_NAME['start_task_subscription'])
+def start_task_subscription(update: Update, context: CallbackContext):
+    context.user_data[states.SUBSCRIPTION_FLAG] = user_db.change_subscription(update.effective_user.id)
+    user_categories = [
+        c['name'] for c in user_db.get_category(update.effective_user.id)
+        if c['user_selected']
+    ]
+
+    answer = f'Отлично! Теперь я буду присылать тебе уведомления о ' \
+             f'новых заданиях в ' \
+             f'категориях: {", ".join(user_categories)}.\n\n' \
+             f'А пока можешь посмотреть открытые задания.'
+
+    update.callback_query.edit_message_text(text=answer,
+                                            reply_markup=common_comands.get_menu_and_tasks_buttons())
+
+    return states.AFTER_CATEGORY_REPLY
 
 @log_command(command=constants.LOG_COMMANDS_NAME['show_open_task'])
 def show_open_task(update: Update, context: CallbackContext):
@@ -165,8 +183,8 @@ def init() -> None:
                 feedback_conv,
                 CallbackQueryHandler(about, pattern='^about$'),
                 CallbackQueryHandler(categories_selection.choose_category, pattern='^change_category$'),
-                CallbackQueryHandler(task_subscription.stop_task_subscription, pattern='^stop_subscription$'),
-                CallbackQueryHandler(task_subscription.start_task_subscription, pattern='^start_subscription$'),
+                stop_subscription_conv,
+                CallbackQueryHandler(start_task_subscription, pattern='^start_subscription$'),
                 CallbackQueryHandler(common_comands.open_menu, pattern='^open_menu$')
             ],
             states.OPEN_TASKS: [
@@ -177,17 +195,8 @@ def init() -> None:
                 feedback_conv,
                 CallbackQueryHandler(show_open_task, pattern='^open_task$'),
                 CallbackQueryHandler(common_comands.open_menu, pattern='^open_menu$')
-            ],
-            states.CANCEL_FEEDBACK: [
-                CallbackQueryHandler(task_subscription.cancel_feedback, pattern='^many_notification$'),
-                CallbackQueryHandler(task_subscription.cancel_feedback, pattern='^no_time$'),
-                CallbackQueryHandler(task_subscription.cancel_feedback, pattern='^no_relevant_task$'),
-                CallbackQueryHandler(task_subscription.cancel_feedback, pattern='^bot_is_bad$'),
-                CallbackQueryHandler(task_subscription.cancel_feedback, pattern='^fond_ignore'),
-                CallbackQueryHandler(task_subscription.cancel_feedback, pattern='^another')
-            ]
+            ]           
         },
-
         fallbacks=[
             CommandHandler('start', common_comands.start),
             CommandHandler('menu', common_comands.open_menu_fall)

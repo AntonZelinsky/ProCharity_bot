@@ -1,7 +1,10 @@
 from telegram import (Update,
                       InlineKeyboardMarkup,
                       InlineKeyboardButton)
-from telegram.ext import CallbackContext
+from telegram.ext import (CallbackContext,
+                          CommandHandler,
+                          ConversationHandler,
+                          CallbackQueryHandler,)
 
 from telegram import InlineKeyboardButton
 from bot import common_comands
@@ -12,25 +15,6 @@ from bot.logger import log_command
 from bot.user_db import UserDB
 
 user_db = UserDB()
-
-
-@log_command(command=constants.LOG_COMMANDS_NAME['start_task_subscription'])
-def start_task_subscription(update: Update, context: CallbackContext):
-    context.user_data[states.SUBSCRIPTION_FLAG] = user_db.change_subscription(update.effective_user.id)
-    user_categories = [
-        c['name'] for c in user_db.get_category(update.effective_user.id)
-        if c['user_selected']
-    ]
-
-    answer = f'Отлично! Теперь я буду присылать тебе уведомления о ' \
-             f'новых заданиях в ' \
-             f'категориях: {", ".join(user_categories)}.\n\n' \
-             f'А пока можешь посмотреть открытые задания.'
-
-    update.callback_query.edit_message_text(text=answer,
-                                            reply_markup=common_comands.get_menu_and_tasks_buttons())
-
-    return states.AFTER_CATEGORY_REPLY
 
 
 @log_command(command=constants.LOG_COMMANDS_NAME['stop_task_subscription'])
@@ -67,3 +51,28 @@ def cancel_feedback(update: Update, context: CallbackContext):
         reply_markup=keyboard
     )
     return states.MENU
+
+
+stop_subscription_conv = ConversationHandler(
+    entry_points=[
+         CallbackQueryHandler(stop_task_subscription, pattern='^stop_subscription$'),
+    ],
+    states={
+      
+       states.CANCEL_FEEDBACK: [
+                CallbackQueryHandler(cancel_feedback, pattern='^many_notification$'),
+                CallbackQueryHandler(cancel_feedback, pattern='^no_time$'),
+                CallbackQueryHandler(cancel_feedback, pattern='^no_relevant_task$'),
+                CallbackQueryHandler(cancel_feedback, pattern='^bot_is_bad$'),
+                CallbackQueryHandler(cancel_feedback, pattern='^fond_ignore'),
+                CallbackQueryHandler(cancel_feedback, pattern='^another')
+            ]
+    },
+    fallbacks=[
+        CommandHandler('start', common_comands.start),
+        CommandHandler('menu', common_comands.open_menu_fall)
+    ],
+    map_to_parent={
+        states.MENU: states.MENU
+    }
+)

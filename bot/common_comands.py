@@ -1,6 +1,7 @@
 from telegram import (Update,
                       InlineKeyboardMarkup,
-                      InlineKeyboardButton)
+                      InlineKeyboardButton,
+                      ReplyKeyboardMarkup)
 from telegram.ext import CallbackContext
 
 from telegram import InlineKeyboardButton
@@ -50,26 +51,23 @@ user_db = UserDB()
 def start(update: Update, context: CallbackContext) -> int:
     deeplink_passed_param = context.args
     user = user_db.add_user(update.effective_user, deeplink_passed_param)
-    context.user_data[states.SUBSCRIPTION_FLAG] = user.has_mailing
-
-    callback_data = (states.GREETING_REGISTERED_USER
-                     if user.categories
-                     else states.GREETING)
-    button = [
-        [
-            InlineKeyboardButton(text='Начнем', callback_data=callback_data)
-        ]
-    ]
-    keyboard = InlineKeyboardMarkup(button)
+    context.user_data[states.SUBSCRIPTION_FLAG] = user.has_mailing  
+    reply_keyboard = [['Начнем']]
     context.bot.send_message(
         chat_id=update.effective_chat.id,
         text='Привет! 👋 \n\n'
              f'Меня зовут {BOT_NAME}. '
              'Буду держать тебя в курсе новых задач и помогу '
              'оперативно связаться с командой поддержки.',
-        reply_markup=keyboard
+        reply_markup=ReplyKeyboardMarkup(
+            reply_keyboard, one_time_keyboard=True, resize_keyboard=True,
+        ),
     )
-    return states.GREETING
+    
+    if user.categories:
+        return states.GREETING_REGISTERED_USER
+    else:
+        return states.GREETING
 
 
 @log_command(command=LOG_COMMANDS_NAME['open_menu'])

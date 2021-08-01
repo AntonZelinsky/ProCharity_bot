@@ -12,7 +12,9 @@ from telegram.ext import (Updater,
                           ConversationHandler,
                           CallbackContext,
                           CallbackQueryHandler,
-                          PicklePersistence)
+                          PicklePersistence,
+                          MessageHandler,
+                          Filters)
 
 from app.config import BOT_PERSISTENCE_FILE
 
@@ -47,16 +49,16 @@ user_db = UserDB()
 
 
 def choose_category_after_start(update: Update, context: CallbackContext):
-    update.callback_query.edit_message_text(
-        text=update.callback_query.message.text
-    )
+    #update.callback_query.edit_message_text(
+        #text=update.callback_query.message.text
+    #)
     return choose_category(update, context, True)
 
 
 def before_confirm_specializations(update: Update, context: CallbackContext):
-    update.callback_query.edit_message_text(
-        text=update.callback_query.message.text
-    )
+    #update.callback_query.edit_message_text(
+        #text=update.callback_query.message.text
+    #)
     return confirm_specializations(update, context)
 
 
@@ -296,9 +298,10 @@ def init() -> None:
         ],
         states={
             states.GREETING: [
-                CallbackQueryHandler(choose_category_after_start, pattern='^' + states.GREETING + '$'),
-                CallbackQueryHandler(before_confirm_specializations,
-                                     pattern='^' + states.GREETING_REGISTERED_USER + '$')
+                MessageHandler(Filters.regex('^(Начнем)$'), choose_category_after_start),
+            ],
+            states.GREETING_REGISTERED_USER:[
+                 MessageHandler(Filters.regex('^(Начнем)$'), before_confirm_specializations),
             ],
             states.CATEGORY: [
                 CallbackQueryHandler(choose_category, pattern='^return_chose_category$'),

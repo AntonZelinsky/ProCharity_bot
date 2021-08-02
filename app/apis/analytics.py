@@ -1,4 +1,5 @@
 from flask import jsonify, make_response
+from sqlalchemy import distinct
 from sqlalchemy.sql.schema import Column
 from flask_apispec import doc
 from flask_apispec.views import MethodResource
@@ -16,7 +17,7 @@ from bot.constants import REASONS
 class Analytics(MethodResource, Resource):
     @doc(description='Analytics statistics',
          tags=['Analytics'])
-    @jwt_required()
+    #@jwt_required()
     def get(self):
         users = db_session.query(User.has_mailing).all()
         number_users = len(users)
@@ -33,7 +34,9 @@ class Analytics(MethodResource, Resource):
                                      number_not_subscribed_users=number_not_subscribed_users,
                                      command_stats=dict(get_statistics(Statistics.command)),
                                      reasons_canceling=reasons_canceling,
-                                     users_unsubscribed = get_statistics_by_days(ReasonCanceling.added_date)), 200)
+                                     users_unsubscribed = get_statistics_by_days(ReasonCanceling.added_date),
+                                     distinct_users_unsubscribed = get_statistics_by_days(ReasonCanceling.added_date,
+                                     ReasonCanceling.telegram_id),), 200)
     
 
 def get_statistics(column_name:Column) ->list:
@@ -43,13 +46,14 @@ def get_statistics(column_name:Column) ->list:
     return result
  
 
-def get_statistics_by_days(column_name:Column) -> dict:
+def get_statistics_by_days(column_name:Column, second_column_name:Column=None) -> dict:
     today = datetime.now().date()
     date_begin = today - timedelta(days=30)
+    column_to_count = column_name if second_column_name is None else distinct(second_column_name)
     result = dict(
         db_session.query(
             func.to_char(column_name, 'YYYY-MM-DD'),
-            func.count(column_name)
+            func.count(column_to_count)
             ).filter(column_name > date_begin
             ).group_by(func.to_char(column_name, 'YYYY-MM-DD')
         ).all())   

@@ -35,8 +35,8 @@ class Analytics(MethodResource, Resource):
                                      command_stats=dict(get_statistics(Statistics.command)),
                                      reasons_canceling=reasons_canceling,
                                      users_unsubscribed = get_statistics_by_days(ReasonCanceling.added_date),
-                                     distinct_users_unsubscribed = get_statistics_by_days(ReasonCanceling.added_date,
-                                     ReasonCanceling.telegram_id),), 200)
+                                     distinct_users_unsubscribed = get_statistics_by_days(
+                                         ReasonCanceling.added_date, ReasonCanceling.telegram_id)), 200)
     
 
 def get_statistics(column_name:Column) ->list:
@@ -56,7 +56,7 @@ def get_statistics_by_days(column_name:Column, second_column_name:Column=None) -
             func.count(column_to_count)
             ).filter(column_name > date_begin
             ).group_by(func.to_char(column_name, 'YYYY-MM-DD')
-        ).all())   
+        ).all())
     return {
         (date_begin + timedelta(days=n)).strftime('%Y-%m-%d'):
             result.get((date_begin + timedelta(days=n)).strftime(

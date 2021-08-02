@@ -4,18 +4,25 @@ from telegram import (Update,
                       InlineKeyboardMarkup,
                       InlineKeyboardButton,
                       ParseMode)
-from telegram.ext import CallbackContext
+from telegram.ext import (CallbackContext,
+                          ConversationHandler,
+                          CallbackQueryHandler,
+                          CommandHandler)
 
 from telegram import InlineKeyboardButton
 
 from bot import common_comands
 from bot import constants
+from bot import formatter
 from bot import states
 from bot import user_db
 from bot.logger import log_command
 from bot.user_db import UserDB
+from bot.handlers.feedback_handler import feedback_conv
 
 user_db = UserDB()
+
+PAGINATION = 3
 
 
 def choose_category_after_start(update: Update, context: CallbackContext):
@@ -167,3 +174,109 @@ def no_relevant_category(update: Update, context: CallbackContext):
     )
 
     return states.NO_CATEGORY
+
+
+@log_command(command=constants.LOG_COMMANDS_NAME['show_open_task'])
+def show_open_task(update: Update, context: CallbackContext):
+    buttons = [
+        [
+            InlineKeyboardButton(text='Посмотреть ещё', callback_data='open_task')
+        ],
+        [
+            InlineKeyboardButton(text='Открыть меню', callback_data='open_menu')
+        ]
+    ]
+    keyboard = InlineKeyboardMarkup(buttons)
+
+    if not context.user_data.get(states.START_SHOW_TASK):
+        context.user_data[states.START_SHOW_TASK] = []
+
+    tasks = user_db.get_user_active_tasks(
+        update.effective_user.id, context.user_data[states.START_SHOW_TASK]
+    )
+    if tasks:
+        tasks.sort(key=lambda x: x[0].id)
+
+    if not tasks:
+        update.callback_query.edit_message_text(
+            text='Нет доступных заданий',
+            reply_markup=InlineKeyboardMarkup(
+                [[InlineKeyboardButton(text='Открыть меню', callback_data='open_menu')]]
+            )
+        )
+    else:
+        for task in tasks[:PAGINATION]:
+            """
+            Это условия проверяет, является ли элемент последним в списке
+            доступных к показу заданий или нет.
+            """
+            if task[0].id != tasks[-1][0].id:
+                context.bot.send_message(
+                    chat_id=update.effective_chat.id, text=formatter.display_task(task),
+                    parse_mode=ParseMode.HTML, disable_web_page_preview=True
+                )
+                context.user_data[states.START_SHOW_TASK].append(task[0].id)
+            else:
+                context.bot.send_message(
+                    chat_id=update.effective_chat.id, text=formatter.display_task(task),
+                    parse_mode=ParseMode.HTML, disable_web_page_preview=True
+                )
+                context.user_data[states.START_SHOW_TASK].append(task[0].id)
+                update.callback_query.delete_message()
+                context.bot.send_message(
+                    chat_id=update.effective_chat.id,
+                    text='Ты просмотрел все открытые задания на текущий момент.',
+                    reply_markup=InlineKeyboardMarkup(
+                        [[InlineKeyboardButton(text='Открыть меню',
+                                               callback_data='open_menu')]]
+                    )
+                )
+                return states.OPEN_TASKS
+
+        update.callback_query.delete_message()
+
+        context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text='Есть ещё задания, показать?',
+            reply_markup=keyboard
+        )
+
+    return states.OPEN_TASKS
+
+
+categories_conv = ConversationHandler(
+    entry_points=[
+        CallbackQueryHandler(choose_category_after_start, pattern='^' + states.GREETING + '$'),
+        CallbackQueryHandler(before_confirm_specializations,
+                                     pattern='^' + states.GREETING_REGISTERED_USER + '$'),
+        CallbackQueryHandler(choose_category, pattern='^change_category$'),
+        CallbackQueryHandler(show_open_task, pattern='^open_task$'),
+    ],
+    states={
+       states.CATEGORY: [
+                CallbackQueryHandler(choose_category, pattern='^return_chose_category$'),
+                CallbackQueryHandler(after_category_choose, pattern='^ready$'),
+                CallbackQueryHandler(no_relevant_category, pattern='^no_relevant$')
+            ],
+        states.AFTER_CATEGORY_REPLY: [
+                CallbackQueryHandler(show_open_task, pattern='^open_task$'),
+                CallbackQueryHandler(common_comands.open_menu, pattern='^open_menu$')
+            ],
+        states.NO_CATEGORY: [
+                feedback_conv,
+                CallbackQueryHandler(show_open_task, pattern='^open_task$'),
+                CallbackQueryHandler(common_comands.open_menu, pattern='^open_menu$')
+            ],
+        states.OPEN_TASKS: [
+                CallbackQueryHandler(show_open_task, pattern='^open_task$'),
+                CallbackQueryHandler(common_comands.open_menu, pattern='^open_menu$')
+            ]  
+    },
+    fallbacks=[
+        CommandHandler('start', common_comands.start),
+        CommandHandler('menu', common_comands.open_menu_fall)
+    ],
+    map_to_parent={
+        states.MENU: states.MENU
+    }
+)

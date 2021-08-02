@@ -17,7 +17,7 @@ from bot.constants import REASONS
 class Analytics(MethodResource, Resource):
     @doc(description='Analytics statistics',
          tags=['Analytics'])
-    #@jwt_required()
+    @jwt_required()
     def get(self):
         users = db_session.query(User.has_mailing).all()
         number_users = len(users)

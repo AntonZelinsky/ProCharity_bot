@@ -6,7 +6,9 @@ from dotenv import load_dotenv
 from telegram import (Update,
                       InlineKeyboardMarkup,
                       InlineKeyboardButton,
-                      ParseMode)
+                      ParseMode,
+                      ReplyKeyboardMarkup,
+                      KeyboardButton)
 from telegram.ext import (Updater,
                           CommandHandler,
                           ConversationHandler,
@@ -48,45 +50,22 @@ updater = Updater(token=os.getenv('TOKEN'), persistence=bot_persistence, use_con
 user_db = UserDB()
 
 
-def choose_category_after_start(update: Update, context: CallbackContext):
-    #update.callback_query.edit_message_text(
-        #text=update.callback_query.message.text
-    #)
-    return choose_category(update, context, True)
-
-
-def before_confirm_specializations(update: Update, context: CallbackContext):
-    #update.callback_query.edit_message_text(
-        #text=update.callback_query.message.text
-    #)
-    return confirm_specializations(update, context)
-
-
 @log_command(command=constants.LOG_COMMANDS_NAME['confirm_specializations'])
 def confirm_specializations(update: Update, context: CallbackContext):
-    buttons = [
-        [
-            InlineKeyboardButton(text='Да', callback_data='ready')
-        ],
-        [
-            InlineKeyboardButton(text='Нет, хочу изменить.', callback_data='return_chose_category')
-        ]
-    ]
+    reply_keyboard = [['Да'], ['Нет, хочу изменить.']]
     specializations = ', '.join([spec['name'] for spec
                                  in user_db.get_category(update.effective_user.id)
                                  if spec['user_selected']])
-
     if not specializations:
         specializations = 'Категории ещё не выбраны'
-
-    keyboard = InlineKeyboardMarkup(buttons)
-
     context.bot.send_message(
         chat_id=update.effective_chat.id,
         text='Вот список твоих профессиональных компетенций:'
              f' *{specializations}*. Все верно?',
         parse_mode=ParseMode.MARKDOWN,
-        reply_markup=keyboard,
+        reply_markup=ReplyKeyboardMarkup(
+            reply_keyboard, one_time_keyboard=True, resize_keyboard=True,
+        ),
     )
     return states.CATEGORY
 
@@ -94,7 +73,7 @@ def confirm_specializations(update: Update, context: CallbackContext):
 @log_command(command=constants.LOG_COMMANDS_NAME['change_user_categories'])
 def change_user_categories(update: Update, context: CallbackContext):
     """Auxiliary function for selecting a category and changing the status of subscriptions."""
-    pattern_id = re.findall(r'\d+', update.callback_query.data)
+    pattern_id = re.findall(r'\d+', context.chat_data)
     category_id = int(pattern_id[0])
     telegram_id = update.effective_user.id
 
@@ -105,10 +84,9 @@ def change_user_categories(update: Update, context: CallbackContext):
 
 @log_command(command=constants.LOG_COMMANDS_NAME['choose_category'],
              ignore_func=['change_user_categories'])
-def choose_category(update: Update, context: CallbackContext, save_prev_msg: bool = False):
+def choose_category(update: Update, context: CallbackContext, save_prev_msg: bool = True):
     """The main function is to select categories for subscribing to them."""
     categories = user_db.get_category(update.effective_user.id)
-
     buttons = []
     for cat in categories:
         if cat['user_selected']:
@@ -116,13 +94,13 @@ def choose_category(update: Update, context: CallbackContext, save_prev_msg: boo
         buttons.append([InlineKeyboardButton(text=cat['name'], callback_data=f'up_cat{cat["category_id"]}'
                                              )])
 
-    buttons += [
+    buttons2 = [
         [
-            InlineKeyboardButton(text='Нет моих компетенций 😕',
+            KeyboardButton(text='Нет моих компетенций 😕',
                                  callback_data='no_relevant')
         ],
         [
-            InlineKeyboardButton(text='Готово 👌', callback_data='ready'),
+            KeyboardButton(text='Готово 👌', callback_data='ready'),
         ],
     ]
     keyboard = InlineKeyboardMarkup(buttons)
@@ -131,8 +109,13 @@ def choose_category(update: Update, context: CallbackContext, save_prev_msg: boo
             chat_id=update.effective_chat.id,
             text='Чтобы я знал, с какими задачами ты готов помогать, '
                  'выбери свои профессиональные компетенции (можно выбрать '
-                 'несколько). После этого, нажми на пункт "Готово 👌"',
+                 'несколько).',
             reply_markup=keyboard,
+        )
+        context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text='После этого, нажми на пункт "Готово 👌"',
+            reply_markup=ReplyKeyboardMarkup(buttons2, resize_keyboard=True),
         )
     else:
         update.callback_query.edit_message_text(
@@ -155,7 +138,8 @@ def after_category_choose(update: Update, context: CallbackContext):
     if not user_categories:
         user_categories = 'Категории ещё не выбраны'
 
-    update.callback_query.edit_message_text(
+    context.bot.send_message(
+        chat_id=update.effective_chat.id,
         text=f'Отлично! Теперь я буду присылать тебе уведомления о новых '
              f'заданиях в категориях: *{user_categories}*.\n\n',
         parse_mode=ParseMode.MARKDOWN
@@ -174,13 +158,13 @@ def after_category_choose(update: Update, context: CallbackContext):
 def show_open_task(update: Update, context: CallbackContext):
     buttons = [
         [
-            InlineKeyboardButton(text='Посмотреть ещё', callback_data='open_task')
+            KeyboardButton(text='Посмотреть ещё', callback_data='open_task')
         ],
         [
-            InlineKeyboardButton(text='Открыть меню', callback_data='open_menu')
+            KeyboardButton(text='Открыть меню', callback_data='open_menu')
         ]
     ]
-    keyboard = InlineKeyboardMarkup(buttons)
+    keyboard = ReplyKeyboardMarkup(buttons)
 
     if not context.user_data.get(states.START_SHOW_TASK):
         context.user_data[states.START_SHOW_TASK] = []
@@ -192,10 +176,11 @@ def show_open_task(update: Update, context: CallbackContext):
         tasks.sort(key=lambda x: x[0].id)
 
     if not tasks:
-        update.callback_query.edit_message_text(
+        context.bot.send_message(
+            chat_id=update.effective_chat.id,
             text='Нет доступных заданий',
-            reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton(text='Открыть меню', callback_data='open_menu')]]
+            reply_markup=ReplyKeyboardMarkup(
+                [[KeyboardButton(text='Открыть меню')]]
             )
         )
     else:
@@ -216,7 +201,7 @@ def show_open_task(update: Update, context: CallbackContext):
                     parse_mode=ParseMode.HTML, disable_web_page_preview=True
                 )
                 context.user_data[states.START_SHOW_TASK].append(task[0].id)
-                update.callback_query.delete_message()
+                #update.callback_query.delete_message()
                 context.bot.send_message(
                     chat_id=update.effective_chat.id,
                     text='Ты просмотрел все открытые задания на текущий момент.',
@@ -227,7 +212,7 @@ def show_open_task(update: Update, context: CallbackContext):
                 )
                 return states.OPEN_TASKS
 
-        update.callback_query.delete_message()
+        #update.callback_query.delete_message()
 
         context.bot.send_message(
             chat_id=update.effective_chat.id,
@@ -298,25 +283,29 @@ def init() -> None:
         ],
         states={
             states.GREETING: [
-                MessageHandler(Filters.regex('^(Начнем)$'), choose_category_after_start),
+                MessageHandler(Filters.regex('^(Начнем)$'), choose_category),
             ],
             states.GREETING_REGISTERED_USER:[
-                 MessageHandler(Filters.regex('^(Начнем)$'), before_confirm_specializations),
+                 MessageHandler(Filters.regex('^(Начнем)$'), confirm_specializations),
             ],
             states.CATEGORY: [
-                CallbackQueryHandler(choose_category, pattern='^return_chose_category$'),
-                CallbackQueryHandler(after_category_choose, pattern='^ready$'),
-                CallbackQueryHandler(no_relevant_category, pattern='^no_relevant$')
+                MessageHandler(Filters.regex('^(Да)$'), after_category_choose),
+                MessageHandler(Filters.regex('^(Нет, хочу изменить.)$'), choose_category), # TODO разобраться с этой хренью
+                
+                #CallbackQueryHandler(choose_category, pattern='^return_chose_category$'),
+                #CallbackQueryHandler(after_category_choose, pattern='^ready$'),
+                #CallbackQueryHandler(no_relevant_category, pattern='^no_relevant$')
 
             ],
             states.AFTER_CATEGORY_REPLY: [
-                CallbackQueryHandler(show_open_task, pattern='^open_task$'),
-                CallbackQueryHandler(common_comands.open_menu, pattern='^open_menu$')
+                MessageHandler(Filters.regex('^(Посмотреть открытые задания)$'), show_open_task),
+                MessageHandler(Filters.regex('^(Открыть меню)$'), common_comands.open_menu_fall),
             ],
             states.MENU: [
-                CallbackQueryHandler(show_open_task, pattern='^open_task$'),
+                MessageHandler(Filters.regex('^(Посмотреть открытые задания)$'), show_open_task),
+                #CallbackQueryHandler(show_open_task, pattern='^open_task$'),
                 feedback_conv,
-                CallbackQueryHandler(about, pattern='^about$'),
+                MessageHandler(Filters.regex('^(О платформе)$'), about),
                 CallbackQueryHandler(choose_category, pattern='^change_category$'),
                 CallbackQueryHandler(task_subscription.stop_task_subscription, pattern='^stop_subscription$'),
                 CallbackQueryHandler(task_subscription.start_task_subscription, pattern='^start_subscription$'),

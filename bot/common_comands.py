@@ -1,7 +1,8 @@
 from telegram import (Update,
                       InlineKeyboardMarkup,
                       InlineKeyboardButton,
-                      ReplyKeyboardMarkup)
+                      ReplyKeyboardMarkup,
+                      KeyboardButton)
 from telegram.ext import CallbackContext
 
 from telegram import InlineKeyboardButton
@@ -12,34 +13,32 @@ from bot.user_db import UserDB
 
 MENU_BUTTONS = [
     [
-        InlineKeyboardButton(
-            text='🔎 Посмотреть открытые задания', callback_data='open_task'
+        KeyboardButton(
+            text='🔎 Посмотреть открытые задания'
         )
     ],
     [
-        InlineKeyboardButton(
-            text='✏️ Изменить компетенции', callback_data='change_category'
+        KeyboardButton(
+            text='✏️ Изменить компетенции'
         )
     ],
     [
-        InlineKeyboardButton(
-            text='✉️ Отправить предложение/ошибку', callback_data='new_feature'
+        KeyboardButton(
+            text='✉️ Отправить предложение/ошибку')
+    ],
+    [
+        KeyboardButton(
+            text='❓ Задать вопрос'
         )
     ],
     [
-        InlineKeyboardButton(
-            text='❓ Задать вопрос', callback_data='ask_question'
+        KeyboardButton(
+            text='ℹ️ О платформе'
         )
     ],
     [
-        InlineKeyboardButton(
-            text='ℹ️ О платформе', callback_data='about'
-        )
-    ],
-    [
-        InlineKeyboardButton(
-            text='⏹ Остановить/включить подписку на задания',
-            callback_data='stop_subscription'
+        KeyboardButton(
+            text='⏹ Остановить/включить подписку на задания'
         )
     ]
 ]
@@ -64,10 +63,7 @@ def start(update: Update, context: CallbackContext) -> int:
         ),
     )
     
-    if user.categories:
-        return states.GREETING_REGISTERED_USER
-    else:
-        return states.GREETING
+    return states.GREETING_REGISTERED_USER if user.categories else states.GREETING
 
 
 @log_command(command=LOG_COMMANDS_NAME['open_menu'])
@@ -94,30 +90,28 @@ def open_menu_fall(update: Update, context: CallbackContext):
 def get_full_menu_buttons(context: CallbackContext):
     subscription_button = get_subscription_button(context)
     MENU_BUTTONS[-1] = [subscription_button]
-    keyboard = InlineKeyboardMarkup(MENU_BUTTONS)
+    keyboard = ReplyKeyboardMarkup(MENU_BUTTONS, resize_keyboard=True, one_time_keyboard=True)
     return keyboard
 
 
 def get_subscription_button(context: CallbackContext):
     if context.user_data[states.SUBSCRIPTION_FLAG]:
-        return InlineKeyboardButton(
-            text='⏹ Остановить подписку на задания',
-            callback_data='stop_subscription'
+        return KeyboardButton(
+            text='⏹ Остановить подписку на задания'
         )
-    return InlineKeyboardButton(
-        text='▶️ Включить подписку на задания',
-        callback_data='start_subscription'
+    return KeyboardButton(
+        text='▶️ Включить подписку на задания'
     )
 
 
 def get_menu_and_tasks_buttons():
     buttons = [
         [
-            InlineKeyboardButton(text='Посмотреть открытые задания', callback_data='open_task')
+            KeyboardButton(text='Посмотреть открытые задания', callback_data='open_task')
         ],
         [
-            InlineKeyboardButton(text='Открыть меню', callback_data='open_menu')
+            KeyboardButton(text='Открыть меню', callback_data='open_menu')
         ]
     ]
-    keyboard = InlineKeyboardMarkup(buttons)
+    keyboard = ReplyKeyboardMarkup(buttons, resize_keyboard=True, one_time_keyboard=True)
     return keyboard

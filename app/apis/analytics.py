@@ -36,7 +36,8 @@ class Analytics(MethodResource, Resource):
                                      reasons_canceling=reasons_canceling,
                                      users_unsubscribed = get_statistics_by_days(ReasonCanceling.added_date),
                                      distinct_users_unsubscribed = get_statistics_by_days(
-                                         ReasonCanceling.added_date, ReasonCanceling.telegram_id)), 200)
+                                         ReasonCanceling.added_date, ReasonCanceling.telegram_id)
+                                    ), 200)
     
 
 def get_statistics(column_name:Column) ->list:

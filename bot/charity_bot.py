@@ -14,10 +14,10 @@ from telegram.ext import (Updater,
 
 from app.config import BOT_PERSISTENCE_FILE
 
-from bot import states
 from bot import common_comands
-from bot import constants
-
+from bot.constants import states
+from bot.constants import ui_constants
+from bot.constants import command_constants
 from bot.handlers.categories_handler import categories_conv, change_user_categories
 from bot.handlers.feedback_handler import feedback_conv
 from bot.handlers.subscription_handler import subscription_conv
@@ -44,7 +44,7 @@ updater = Updater(token=os.getenv('TOKEN'), persistence=bot_persistence, use_con
 user_db = UserDB()
 
 
-@log_command(command=constants.LOG_COMMANDS_NAME['about'])
+@log_command(command=ui_constants.LOG_COMMANDS_NAME['about'])
 def about(update: Update, context: CallbackContext):
     button = [
         [InlineKeyboardButton(text='Вернуться в меню', callback_data='open_menu')]
@@ -81,8 +81,8 @@ def init() -> None:
                 feedback_conv,
                 categories_conv,
                 subscription_conv,
-                CallbackQueryHandler(about, pattern='^about$'),                
-                CallbackQueryHandler(common_comands.open_menu, pattern='^open_menu$')
+                CallbackQueryHandler(about, pattern=command_constants.ABOUT),                
+                CallbackQueryHandler(common_comands.open_menu, pattern=command_constants.OPEN_MENU)
             ],            
         },
         fallbacks=[

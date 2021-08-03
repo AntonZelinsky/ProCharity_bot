@@ -7,9 +7,10 @@ from telegram.ext import (CommandHandler,
                           CallbackQueryHandler,
                           MessageHandler,
                           Filters)
-from bot import states
 from bot import common_comands
-from bot import constants
+from bot.constants import states
+from bot.constants import command_constants
+from bot.constants import ui_constants
 from bot import email_client 
 from bot.logger import log_command
 from bot.user_db import UserDB
@@ -28,10 +29,10 @@ MSG_TEXT = 'msg_text'
 user_db = UserDB()
 
 
-@log_command(command=constants.LOG_COMMANDS_NAME['ask_new_category'])
+@log_command(command=ui_constants.LOG_COMMANDS_NAME['ask_new_category'])
 def ask_new_category(update: Update, context: CallbackContext):
     button = [
-        [InlineKeyboardButton(text='Вернуться в меню', callback_data='open_menu')]
+        [InlineKeyboardButton(text='Вернуться в меню', callback_data=command_constants.OPEN_MENU)]
     ]
     keyboard = InlineKeyboardMarkup(button)
     message = update.callback_query.edit_message_text(
@@ -46,10 +47,10 @@ def ask_new_category(update: Update, context: CallbackContext):
     return states.TYPING
 
 
-@log_command(command=constants.LOG_COMMANDS_NAME['ask_question'])
+@log_command(command=ui_constants.LOG_COMMANDS_NAME['ask_question'])
 def ask_question(update: Update, context: CallbackContext):
     button = [
-        [InlineKeyboardButton(text='Вернуться в меню', callback_data='open_menu')]
+        [InlineKeyboardButton(text='Вернуться в меню', callback_data=command_constants.OPEN_MENU)]
     ]
     keyboard = InlineKeyboardMarkup(button)
     message = update.callback_query.edit_message_text(
@@ -63,10 +64,10 @@ def ask_question(update: Update, context: CallbackContext):
     return states.TYPING
 
 
-@log_command(command=constants.LOG_COMMANDS_NAME['add_new_feature'])
+@log_command(command=ui_constants.LOG_COMMANDS_NAME['add_new_feature'])
 def add_new_feature(update: Update, context: CallbackContext):
     button = [
-        [InlineKeyboardButton(text='Вернуться в меню', callback_data='open_menu')]
+        [InlineKeyboardButton(text='Вернуться в меню', callback_data=command_constants.OPEN_MENU)]
     ]
     keyboard = InlineKeyboardMarkup(button)
     message = update.callback_query.edit_message_text(
@@ -81,7 +82,7 @@ def add_new_feature(update: Update, context: CallbackContext):
     return states.TYPING
 
 
-@log_command(command=constants.LOG_COMMANDS_NAME['save_user_input'])
+@log_command(command=ui_constants.LOG_COMMANDS_NAME['save_user_input'])
 def save_user_input(update: Update, context: CallbackContext):
     user = user_db.get_user(update.effective_user.id)
     context.user_data[USER_MSG] = update.message.text
@@ -91,7 +92,7 @@ def save_user_input(update: Update, context: CallbackContext):
         return ask_email(update, context)
 
 
-@log_command(command=constants.LOG_COMMANDS_NAME['ask_email'])
+@log_command(command=ui_constants.LOG_COMMANDS_NAME['ask_email'])
 def ask_email(update: Update, context: CallbackContext):
     context.user_data[ASK_EMAIL_FLAG] = True
     context.bot.edit_message_text(
@@ -104,7 +105,7 @@ def ask_email(update: Update, context: CallbackContext):
     text = 'Пожалуйста, укажи свою почту, если хочешь получить ответ'
     buttons = [
         [InlineKeyboardButton(text='Не жду ответ', callback_data='no_wait')],
-        [InlineKeyboardButton(text='Вернуться в меню', callback_data='open_menu')]
+        [InlineKeyboardButton(text='Вернуться в меню', callback_data=command_constants.OPEN_MENU)]
     ]
     message = context.bot.send_message(
         chat_id=update.effective_chat.id,
@@ -118,7 +119,7 @@ def ask_email(update: Update, context: CallbackContext):
     return states.ASK_EMAIL
 
 
-@log_command(command=constants.LOG_COMMANDS_NAME['no_wait_answer'])
+@log_command(command=ui_constants.LOG_COMMANDS_NAME['no_wait_answer'])
 def no_wait_answer(update: Update, context: CallbackContext):
     email_client.send_email(
         update.effective_user.id, context.user_data.get(USER_MSG),
@@ -141,7 +142,7 @@ def save_email(update: Update, context: CallbackContext):
         return save_user_input(update, context)
 
 
-@log_command(command=constants.LOG_COMMANDS_NAME['after_get_feedback'])
+@log_command(command=ui_constants.LOG_COMMANDS_NAME['after_get_feedback'])
 def after_get_feedback(update: Update, context: CallbackContext):
     if context.user_data.get(ASK_EMAIL_FLAG):
         context.bot.edit_message_text(
@@ -190,10 +191,10 @@ feedback_conv = ConversationHandler(
     states={
         states.TYPING: [
             MessageHandler(Filters.text & ~Filters.command, save_user_input),
-            CallbackQueryHandler(common_comands.open_menu, pattern='^open_menu$')
+            CallbackQueryHandler(common_comands.open_menu, pattern=command_constants.OPEN_MENU)
         ],
         states.ASK_EMAIL: [
-            CallbackQueryHandler(common_comands.open_menu, pattern='^open_menu$'),
+            CallbackQueryHandler(common_comands.open_menu, pattern=command_constants.OPEN_MENU),
             CallbackQueryHandler(no_wait_answer, pattern='^no_wait$'),
             MessageHandler(Filters.text & ~Filters.command, save_email)
         ]

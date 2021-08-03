@@ -11,7 +11,7 @@ from app.models import ReasonCanceling, Statistics, User
 from app.database import db_session
 from datetime import datetime, timedelta
 
-from bot.constants import REASONS
+from bot.constants.ui_constants import REASONS
 
 
 class Analytics(MethodResource, Resource):

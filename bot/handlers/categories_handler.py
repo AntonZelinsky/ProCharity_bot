@@ -12,9 +12,10 @@ from telegram.ext import (CallbackContext,
 from telegram import InlineKeyboardButton
 
 from bot import common_comands
-from bot import constants
 from bot import formatter
-from bot import states
+from bot.constants import ui_constants
+from bot.constants import command_constants
+from bot.constants import states
 from bot import user_db
 from bot.logger import log_command
 from bot.user_db import UserDB
@@ -39,7 +40,7 @@ def before_confirm_specializations(update: Update, context: CallbackContext):
     return confirm_specializations(update, context)
 
 
-@log_command(command=constants.LOG_COMMANDS_NAME['confirm_specializations'])
+@log_command(command=ui_constants.LOG_COMMANDS_NAME['confirm_specializations'])
 def confirm_specializations(update: Update, context: CallbackContext):
     buttons = [
         [
@@ -68,7 +69,7 @@ def confirm_specializations(update: Update, context: CallbackContext):
     return states.CATEGORY
 
 
-@log_command(command=constants.LOG_COMMANDS_NAME['change_user_categories'])
+@log_command(command=ui_constants.LOG_COMMANDS_NAME['change_user_categories'])
 def change_user_categories(update: Update, context: CallbackContext):
     """Auxiliary function for selecting a category and changing the status of subscriptions."""
     pattern_id = re.findall(r'\d+', update.callback_query.data)
@@ -80,7 +81,7 @@ def change_user_categories(update: Update, context: CallbackContext):
     update.callback_query.answer()
 
 
-@log_command(command=constants.LOG_COMMANDS_NAME['choose_category'],
+@log_command(command=ui_constants.LOG_COMMANDS_NAME['choose_category'],
              ignore_func=['change_user_categories'])
 def choose_category(update: Update, context: CallbackContext, save_prev_msg: bool = False):
     """The main function is to select categories for subscribing to them."""
@@ -122,7 +123,7 @@ def choose_category(update: Update, context: CallbackContext, save_prev_msg: boo
     return states.CATEGORY
 
 
-@log_command(command=constants.LOG_COMMANDS_NAME['after_category_choose'])
+@log_command(command=ui_constants.LOG_COMMANDS_NAME['after_category_choose'])
 def after_category_choose(update: Update, context: CallbackContext):   
 
     user_categories = ', '.join([spec['name'] for spec
@@ -147,7 +148,7 @@ def after_category_choose(update: Update, context: CallbackContext):
     return states.AFTER_CATEGORY_REPLY
 
 
-@log_command(command=constants.LOG_COMMANDS_NAME['no_relevant_category'])
+@log_command(command=ui_constants.LOG_COMMANDS_NAME['no_relevant_category'])
 def no_relevant_category(update: Update, context: CallbackContext):
     buttons = [
         [
@@ -162,7 +163,7 @@ def no_relevant_category(update: Update, context: CallbackContext):
         ],
         [
             InlineKeyboardButton(
-                text='Вернуться в меню', callback_data='open_menu'
+                text='Вернуться в меню', callback_data=command_constants.OPEN_MENU
             )
         ]
     ]
@@ -176,14 +177,14 @@ def no_relevant_category(update: Update, context: CallbackContext):
     return states.NO_CATEGORY
 
 
-@log_command(command=constants.LOG_COMMANDS_NAME['show_open_task'])
+@log_command(command=ui_constants.LOG_COMMANDS_NAME['show_open_task'])
 def show_open_task(update: Update, context: CallbackContext):
     buttons = [
         [
             InlineKeyboardButton(text='Посмотреть ещё', callback_data='open_task')
         ],
         [
-            InlineKeyboardButton(text='Открыть меню', callback_data='open_menu')
+            InlineKeyboardButton(text='Открыть меню', callback_data=command_constants.OPEN_MENU)
         ]
     ]
     keyboard = InlineKeyboardMarkup(buttons)
@@ -201,7 +202,7 @@ def show_open_task(update: Update, context: CallbackContext):
         update.callback_query.edit_message_text(
             text='Нет доступных заданий',
             reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton(text='Открыть меню', callback_data='open_menu')]]
+                [[InlineKeyboardButton(text='Открыть меню', callback_data=command_constants.OPEN_MENU)]]
             )
         )
     else:
@@ -228,7 +229,7 @@ def show_open_task(update: Update, context: CallbackContext):
                     text='Ты просмотрел все открытые задания на текущий момент.',
                     reply_markup=InlineKeyboardMarkup(
                         [[InlineKeyboardButton(text='Открыть меню',
-                                               callback_data='open_menu')]]
+                                               callback_data=command_constants.OPEN_MENU)]]
                     )
                 )
                 return states.OPEN_TASKS
@@ -260,16 +261,16 @@ categories_conv = ConversationHandler(
             ],
         states.AFTER_CATEGORY_REPLY: [
                 CallbackQueryHandler(show_open_task, pattern='^open_task$'),
-                CallbackQueryHandler(common_comands.open_menu, pattern='^open_menu$')
+                CallbackQueryHandler(common_comands.open_menu, pattern=command_constants.OPEN_MENU)
             ],
         states.NO_CATEGORY: [
                 feedback_conv,
                 CallbackQueryHandler(show_open_task, pattern='^open_task$'),
-                CallbackQueryHandler(common_comands.open_menu, pattern='^open_menu$')
+                CallbackQueryHandler(common_comands.open_menu, pattern=command_constants.OPEN_MENU)
             ],
         states.OPEN_TASKS: [
                 CallbackQueryHandler(show_open_task, pattern='^open_task$'),
-                CallbackQueryHandler(common_comands.open_menu, pattern='^open_menu$')
+                CallbackQueryHandler(common_comands.open_menu, pattern=command_constants.OPEN_MENU)
             ]  
     },
     fallbacks=[

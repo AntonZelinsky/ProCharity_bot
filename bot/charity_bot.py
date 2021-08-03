@@ -16,7 +16,7 @@ from app.config import BOT_PERSISTENCE_FILE
 
 from bot import common_comands
 from bot.constants import states
-from bot.constants import ui_constants
+from bot.constants import constants
 from bot.constants import command_constants
 from bot.handlers.categories_handler import categories_conv, change_user_categories
 from bot.handlers.feedback_handler import feedback_conv
@@ -44,10 +44,10 @@ updater = Updater(token=os.getenv('TOKEN'), persistence=bot_persistence, use_con
 user_db = UserDB()
 
 
-@log_command(command=ui_constants.LOG_COMMANDS_NAME['about'])
+@log_command(command=constants.LOG_COMMANDS_NAME['about'])
 def about(update: Update, context: CallbackContext):
     button = [
-        [InlineKeyboardButton(text='Вернуться в меню', callback_data='open_menu')]
+        [InlineKeyboardButton(text='Вернуться в меню', callback_data=command_constants.OPEN_MENU)]
     ]
     keyboard = InlineKeyboardMarkup(button)
     update.callback_query.edit_message_text(

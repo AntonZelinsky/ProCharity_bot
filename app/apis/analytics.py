@@ -11,7 +11,7 @@ from app.models import ReasonCanceling, Statistics, User
 from app.database import db_session
 from datetime import datetime, timedelta
 
-from bot.constants.ui_constants import REASONS
+from bot.constants import constants
 
 
 class Analytics(MethodResource, Resource):
@@ -26,7 +26,7 @@ class Analytics(MethodResource, Resource):
         
         reasons_canceling_from_db = get_statistics(ReasonCanceling.reason_canceling)       
         reasons_canceling = {
-            REASONS.get(key, 'Другое'):
+            constants.REASONS.get(key, 'Другое'):
                 value for key, value in reasons_canceling_from_db
         }
         return make_response(jsonify(added_users=get_statistics_by_days(User.date_registration),

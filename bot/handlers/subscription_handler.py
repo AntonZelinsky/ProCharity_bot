@@ -9,7 +9,8 @@ from telegram.ext import (CallbackContext,
 
 from telegram import InlineKeyboardButton
 from bot import common_comands
-from bot.constants import ui_constants
+from bot.constants import constants
+from bot.constants import command_constants
 from bot.constants import states
 from bot import user_db
 from bot.logger import log_command
@@ -18,7 +19,7 @@ from bot.user_db import UserDB
 user_db = UserDB()
 
 
-@log_command(command=ui_constants.LOG_COMMANDS_NAME['start_task_subscription'])
+@log_command(command=constants.LOG_COMMANDS_NAME['start_task_subscription'])
 def start_task_subscription(update: Update, context: CallbackContext):
     context.user_data[states.SUBSCRIPTION_FLAG] = user_db.change_subscription(update.effective_user.id)
     user_categories = [
@@ -37,13 +38,13 @@ def start_task_subscription(update: Update, context: CallbackContext):
     return states.MENU
 
 
-@log_command(command=ui_constants.LOG_COMMANDS_NAME['stop_task_subscription'])
+@log_command(command=constants.LOG_COMMANDS_NAME['stop_task_subscription'])
 def stop_task_subscription(update: Update, context: CallbackContext):
     context.user_data[states.SUBSCRIPTION_FLAG] = user_db.change_subscription(update.effective_user.id)
     cancel_feedback_buttons = [
         [
             InlineKeyboardButton(text=reason[1], callback_data=reason[0])
-        ] for reason in ui_constants.REASONS.items()
+        ] for reason in constants.REASONS.items()
     ]
 
     cancel_feedback_keyboard = InlineKeyboardMarkup(cancel_feedback_buttons)
@@ -59,7 +60,7 @@ def stop_task_subscription(update: Update, context: CallbackContext):
     return states.CANCEL_FEEDBACK
 
 
-@log_command(command=ui_constants.LOG_COMMANDS_NAME['cancel_feedback'])
+@log_command(command=constants.LOG_COMMANDS_NAME['cancel_feedback'])
 def cancel_feedback(update: Update, context: CallbackContext):
     keyboard = common_comands.get_full_menu_buttons(context)
     reason_canceling = update['callback_query']['data']
@@ -75,8 +76,8 @@ def cancel_feedback(update: Update, context: CallbackContext):
 
 subscription_conv = ConversationHandler(
     entry_points=[
-         CallbackQueryHandler(start_task_subscription, pattern='^start_subscription$'),
-         CallbackQueryHandler(stop_task_subscription, pattern='^stop_subscription$'),        
+         CallbackQueryHandler(start_task_subscription, pattern=command_constants.START_SUBSCRIPTION),
+         CallbackQueryHandler(stop_task_subscription, pattern=command_constants.STOP_SUBSCRIPTION),        
     ],
     states={
        states.CANCEL_FEEDBACK: [

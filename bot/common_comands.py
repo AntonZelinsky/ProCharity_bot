@@ -6,40 +6,40 @@ from telegram.ext import CallbackContext
 from telegram import InlineKeyboardButton
 from bot.constants import states
 from bot.constants import command_constants
-from bot.constants import ui_constants
+from bot.constants import constants
 from bot.logger import log_command
 from bot.user_db import UserDB
 
 MENU_BUTTONS = [
     [
         InlineKeyboardButton(
-            text='🔎 Посмотреть открытые задания', callback_data='open_task'
+            text='🔎 Посмотреть открытые задания', callback_data=command_constants.OPEN_TASK
         )
     ],
     [
         InlineKeyboardButton(
-            text='✏️ Изменить компетенции', callback_data='change_category'
+            text='✏️ Изменить компетенции', callback_data=command_constants.CHANGE_CATEGORY
         )
     ],
     [
         InlineKeyboardButton(
-            text='✉️ Отправить предложение/ошибку', callback_data='new_feature'
+            text='✉️ Отправить предложение/ошибку', callback_data=command_constants.NEW_FEATURE
         )
     ],
     [
         InlineKeyboardButton(
-            text='❓ Задать вопрос', callback_data='ask_question'
+            text='❓ Задать вопрос', callback_data=command_constants.ASK_QUESTION
         )
     ],
     [
         InlineKeyboardButton(
-            text='ℹ️ О платформе', callback_data='about'
+            text='ℹ️ О платформе', callback_data=command_constants.ABOUT
         )
     ],
     [
         InlineKeyboardButton(
             text='⏹ Остановить/включить подписку на задания',
-            callback_data='stop_subscription'
+            callback_data=command_constants.STOP_SUBSCRIPTION
         )
     ]
 ]
@@ -47,7 +47,7 @@ MENU_BUTTONS = [
 user_db = UserDB()
 
 
-@log_command(command=ui_constants.LOG_COMMANDS_NAME['start'])
+@log_command(command=constants.LOG_COMMANDS_NAME['start'])
 def start(update: Update, context: CallbackContext) -> int:
     deeplink_passed_param = context.args
     user = user_db.add_user(update.effective_user, deeplink_passed_param)
@@ -65,7 +65,7 @@ def start(update: Update, context: CallbackContext) -> int:
     context.bot.send_message(
         chat_id=update.effective_chat.id,
         text='Привет! 👋 \n\n'
-             f'Меня зовут {ui_constants.BOT_NAME}. '
+             f'Меня зовут {constants.BOT_NAME}. '
              'Буду держать тебя в курсе новых задач и помогу '
              'оперативно связаться с командой поддержки.',
         reply_markup=keyboard
@@ -73,7 +73,7 @@ def start(update: Update, context: CallbackContext) -> int:
     return states.GREETING
 
 
-@log_command(command=ui_constants.LOG_COMMANDS_NAME['open_menu'])
+@log_command(command=constants.LOG_COMMANDS_NAME['open_menu'])
 def open_menu(update: Update, context: CallbackContext):
     keyboard = get_full_menu_buttons(context)
     text = 'Меню'
@@ -105,18 +105,18 @@ def get_subscription_button(context: CallbackContext):
     if context.user_data[states.SUBSCRIPTION_FLAG]:
         return InlineKeyboardButton(
             text='⏹ Остановить подписку на задания',
-            callback_data='stop_subscription'
+            callback_data=command_constants.STOP_SUBSCRIPTION
         )
     return InlineKeyboardButton(
         text='▶️ Включить подписку на задания',
-        callback_data='start_subscription'
+        callback_data=command_constants.START_SUBSCRIPTION
     )
 
 
 def get_menu_and_tasks_buttons():
     buttons = [
         [
-            InlineKeyboardButton(text='Посмотреть открытые задания', callback_data='open_task')
+            InlineKeyboardButton(text='Посмотреть открытые задания', callback_data=command_constants.OPEN_TASK)
         ],
         [
             InlineKeyboardButton(text='Открыть меню', callback_data=command_constants.OPEN_MENU)

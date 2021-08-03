@@ -1,6 +1,7 @@
 from telegram import (Update,
                       InlineKeyboardMarkup,
-                      InlineKeyboardButton)
+                      InlineKeyboardButton,
+                      ParseMode)
 from telegram.ext import (CallbackContext,
                           CommandHandler,
                           ConversationHandler,
@@ -27,10 +28,10 @@ def start_task_subscription(update: Update, context: CallbackContext):
 
     answer = f'Отлично! Теперь я буду присылать тебе уведомления о ' \
              f'новых заданиях в ' \
-             f'категориях: {", ".join(user_categories)}.\n\n' \
+             f'категориях: *{", ".join(user_categories)}*.\n\n' \
              f'А пока можешь посмотреть открытые задания.'
 
-    update.callback_query.edit_message_text(text=answer,
+    update.callback_query.edit_message_text(text=answer, parse_mode=ParseMode.MARKDOWN,
                                             reply_markup=common_comands.get_menu_and_tasks_buttons())
 
     return states.MENU

@@ -5,8 +5,8 @@ from telegram.ext import CallbackContext
 
 from telegram import InlineKeyboardButton
 from bot import states
+from bot import constants
 from bot.logger import log_command
-from bot.constants import BOT_NAME, LOG_COMMANDS_NAME
 from bot.user_db import UserDB
 
 MENU_BUTTONS = [
@@ -46,7 +46,7 @@ MENU_BUTTONS = [
 user_db = UserDB()
 
 
-@log_command(command=LOG_COMMANDS_NAME['start'])
+@log_command(command=constants.LOG_COMMANDS_NAME['start'])
 def start(update: Update, context: CallbackContext) -> int:
     deeplink_passed_param = context.args
     user = user_db.add_user(update.effective_user, deeplink_passed_param)
@@ -64,7 +64,7 @@ def start(update: Update, context: CallbackContext) -> int:
     context.bot.send_message(
         chat_id=update.effective_chat.id,
         text='Привет! 👋 \n\n'
-             f'Меня зовут {BOT_NAME}. '
+             f'Меня зовут {constants.BOT_NAME}. '
              'Буду держать тебя в курсе новых задач и помогу '
              'оперативно связаться с командой поддержки.',
         reply_markup=keyboard
@@ -72,7 +72,7 @@ def start(update: Update, context: CallbackContext) -> int:
     return states.GREETING
 
 
-@log_command(command=LOG_COMMANDS_NAME['open_menu'])
+@log_command(command=constants.LOG_COMMANDS_NAME['open_menu'])
 def open_menu(update: Update, context: CallbackContext):
     keyboard = get_full_menu_buttons(context)
     text = 'Меню'

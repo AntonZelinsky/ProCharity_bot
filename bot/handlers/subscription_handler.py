@@ -81,12 +81,12 @@ subscription_conv = ConversationHandler(
     ],
     states={
        states.CANCEL_FEEDBACK: [
-                CallbackQueryHandler(cancel_feedback, pattern='^many_notification$'),
-                CallbackQueryHandler(cancel_feedback, pattern='^no_time$'),
-                CallbackQueryHandler(cancel_feedback, pattern='^no_relevant_task$'),
-                CallbackQueryHandler(cancel_feedback, pattern='^bot_is_bad$'),
-                CallbackQueryHandler(cancel_feedback, pattern='^fond_ignore'),
-                CallbackQueryHandler(cancel_feedback, pattern='^another')
+                CallbackQueryHandler(cancel_feedback, pattern=command_constants.MANY_NOTIFICATION),
+                CallbackQueryHandler(cancel_feedback, pattern=command_constants.NO_TIME),
+                CallbackQueryHandler(cancel_feedback, pattern=command_constants.NO_RELEVANT_TASK),
+                CallbackQueryHandler(cancel_feedback, pattern=command_constants.BOT_IS_BAD),
+                CallbackQueryHandler(cancel_feedback, pattern=command_constants.FOND_IGNORE),
+                CallbackQueryHandler(cancel_feedback, pattern=command_constants.ANOTHER)
             ]
     },
     fallbacks=[

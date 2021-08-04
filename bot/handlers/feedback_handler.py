@@ -82,7 +82,7 @@ def add_new_feature(update: Update, context: CallbackContext):
     return states.TYPING
 
 
-@log_command(command=constants.LOG_COMMANDS_NAME['save_user_input'])
+# @log_command(command=constants.LOG_COMMANDS_NAME['save_user_input'])
 def save_user_input(update: Update, context: CallbackContext):
     user = user_db.get_user(update.effective_user.id)
     context.user_data[USER_MSG] = update.message.text

@@ -53,5 +53,5 @@ class CreateCategories(MethodResource, Resource):
             db_session.rollback()
             return make_response(jsonify(message=f'Bad request: {str(ex)}'), 400)
 
-        logger.error('New categories successfully added.')
+        logger.info('New categories successfully added.')
         return make_response(jsonify(result='ok'), 200)

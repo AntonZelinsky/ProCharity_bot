@@ -63,7 +63,9 @@ def about(update: Update, context: CallbackContext):
 
 
 def error_handler(update: object, context: CallbackContext) -> None:
-    text = (f"Error '{context.error}', user id: {update.effective_user.id},")
+    if update.effective_user:
+        text = (f"Error '{context.error}', user id: {update.effective_user.id}")
+    text = (f"Error '{context.error}', user is not found.")
     logger.error(msg=text, exc_info=context.error)
 
 

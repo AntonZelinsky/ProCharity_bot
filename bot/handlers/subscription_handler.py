@@ -81,12 +81,12 @@ subscription_conv = ConversationHandler(
     ],
     states={
        states.CANCEL_FEEDBACK: [
-                CallbackQueryHandler(cancel_feedback, pattern=command_constants.MANY_NOTIFICATION),
-                CallbackQueryHandler(cancel_feedback, pattern=command_constants.NO_TIME),
-                CallbackQueryHandler(cancel_feedback, pattern=command_constants.NO_RELEVANT_TASK),
-                CallbackQueryHandler(cancel_feedback, pattern=command_constants.BOT_IS_BAD),
-                CallbackQueryHandler(cancel_feedback, pattern=command_constants.FOND_IGNORE),
-                CallbackQueryHandler(cancel_feedback, pattern=command_constants.ANOTHER)
+                CallbackQueryHandler(cancel_feedback, pattern=command_constants.CANCEL_FEEDBACK__MANY_NOTIFICATION),
+                CallbackQueryHandler(cancel_feedback, pattern=command_constants.CANCEL_FEEDBACK__NO_TIME),
+                CallbackQueryHandler(cancel_feedback, pattern=command_constants.CANCEL_FEEDBACK__NO_RELEVANT_TASK),
+                CallbackQueryHandler(cancel_feedback, pattern=command_constants.CANCEL_FEEDBACK__BOT_IS_BAD),
+                CallbackQueryHandler(cancel_feedback, pattern=command_constants.CANCEL_FEEDBACK__FOND_IGNORE),
+                CallbackQueryHandler(cancel_feedback, pattern=command_constants.CANCEL_FEEDBACK__ANOTHER)
             ]
     },
     fallbacks=[

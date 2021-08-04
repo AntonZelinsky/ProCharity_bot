@@ -32,7 +32,7 @@ class UserDB:
                 user.last_name = external_user.last_name
                 user.external_id = external_user.external_id
                 user.email = external_user.email
-                user.date_external_registration = external_user.created_date
+                user.external_signup_date = external_user.created_date
                 
                 if external_user.specializations:
                     external_user_specializations = [int(x) for x in external_user.specializations.split(',')]

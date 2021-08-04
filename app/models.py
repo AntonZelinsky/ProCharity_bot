@@ -57,7 +57,7 @@ class User(Base):
     last_name = Column(String(32), nullable=True)
     has_mailing = Column(Boolean, default=True)
     date_registration = Column(DateTime, server_default=text('now()'), nullable=False)
-    date_external_registration =  Column(DateTime, nullable=True)
+    external_signup_date = Column(DateTime, nullable=True)
 
     def __repr__(self):
         return f'<User {self.telegram_id}>'

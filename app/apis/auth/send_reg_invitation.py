@@ -44,12 +44,12 @@ class SendRegistrationInvite(MethodResource, Resource):
     def post(self, **kwargs):
         email = kwargs.get('email').lower()
 
-        try:
-            if email:
+        if email:
+            try:
                 validate_email(email, check_deliverability=False)
-        except EmailNotValidError as ex:
-            logger.exception(str(ex))
-            return make_response(jsonify(message=str(ex)), 400)
+            except EmailNotValidError as ex:
+                logger.exception(str(ex))
+                return make_response(jsonify(message=str(ex)), 400)
 
         token_expiration = config.INV_TOKEN_EXPIRATION
         invitation_token_expiration_date = datetime.now() + timedelta(hours=token_expiration)

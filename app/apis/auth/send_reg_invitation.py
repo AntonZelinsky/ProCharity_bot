@@ -1,16 +1,21 @@
 import uuid
 from datetime import datetime, timedelta
+from smtplib import SMTPException
+
+from sqlalchemy.exc import SQLAlchemyError
+
 from app import config
 from app.database import db_session
 from app.messages import send_email
 from app.models import AdminRegistrationRequest, AdminUser
-from email_validator import EmailNotValidError, validate_email
+from email_validator import validate_email, EmailNotValidError
 from flask import jsonify, make_response, render_template, request
 from flask_apispec import doc, use_kwargs
 from flask_apispec.views import MethodResource
 from flask_jwt_extended import jwt_required
 from flask_restful import Resource
 from marshmallow import fields
+from app.logger import app_logger as logger
 
 
 class SendRegistrationInvite(MethodResource, Resource):
@@ -39,12 +44,12 @@ class SendRegistrationInvite(MethodResource, Resource):
     def post(self, **kwargs):
         email = kwargs.get('email').lower()
 
-        if email:
-            try:
+        try:
+            if email:
                 validate_email(email, check_deliverability=False)
-
-            except EmailNotValidError as ex:
-                return make_response(jsonify(message=str(ex)), 400)
+        except EmailNotValidError as ex:
+            logger.exception(str(ex))
+            return make_response(jsonify(message=str(ex)), 400)
 
         token_expiration = config.INV_TOKEN_EXPIRATION
         invitation_token_expiration_date = datetime.now() + timedelta(hours=token_expiration)
@@ -60,6 +65,7 @@ class SendRegistrationInvite(MethodResource, Resource):
 
             admin_user = AdminUser.query.filter_by(email=email).first()
             if admin_user:
+                logger.info(f"The user {email} with the specified email address is already registered")
                 return make_response(jsonify(
                     message="Пользователь с указанным почтовым адресом уже зарегистрирован."), 400)
 
@@ -70,7 +76,13 @@ class SendRegistrationInvite(MethodResource, Resource):
             )
 
             db_session.add(user)
-            db_session.commit()
+
+            try:
+                db_session.commit()
+            except SQLAlchemyError as ex:
+                logger.exception(str(ex))
+                db_session.rollback()
+                return make_response(jsonify(message=f'Bad request: {str(ex)}'), 400)
 
         invitation_link = f'{request.scheme}://{config.HOST_NAME}/#/register/{invitation_token}'
 
@@ -79,14 +91,15 @@ class SendRegistrationInvite(MethodResource, Resource):
             inv_link=invitation_link,
             expiration=token_expiration
         )
-
         try:
             send_email(
                 recipients=[email],
                 subject=config.REGISTRATION_SUBJECT,
                 template=email_template
             )
-        except Exception as ex:
-            return make_response(jsonify(str(ex)), 500)
+        except SMTPException as ex:
+            logger.error(str(ex))
+            return make_response(jsonify(message=f'The invitation message cannot be sent.'), 400)
 
+        logger.info(f"The mail of invitation was sent to the specified address: {email}.")
         return make_response(jsonify(message="Письмо с приглашением было отправлено на указанный адрес."), 200)

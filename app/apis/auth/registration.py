@@ -1,17 +1,18 @@
 from datetime import datetime
 
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import load_only
 
 from app import password_policy
 from app.database import db_session
-from app.models import AdminRegistrationRequest, AdminUser,ExternalSiteUser
+from app.models import AdminRegistrationRequest, AdminUser, ExternalSiteUser
 from flask import jsonify, make_response
 from flask_apispec import doc, use_kwargs
 from flask_apispec.views import MethodResource
 from flask_restful import Resource
 from marshmallow import fields, Schema
 from werkzeug.security import generate_password_hash
+from app.logger import app_logger as logger
 
 
 class AdminUserRegistrationSchema(Schema):
@@ -67,26 +68,33 @@ class UserRegister(MethodResource, Resource):
 
         if (not registration_record
                 or registration_record.token_expiration_date < datetime.now()):
+            logger.info(f'The invitation "{token}" not found or expired.')
             return make_response(jsonify(message="Приглашение не было найдено или просрочено. "
                                                  "Пожалуйста свяжитесь с своим системным администратором."), 403)
-        # This key is no longer required.
         del kwargs['token']
+        email = registration_record.email
 
         if not password:
+            logger.info(f'The password for registration not passed. User: {email}')
             return make_response(jsonify("Для регистрации необходимо указать пароль."), 401)
 
-        kwargs['email'] = registration_record.email
+        kwargs['email'] = email
         kwargs['password'] = generate_password_hash(password)
 
         if not password_policy.validate(password):
+            logger.info(f'The entered password does not comply with the password policy. User: {email}.')
             return make_response(jsonify(message="Введенный пароль не соответствует политике паролей."), 400)
 
-        # Create a new Admin user
         db_session.add(AdminUser(**kwargs))
-        # delete invitation
         db_session.delete(registration_record)
-        db_session.commit()
+        try:
+            db_session.commit()
+        except SQLAlchemyError as ex:
+            logger.exception(str(ex))
+            db_session.rollback()
+            return make_response(jsonify(message=f'Bad request: {str(ex)}'), 400)
 
+        logger.info(f'User {email} is successfully registered.')
         return make_response(jsonify(message="Пользователь успешно зарегистрирован."), 200)
 
 
@@ -124,7 +132,10 @@ class ExternalUserRegistration(MethodResource, Resource):
 
         try:
             db_session.commit()
-        except IntegrityError:
-            return make_response(jsonify(message='some mistake'), 400)
+        except SQLAlchemyError as ex:
+            logger.exception(str(ex))
+            db_session.rollback()
+            return make_response(jsonify(message=f'Bad request: {str(ex)}'), 400)
 
+        logger.info(f'The external user "{external_id}" successful registered.')
         return make_response(jsonify(message='successful'), 200)

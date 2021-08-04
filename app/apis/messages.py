@@ -4,6 +4,8 @@ from flask import jsonify, make_response
 
 from flask_apispec import doc, use_kwargs
 from marshmallow import fields, Schema
+from sqlalchemy.exc import SQLAlchemyError
+
 from app.database import db_session
 from app.models import Notification
 
@@ -11,6 +13,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from app import config
 from bot.messages import TelegramNotification
 import datetime
+from app.logger import app_logger as logger
 
 
 class TelegramNotificationSchema(Schema):
@@ -55,21 +58,29 @@ class SendTelegramNotification(Resource, MethodResource):
         has_mailing = kwargs.get('has_mailing')
 
         if not message or not has_mailing:
+            logger.info("The <message> and  <has_mailing> parameters have not been passed")
             return make_response(jsonify(result="Необходимо указать параметры <message> и <has_mailing>."), 400)
 
-        # add a sending message to database
         authorized_user = get_jwt_identity()
         message = Notification(message=message, sent_by=authorized_user)
         db_session.add(message)
-        db_session.commit()
+        try:
+            db_session.commit()
+            job_queue = TelegramNotification(has_mailing)
 
-        job_queue = TelegramNotification(has_mailing)
+            if not job_queue.send_notification(message=message.message):
+                logger.info(f"Passed invalid <has_mailing> parameter. Passed: {has_mailing}")
+                return make_response(jsonify(result=f"Неверно указан параметр <has_mailing>. "
+                                                    f"Сообщение не отправлено."), 400)
 
-        if not job_queue.send_notification(message=message.message):
-            return make_response(jsonify(result=f"Неверно указан параметр <has_mailing>. "
-                                                f"Сообщение не отправлено."), 400)
+            message.was_sent = True
+            message.sent_date = datetime.datetime.now()
+            db_session.commit()
 
-        message.was_sent = True
-        message.sent_date = datetime.datetime.now()
-        db_session.commit()
+        except SQLAlchemyError as ex:
+            logger.exception(str(ex))
+            db_session.rollback()
+            return make_response(jsonify(message=f'Bad request: {str(ex)}'), 400)
+
+        logger.info(f"The message '{message.message[0:30]}...' has been successfully added to the mailing list.")
         return make_response(jsonify(result=f"Сообщение успешно добавлено в очередь рассылки."), 200)

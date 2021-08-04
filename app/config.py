@@ -80,3 +80,8 @@ APPLICATION_CONFIGURATION = {
     'MAIL_DEFAULT_SENDER': os.getenv('MAIL_DEFAULT_SENDER'),
     'MAIL_PASSWORD': os.getenv('MAIL_PASSWORD'),
 }
+
+# -----------------------
+# Logging settings
+LOG_DIR = 'logs'
+LOG_PATH = os.path.join(BASE_DIR, LOG_DIR)

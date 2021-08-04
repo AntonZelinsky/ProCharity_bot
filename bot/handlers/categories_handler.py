@@ -39,7 +39,7 @@ def before_confirm_specializations(update: Update, context: CallbackContext):
     return confirm_specializations(update, context)
 
 
-@log_command(command=constants.LOG_COMMANDS_NAME['confirm_specializations'])
+# @log_command(command=constants.LOG_COMMANDS_NAME['confirm_specializations'])
 def confirm_specializations(update: Update, context: CallbackContext):
     buttons = [
         [
@@ -68,7 +68,7 @@ def confirm_specializations(update: Update, context: CallbackContext):
     return states.CATEGORY
 
 
-@log_command(command=constants.LOG_COMMANDS_NAME['change_user_categories'])
+# @log_command(command=constants.LOG_COMMANDS_NAME['change_user_categories'])
 def change_user_categories(update: Update, context: CallbackContext):
     """Auxiliary function for selecting a category and changing the status of subscriptions."""
     pattern_id = re.findall(r'\d+', update.callback_query.data)
@@ -122,7 +122,7 @@ def choose_category(update: Update, context: CallbackContext, save_prev_msg: boo
     return states.CATEGORY
 
 
-@log_command(command=constants.LOG_COMMANDS_NAME['after_category_choose'])
+# @log_command(command=constants.LOG_COMMANDS_NAME['after_category_choose'])
 def after_category_choose(update: Update, context: CallbackContext):   
 
     user_categories = ', '.join([spec['name'] for spec

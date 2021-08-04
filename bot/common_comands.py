@@ -1,6 +1,7 @@
 from telegram import (Update,
                       InlineKeyboardMarkup,
-                      InlineKeyboardButton)
+                      InlineKeyboardButton,
+                      ParseMode)
 from telegram.ext import CallbackContext
 
 from telegram import InlineKeyboardButton
@@ -64,10 +65,11 @@ def start(update: Update, context: CallbackContext) -> int:
     context.bot.send_message(
         chat_id=update.effective_chat.id,
         text='Привет! 👋 \n\n'
-             f'Меня зовут {constants.BOT_NAME}. '
+             f'Я бот платформы интеллектуального волонтерства <a href="https://procharity.ru/">ProCharity</a>. '
              'Буду держать тебя в курсе новых задач и помогу '
              'оперативно связаться с командой поддержки.',
-        reply_markup=keyboard
+        reply_markup=keyboard,
+        parse_mode=ParseMode.HTML, disable_web_page_preview=True
     )
     return states.GREETING
 

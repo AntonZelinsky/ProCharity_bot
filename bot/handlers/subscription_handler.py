@@ -9,8 +9,9 @@ from telegram.ext import (CallbackContext,
 
 from telegram import InlineKeyboardButton
 from bot import common_comands
-from bot import constants
-from bot import states
+from bot.constants import constants
+from bot.constants import command_constants
+from bot.constants import states
 from bot import user_db
 from bot.logger import log_command
 from bot.user_db import UserDB
@@ -75,17 +76,17 @@ def cancel_feedback(update: Update, context: CallbackContext):
 
 subscription_conv = ConversationHandler(
     entry_points=[
-         CallbackQueryHandler(start_task_subscription, pattern='^start_subscription$'),
-         CallbackQueryHandler(stop_task_subscription, pattern='^stop_subscription$'),        
+         CallbackQueryHandler(start_task_subscription, pattern=command_constants.COMMAND__START_SUBSCRIPTION),
+         CallbackQueryHandler(stop_task_subscription, pattern=command_constants.COMMAND__STOP_SUBSCRIPTION),        
     ],
     states={
        states.CANCEL_FEEDBACK: [
-                CallbackQueryHandler(cancel_feedback, pattern='^many_notification$'),
-                CallbackQueryHandler(cancel_feedback, pattern='^no_time$'),
-                CallbackQueryHandler(cancel_feedback, pattern='^no_relevant_task$'),
-                CallbackQueryHandler(cancel_feedback, pattern='^bot_is_bad$'),
-                CallbackQueryHandler(cancel_feedback, pattern='^fond_ignore'),
-                CallbackQueryHandler(cancel_feedback, pattern='^another')
+                CallbackQueryHandler(cancel_feedback, pattern=command_constants.CANCEL_FEEDBACK__MANY_NOTIFICATION),
+                CallbackQueryHandler(cancel_feedback, pattern=command_constants.CANCEL_FEEDBACK__NO_TIME),
+                CallbackQueryHandler(cancel_feedback, pattern=command_constants.CANCEL_FEEDBACK__NO_RELEVANT_TASK),
+                CallbackQueryHandler(cancel_feedback, pattern=command_constants.CANCEL_FEEDBACK__BOT_IS_BAD),
+                CallbackQueryHandler(cancel_feedback, pattern=command_constants.CANCEL_FEEDBACK__FOND_IGNORE),
+                CallbackQueryHandler(cancel_feedback, pattern=command_constants.CANCEL_FEEDBACK__ANOTHER)
             ]
     },
     fallbacks=[

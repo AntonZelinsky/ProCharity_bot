@@ -4,7 +4,8 @@ import os
 from dotenv import load_dotenv
 from telegram import (Update,
                       InlineKeyboardMarkup,
-                      InlineKeyboardButton)
+                      InlineKeyboardButton,
+                      ParseMode)
 from telegram.ext import (Updater,
                           CommandHandler,
                           ConversationHandler,
@@ -55,8 +56,10 @@ def about(update: Update, context: CallbackContext):
              'организациям в вопросах, которые требуют специальных знаний и '
              'опыта.\n\nИнтеллектуальный волонтёр безвозмездно дарит фонду своё '
              'время и профессиональные навыки, позволяя решать задачи, '
-             'которые трудно закрыть силами штатных сотрудников.',
-        reply_markup=keyboard
+             'которые трудно закрыть силами штатных сотрудников.\n\n'
+             'Сделано студентами <a href="https://praktikum.yandex.ru/">Яндекс.Практикума.</a>',
+        reply_markup=keyboard,
+        parse_mode=ParseMode.HTML, disable_web_page_preview=True
     )
 
     return states.MENU

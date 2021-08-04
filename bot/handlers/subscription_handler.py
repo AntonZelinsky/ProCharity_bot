@@ -76,8 +76,8 @@ def cancel_feedback(update: Update, context: CallbackContext):
 
 subscription_conv = ConversationHandler(
     entry_points=[
-         CallbackQueryHandler(start_task_subscription, pattern=command_constants.START_SUBSCRIPTION),
-         CallbackQueryHandler(stop_task_subscription, pattern=command_constants.STOP_SUBSCRIPTION),        
+         CallbackQueryHandler(start_task_subscription, pattern=command_constants.COMMAND__START_SUBSCRIPTION),
+         CallbackQueryHandler(stop_task_subscription, pattern=command_constants.COMMAND__STOP_SUBSCRIPTION),        
     ],
     states={
        states.CANCEL_FEEDBACK: [

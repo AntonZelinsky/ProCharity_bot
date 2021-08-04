@@ -14,33 +14,33 @@ from bot.user_db import UserDB
 MENU_BUTTONS = [
     [
         InlineKeyboardButton(
-            text='🔎 Посмотреть открытые задания', callback_data=command_constants.OPEN_TASK
+            text='🔎 Посмотреть открытые задания', callback_data=command_constants.COMMAND__OPEN_TASK
         )
     ],
     [
         InlineKeyboardButton(
-            text='✏️ Изменить компетенции', callback_data=command_constants.CHANGE_CATEGORY
+            text='✏️ Изменить компетенции', callback_data=command_constants.COMMAND__CHANGE_CATEGORY
         )
     ],
     [
         InlineKeyboardButton(
-            text='✉️ Отправить предложение/ошибку', callback_data=command_constants.NEW_FEATURE
+            text='✉️ Отправить предложение/ошибку', callback_data=command_constants.COMMAND__NEW_FEATURE
         )
     ],
     [
         InlineKeyboardButton(
-            text='❓ Задать вопрос', callback_data=command_constants.ASK_QUESTION
+            text='❓ Задать вопрос', callback_data=command_constants.COMMAND__ASK_QUESTION
         )
     ],
     [
         InlineKeyboardButton(
-            text='ℹ️ О платформе', callback_data=command_constants.ABOUT
+            text='ℹ️ О платформе', callback_data=command_constants.COMMAND__ABOUT
         )
     ],
     [
         InlineKeyboardButton(
             text='⏹ Остановить/включить подписку на задания',
-            callback_data=command_constants.STOP_SUBSCRIPTION
+            callback_data=command_constants.COMMAND__STOP_SUBSCRIPTION
         )
     ]
 ]
@@ -107,21 +107,21 @@ def get_subscription_button(context: CallbackContext):
     if context.user_data[states.SUBSCRIPTION_FLAG]:
         return InlineKeyboardButton(
             text='⏹ Остановить подписку на задания',
-            callback_data=command_constants.STOP_SUBSCRIPTION
+            callback_data=command_constants.COMMAND__STOP_SUBSCRIPTION
         )
     return InlineKeyboardButton(
         text='▶️ Включить подписку на задания',
-        callback_data=command_constants.START_SUBSCRIPTION
+        callback_data=command_constants.COMMAND__START_SUBSCRIPTION
     )
 
 
 def get_menu_and_tasks_buttons():
     buttons = [
         [
-            InlineKeyboardButton(text='Посмотреть открытые задания', callback_data=command_constants.OPEN_TASK)
+            InlineKeyboardButton(text='Посмотреть открытые задания', callback_data=command_constants.COMMAND__OPEN_TASK)
         ],
         [
-            InlineKeyboardButton(text='Открыть меню', callback_data=command_constants.OPEN_MENU)
+            InlineKeyboardButton(text='Открыть меню', callback_data=command_constants.COMMAND__OPEN_MENU)
         ]
     ]
     keyboard = InlineKeyboardMarkup(buttons)

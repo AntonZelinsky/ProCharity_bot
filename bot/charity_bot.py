@@ -48,7 +48,7 @@ user_db = UserDB()
 @log_command(command=constants.LOG_COMMANDS_NAME['about'])
 def about(update: Update, context: CallbackContext):
     button = [
-        [InlineKeyboardButton(text='Вернуться в меню', callback_data=command_constants.OPEN_MENU)]
+        [InlineKeyboardButton(text='Вернуться в меню', callback_data=command_constants.COMMAND__OPEN_MENU)]
     ]
     keyboard = InlineKeyboardMarkup(button)
     update.callback_query.edit_message_text(
@@ -87,8 +87,8 @@ def init() -> None:
                 feedback_conv,
                 categories_conv,
                 subscription_conv,
-                CallbackQueryHandler(about, pattern=command_constants.ABOUT),                
-                CallbackQueryHandler(common_comands.open_menu, pattern=command_constants.OPEN_MENU)
+                CallbackQueryHandler(about, pattern=command_constants.COMMAND__ABOUT),                
+                CallbackQueryHandler(common_comands.open_menu, pattern=command_constants.COMMAND__OPEN_MENU)
             ],            
         },
         fallbacks=[

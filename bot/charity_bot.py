@@ -62,10 +62,11 @@ def about(update: Update, context: CallbackContext):
     return states.MENU
 
 
-def error_handler(update: object, context: CallbackContext) -> None:
-    if update.effective_user:
-        text = (f"Error '{context.error}', user id: {update.effective_user.id}")
-    text = (f"Error '{context.error}', user is not found.")
+def error_handler(update: Update, context: CallbackContext) -> None:
+    if update.effective_user is not None:
+        text = f"Error '{context.error}', user id: {update.effective_user.id}"
+    else:
+        text = f"Error '{context.error}'"
     logger.error(msg=text, exc_info=context.error)
 
 

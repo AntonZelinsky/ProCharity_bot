@@ -38,6 +38,9 @@ class Analytics(MethodResource, Resource):
                                      users_unsubscribed = get_statistics_by_days(ReasonCanceling.added_date),
                                      distinct_users_unsubscribed = get_statistics_by_days(
                                          ReasonCanceling.added_date, ReasonCanceling.telegram_id),
+                                     active_users = get_statistics_by_days(Statistics.added_date, Statistics.telegram_id),
+                                     active_users_per_month = get_monthly_statistics(
+                                         Statistics.added_date, Statistics.telegram_id)
                                     ), 200)
     
 
@@ -65,3 +68,11 @@ def get_statistics_by_days(column_name:Column, second_column_name:Column=None) -
                 '%Y-%m-%d'
             ), 0) for n in range(1, 31)
     }
+
+
+def get_monthly_statistics(column_name:Column, second_column_name:Column):
+    date_begin = datetime.now().date() - timedelta(days=30)
+    result = db_session.query(
+        func.count(distinct(second_column_name))
+        ).filter(column_name > date_begin).all()
+    return result[0][0]

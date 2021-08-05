@@ -35,7 +35,7 @@ class SendRegistrationInvite(MethodResource, Resource):
          )
     # TODO Token verification is temporarily disabled.
     @use_kwargs({'email': fields.Str()})
-    # @jwt_required()
+    @jwt_required()
     def post(self, **kwargs):
         email = kwargs.get('email').lower()
 
@@ -45,30 +45,27 @@ class SendRegistrationInvite(MethodResource, Resource):
 
             except EmailNotValidError as ex:
                 return make_response(jsonify(message=str(ex)), 400)
-
+        
+        admin_user = AdminUser.query.filter_by(email=email).first()
+        if admin_user:
+            return make_response(jsonify(
+                message="Пользователь с указанным почтовым адресом уже зарегистрирован."), 400)
+        
         token_expiration = config.INV_TOKEN_EXPIRATION
         invitation_token_expiration_date = datetime.now() + timedelta(hours=token_expiration)
         invitation_token = str(uuid.uuid4())
 
         register_record = AdminRegistrationRequest.query.filter_by(email=email).first()
-
         if register_record:
             register_record.token = invitation_token
             register_record.token_expiration_date = invitation_token_expiration_date
             db_session.commit()
         else:
-
-            admin_user = AdminUser.query.filter_by(email=email).first()
-            if admin_user:
-                return make_response(jsonify(
-                    message="Пользователь с указанным почтовым адресом уже зарегистрирован."), 400)
-
             user = AdminRegistrationRequest(
                 email=email,
                 token=invitation_token,
                 token_expiration_date=invitation_token_expiration_date
             )
-
             db_session.add(user)
             db_session.commit()
 

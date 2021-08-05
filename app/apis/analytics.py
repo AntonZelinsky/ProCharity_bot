@@ -30,13 +30,14 @@ class Analytics(MethodResource, Resource):
                 value for key, value in reasons_canceling_from_db
         }
         return make_response(jsonify(added_users=get_statistics_by_days(User.date_registration),
+                                     added_external_users=get_statistics_by_days(User.external_signup_date),
                                      number_subscribed_users=number_subscribed_users,
                                      number_not_subscribed_users=number_not_subscribed_users,
                                      command_stats=dict(get_statistics(Statistics.command)),
                                      reasons_canceling=reasons_canceling,
                                      users_unsubscribed = get_statistics_by_days(ReasonCanceling.added_date),
                                      distinct_users_unsubscribed = get_statistics_by_days(
-                                         ReasonCanceling.added_date, ReasonCanceling.telegram_id)
+                                         ReasonCanceling.added_date, ReasonCanceling.telegram_id),
                                     ), 200)
     
 

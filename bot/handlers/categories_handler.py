@@ -28,14 +28,16 @@ PAGINATION = 3
 
 def choose_category_after_start(update: Update, context: CallbackContext):
     update.callback_query.edit_message_text(
-        text=update.callback_query.message.text
+        text=update.callback_query.message.text_html,
+        parse_mode=ParseMode.HTML, disable_web_page_preview=True
     )
     return choose_category(update, context, True)
 
 
 def before_confirm_specializations(update: Update, context: CallbackContext):
     update.callback_query.edit_message_text(
-        text=update.callback_query.message.text
+        text=update.callback_query.message.text_html,
+        parse_mode=ParseMode.HTML, disable_web_page_preview=True
     )
     return confirm_specializations(update, context)
 

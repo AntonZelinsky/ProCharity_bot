@@ -11,6 +11,9 @@ COMMAND__ASK_NEW_CATEGORY = 'ask_new_category'
 COMMAND__NO_WAIT = 'no_wait'
 COMMAND__START_SUBSCRIPTION ='start_subscription'
 COMMAND__STOP_SUBSCRIPTION = 'stop_subscription'
+COMMAND__GREETING = 'choose_category_after_start'
+COMMAND__GREETING_REGISTERED_USER = 'before_confirm_specializations'
+
 
 CANCEL_FEEDBACK__MANY_NOTIFICATION = 'many_notification'
 CANCEL_FEEDBACK__NO_TIME = 'no_time'

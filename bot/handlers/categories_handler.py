@@ -249,17 +249,17 @@ def show_open_task(update: Update, context: CallbackContext):
 
 categories_conv = ConversationHandler(
     entry_points=[
-        CallbackQueryHandler(choose_category_after_start, pattern='^' + states.GREETING + '$'),
+        CallbackQueryHandler(choose_category_after_start, pattern=command_constants.COMMAND__GREETING),
         CallbackQueryHandler(before_confirm_specializations,
-                                     pattern='^' + states.GREETING_REGISTERED_USER + '$'),
+                                     pattern=command_constants.COMMAND__GREETING_REGISTERED_USER),
         CallbackQueryHandler(choose_category, pattern=command_constants.COMMAND__CHANGE_CATEGORY),
         CallbackQueryHandler(show_open_task, pattern=command_constants.COMMAND__OPEN_TASK),
     ],
     states={
        states.GREETING:[
-        CallbackQueryHandler(choose_category_after_start, pattern='^' + states.GREETING + '$'),
+        CallbackQueryHandler(choose_category_after_start, pattern=command_constants.COMMAND__GREETING),
         CallbackQueryHandler(before_confirm_specializations,
-                                     pattern='^' + states.GREETING_REGISTERED_USER + '$')],
+                                     pattern=command_constants.COMMAND__GREETING_REGISTERED_USER)],
        states.CATEGORY: [
                 CallbackQueryHandler(choose_category, pattern=command_constants.COMMAND__RETURN_CHOSE_CATEGORY),
                 CallbackQueryHandler(after_category_choose, pattern=command_constants.COMMAND__READY),

@@ -4,7 +4,8 @@ import os
 from dotenv import load_dotenv
 from telegram import (Update,
                       InlineKeyboardMarkup,
-                      InlineKeyboardButton)
+                      InlineKeyboardButton,
+                      ParseMode)
 from telegram.ext import (Updater,
                           CommandHandler,
                           ConversationHandler,
@@ -14,10 +15,10 @@ from telegram.ext import (Updater,
 
 from app.config import BOT_PERSISTENCE_FILE
 
-from bot import states
 from bot import common_comands
-from bot import constants
-
+from bot.constants import states
+from bot.constants import constants
+from bot.constants import command_constants
 from bot.handlers.categories_handler import categories_conv, change_user_categories
 from bot.handlers.feedback_handler import feedback_conv
 from bot.handlers.subscription_handler import subscription_conv
@@ -30,7 +31,7 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
+    level=logging.DEBUG
 )
 
 bot_persistence = PicklePersistence(filename=BOT_PERSISTENCE_FILE,
@@ -47,7 +48,7 @@ user_db = UserDB()
 @log_command(command=constants.LOG_COMMANDS_NAME['about'])
 def about(update: Update, context: CallbackContext):
     button = [
-        [InlineKeyboardButton(text='Вернуться в меню', callback_data='open_menu')]
+        [InlineKeyboardButton(text='Вернуться в меню', callback_data=command_constants.COMMAND__OPEN_MENU)]
     ]
     keyboard = InlineKeyboardMarkup(button)
     update.callback_query.edit_message_text(
@@ -55,15 +56,20 @@ def about(update: Update, context: CallbackContext):
              'организациям в вопросах, которые требуют специальных знаний и '
              'опыта.\n\nИнтеллектуальный волонтёр безвозмездно дарит фонду своё '
              'время и профессиональные навыки, позволяя решать задачи, '
-             'которые трудно закрыть силами штатных сотрудников.',
-        reply_markup=keyboard
+             'которые трудно закрыть силами штатных сотрудников.\n\n'
+             'Сделано студентами <a href="https://praktikum.yandex.ru/">Яндекс.Практикума.</a>',
+        reply_markup=keyboard,
+        parse_mode=ParseMode.HTML, disable_web_page_preview=True
     )
 
     return states.MENU
 
 
-def error_handler(update: object, context: CallbackContext) -> None:
-    text = (f"Error '{context.error}', user id: {update.effective_user.id},")
+def error_handler(update: Update, context: CallbackContext) -> None:
+    if update is not None and update.effective_user is not None:
+        text = f"Error '{context.error}', user id: {update.effective_user.id}"
+    else:
+        text = f"Error '{context.error}'"
     logger.error(msg=text, exc_info=context.error)
 
 
@@ -81,8 +87,8 @@ def init() -> None:
                 feedback_conv,
                 categories_conv,
                 subscription_conv,
-                CallbackQueryHandler(about, pattern='^about$'),                
-                CallbackQueryHandler(common_comands.open_menu, pattern='^open_menu$')
+                CallbackQueryHandler(about, pattern=command_constants.COMMAND__ABOUT),                
+                CallbackQueryHandler(common_comands.open_menu, pattern=command_constants.COMMAND__OPEN_MENU)
             ],            
         },
         fallbacks=[

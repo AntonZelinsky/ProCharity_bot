@@ -1,44 +1,46 @@
 from telegram import (Update,
                       InlineKeyboardMarkup,
-                      InlineKeyboardButton)
+                      InlineKeyboardButton,
+                      ParseMode)
 from telegram.ext import CallbackContext
 
 from telegram import InlineKeyboardButton
-from bot import states
-from bot import constants
+from bot.constants import states
+from bot.constants import command_constants
+from bot.constants import constants
 from bot.logger import log_command
 from bot.user_db import UserDB
 
 MENU_BUTTONS = [
     [
         InlineKeyboardButton(
-            text='🔎 Посмотреть открытые задания', callback_data='open_task'
+            text='🔎 Посмотреть открытые задания', callback_data=command_constants.COMMAND__OPEN_TASK
         )
     ],
     [
         InlineKeyboardButton(
-            text='✏️ Изменить компетенции', callback_data='change_category'
+            text='✏️ Изменить компетенции', callback_data=command_constants.COMMAND__CHANGE_CATEGORY
         )
     ],
     [
         InlineKeyboardButton(
-            text='✉️ Отправить предложение/ошибку', callback_data='new_feature'
+            text='✉️ Отправить предложение/ошибку', callback_data=command_constants.COMMAND__NEW_FEATURE
         )
     ],
     [
         InlineKeyboardButton(
-            text='❓ Задать вопрос', callback_data='ask_question'
+            text='❓ Задать вопрос', callback_data=command_constants.COMMAND__ASK_QUESTION
         )
     ],
     [
         InlineKeyboardButton(
-            text='ℹ️ О платформе', callback_data='about'
+            text='ℹ️ О платформе', callback_data=command_constants.COMMAND__ABOUT
         )
     ],
     [
         InlineKeyboardButton(
             text='⏹ Остановить/включить подписку на задания',
-            callback_data='stop_subscription'
+            callback_data=command_constants.COMMAND__STOP_SUBSCRIPTION
         )
     ]
 ]
@@ -64,10 +66,11 @@ def start(update: Update, context: CallbackContext) -> int:
     context.bot.send_message(
         chat_id=update.effective_chat.id,
         text='Привет! 👋 \n\n'
-             f'Меня зовут {constants.BOT_NAME}. '
+             f'Я бот платформы интеллектуального волонтерства <a href="https://procharity.ru/">ProCharity</a>. '
              'Буду держать тебя в курсе новых задач и помогу '
              'оперативно связаться с командой поддержки.',
-        reply_markup=keyboard
+        reply_markup=keyboard,
+        parse_mode=ParseMode.HTML, disable_web_page_preview=True
     )
     return states.GREETING
 
@@ -104,21 +107,21 @@ def get_subscription_button(context: CallbackContext):
     if context.user_data[states.SUBSCRIPTION_FLAG]:
         return InlineKeyboardButton(
             text='⏹ Остановить подписку на задания',
-            callback_data='stop_subscription'
+            callback_data=command_constants.COMMAND__STOP_SUBSCRIPTION
         )
     return InlineKeyboardButton(
         text='▶️ Включить подписку на задания',
-        callback_data='start_subscription'
+        callback_data=command_constants.COMMAND__START_SUBSCRIPTION
     )
 
 
 def get_menu_and_tasks_buttons():
     buttons = [
         [
-            InlineKeyboardButton(text='Посмотреть открытые задания', callback_data='open_task')
+            InlineKeyboardButton(text='Посмотреть открытые задания', callback_data=command_constants.COMMAND__OPEN_TASK)
         ],
         [
-            InlineKeyboardButton(text='Открыть меню', callback_data='open_menu')
+            InlineKeyboardButton(text='Открыть меню', callback_data=command_constants.COMMAND__OPEN_MENU)
         ]
     ]
     keyboard = InlineKeyboardMarkup(buttons)

@@ -7,9 +7,10 @@ from telegram.ext import (CommandHandler,
                           CallbackQueryHandler,
                           MessageHandler,
                           Filters)
-from bot import states
 from bot import common_comands
-from bot import constants
+from bot.constants import states
+from bot.constants import command_constants
+from bot.constants import constants
 from bot import email_client 
 from bot.logger import log_command
 from bot.user_db import UserDB
@@ -31,7 +32,7 @@ user_db = UserDB()
 @log_command(command=constants.LOG_COMMANDS_NAME['ask_new_category'])
 def ask_new_category(update: Update, context: CallbackContext):
     button = [
-        [InlineKeyboardButton(text='Вернуться в меню', callback_data='open_menu')]
+        [InlineKeyboardButton(text='Вернуться в меню', callback_data=command_constants.COMMAND__OPEN_MENU)]
     ]
     keyboard = InlineKeyboardMarkup(button)
     message = update.callback_query.edit_message_text(
@@ -49,7 +50,7 @@ def ask_new_category(update: Update, context: CallbackContext):
 @log_command(command=constants.LOG_COMMANDS_NAME['ask_question'])
 def ask_question(update: Update, context: CallbackContext):
     button = [
-        [InlineKeyboardButton(text='Вернуться в меню', callback_data='open_menu')]
+        [InlineKeyboardButton(text='Вернуться в меню', callback_data=command_constants.COMMAND__OPEN_MENU)]
     ]
     keyboard = InlineKeyboardMarkup(button)
     message = update.callback_query.edit_message_text(
@@ -66,7 +67,7 @@ def ask_question(update: Update, context: CallbackContext):
 @log_command(command=constants.LOG_COMMANDS_NAME['add_new_feature'])
 def add_new_feature(update: Update, context: CallbackContext):
     button = [
-        [InlineKeyboardButton(text='Вернуться в меню', callback_data='open_menu')]
+        [InlineKeyboardButton(text='Вернуться в меню', callback_data=command_constants.COMMAND__OPEN_MENU)]
     ]
     keyboard = InlineKeyboardMarkup(button)
     message = update.callback_query.edit_message_text(
@@ -103,8 +104,8 @@ def ask_email(update: Update, context: CallbackContext):
 
     text = 'Пожалуйста, укажи свою почту, если хочешь получить ответ'
     buttons = [
-        [InlineKeyboardButton(text='Не жду ответ', callback_data='no_wait')],
-        [InlineKeyboardButton(text='Вернуться в меню', callback_data='open_menu')]
+        [InlineKeyboardButton(text='Не жду ответ', callback_data=command_constants.COMMAND__NO_WAIT)],
+        [InlineKeyboardButton(text='Вернуться в меню', callback_data=command_constants.COMMAND__OPEN_MENU)]
     ]
     message = context.bot.send_message(
         chat_id=update.effective_chat.id,
@@ -183,18 +184,18 @@ def after_get_feedback(update: Update, context: CallbackContext):
 
 feedback_conv = ConversationHandler(
     entry_points=[
-        CallbackQueryHandler(ask_new_category, pattern='^ask_new_category$'),
-        CallbackQueryHandler(ask_question, pattern='^ask_question$'),
-        CallbackQueryHandler(add_new_feature, pattern='^new_feature$')
+        CallbackQueryHandler(ask_new_category, pattern=command_constants.COMMAND__ASK_NEW_CATEGORY),
+        CallbackQueryHandler(ask_question, pattern=command_constants.COMMAND__ASK_QUESTION),
+        CallbackQueryHandler(add_new_feature, pattern=command_constants.COMMAND__NEW_FEATURE)
     ],
     states={
         states.TYPING: [
             MessageHandler(Filters.text & ~Filters.command, save_user_input),
-            CallbackQueryHandler(common_comands.open_menu, pattern='^open_menu$')
+            CallbackQueryHandler(common_comands.open_menu, pattern=command_constants.COMMAND__OPEN_MENU)
         ],
         states.ASK_EMAIL: [
-            CallbackQueryHandler(common_comands.open_menu, pattern='^open_menu$'),
-            CallbackQueryHandler(no_wait_answer, pattern='^no_wait$'),
+            CallbackQueryHandler(common_comands.open_menu, pattern=command_constants.COMMAND__OPEN_MENU),
+            CallbackQueryHandler(no_wait_answer, pattern=command_constants.COMMAND__NO_WAIT),
             MessageHandler(Filters.text & ~Filters.command, save_email)
         ]
     },

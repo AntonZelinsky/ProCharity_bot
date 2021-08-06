@@ -66,7 +66,7 @@ def about(update: Update, context: CallbackContext):
 
 
 def error_handler(update: Update, context: CallbackContext) -> None:
-    if update.effective_user is not None:
+    if update is not None and update.effective_user is not None:
         text = f"Error '{context.error}', user id: {update.effective_user.id}"
     else:
         text = f"Error '{context.error}'"

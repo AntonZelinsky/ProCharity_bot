@@ -256,6 +256,10 @@ categories_conv = ConversationHandler(
         CallbackQueryHandler(show_open_task, pattern=command_constants.COMMAND__OPEN_TASK),
     ],
     states={
+       states.GREETING:[
+        CallbackQueryHandler(choose_category_after_start, pattern='^' + states.GREETING + '$'),
+        CallbackQueryHandler(before_confirm_specializations,
+                                     pattern='^' + states.GREETING_REGISTERED_USER + '$')],
        states.CATEGORY: [
                 CallbackQueryHandler(choose_category, pattern=command_constants.COMMAND__RETURN_CHOSE_CATEGORY),
                 CallbackQueryHandler(after_category_choose, pattern=command_constants.COMMAND__READY),

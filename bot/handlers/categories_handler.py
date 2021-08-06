@@ -49,7 +49,8 @@ def confirm_specializations(update: Update, context: CallbackContext):
             InlineKeyboardButton(text='Да', callback_data=command_constants.COMMAND__READY)
         ],
         [
-            InlineKeyboardButton(text='Нет, хочу изменить.', callback_data=command_constants.COMMAND__RETURN_CHOSE_CATEGORY)
+            InlineKeyboardButton(text='Нет, хочу изменить.',
+                                 callback_data=command_constants.COMMAND__RETURN_CHOSE_CATEGORY)
         ]
     ]
     specializations = ', '.join([spec['name'] for spec
@@ -126,8 +127,7 @@ def choose_category(update: Update, context: CallbackContext, save_prev_msg: boo
 
 
 @log_command(command=constants.LOG_COMMANDS_NAME['after_category_choose'])
-def after_category_choose(update: Update, context: CallbackContext):   
-
+def after_category_choose(update: Update, context: CallbackContext):
     user_categories = ', '.join([spec['name'] for spec
                                  in user_db.get_category(update.effective_user.id)
                                  if spec['user_selected']])
@@ -251,33 +251,33 @@ categories_conv = ConversationHandler(
     entry_points=[
         CallbackQueryHandler(choose_category_after_start, pattern=command_constants.COMMAND__GREETING),
         CallbackQueryHandler(before_confirm_specializations,
-                                     pattern=command_constants.COMMAND__GREETING_REGISTERED_USER),
+                             pattern=command_constants.COMMAND__GREETING_REGISTERED_USER),
         CallbackQueryHandler(choose_category, pattern=command_constants.COMMAND__CHANGE_CATEGORY),
         CallbackQueryHandler(show_open_task, pattern=command_constants.COMMAND__OPEN_TASK),
     ],
     states={
-       states.GREETING:[
-        CallbackQueryHandler(choose_category_after_start, pattern=command_constants.COMMAND__GREETING),
-        CallbackQueryHandler(before_confirm_specializations,
-                                     pattern=command_constants.COMMAND__GREETING_REGISTERED_USER)],
-       states.CATEGORY: [
-                CallbackQueryHandler(choose_category, pattern=command_constants.COMMAND__RETURN_CHOSE_CATEGORY),
-                CallbackQueryHandler(after_category_choose, pattern=command_constants.COMMAND__READY),
-                CallbackQueryHandler(no_relevant_category, pattern=command_constants.COMMAND__NO_RELEVANT)
-            ],
+        states.GREETING: [
+            CallbackQueryHandler(choose_category_after_start, pattern=command_constants.COMMAND__GREETING),
+            CallbackQueryHandler(before_confirm_specializations,
+                                 pattern=command_constants.COMMAND__GREETING_REGISTERED_USER)],
+        states.CATEGORY: [
+            CallbackQueryHandler(choose_category, pattern=command_constants.COMMAND__RETURN_CHOSE_CATEGORY),
+            CallbackQueryHandler(after_category_choose, pattern=command_constants.COMMAND__READY),
+            CallbackQueryHandler(no_relevant_category, pattern=command_constants.COMMAND__NO_RELEVANT)
+        ],
         states.AFTER_CATEGORY_REPLY: [
-                CallbackQueryHandler(show_open_task, pattern=command_constants.COMMAND__OPEN_TASK),
-                CallbackQueryHandler(common_comands.open_menu, pattern=command_constants.COMMAND__OPEN_MENU)
-            ],
+            CallbackQueryHandler(show_open_task, pattern=command_constants.COMMAND__OPEN_TASK),
+            CallbackQueryHandler(common_comands.open_menu, pattern=command_constants.COMMAND__OPEN_MENU)
+        ],
         states.NO_CATEGORY: [
-                feedback_conv,
-                CallbackQueryHandler(show_open_task, pattern=command_constants.COMMAND__OPEN_TASK),
-                CallbackQueryHandler(common_comands.open_menu, pattern=command_constants.COMMAND__OPEN_MENU)
-            ],
+            feedback_conv,
+            CallbackQueryHandler(show_open_task, pattern=command_constants.COMMAND__OPEN_TASK),
+            CallbackQueryHandler(common_comands.open_menu, pattern=command_constants.COMMAND__OPEN_MENU)
+        ],
         states.OPEN_TASKS: [
-                CallbackQueryHandler(show_open_task, pattern=command_constants.COMMAND__OPEN_TASK),
-                CallbackQueryHandler(common_comands.open_menu, pattern=command_constants.COMMAND__OPEN_MENU)
-            ]  
+            CallbackQueryHandler(show_open_task, pattern=command_constants.COMMAND__OPEN_TASK),
+            CallbackQueryHandler(common_comands.open_menu, pattern=command_constants.COMMAND__OPEN_MENU)
+        ]
     },
     fallbacks=[
         CommandHandler('start', common_comands.start),

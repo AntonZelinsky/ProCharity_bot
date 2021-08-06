@@ -54,9 +54,9 @@ def start(update: Update, context: CallbackContext) -> int:
     user = user_db.add_user(update.effective_user, deeplink_passed_param)
     context.user_data[states.SUBSCRIPTION_FLAG] = user.has_mailing
 
-    callback_data = (states.GREETING_REGISTERED_USER
+    callback_data = (command_constants.COMMAND__GREETING_REGISTERED_USER
                      if user.categories
-                     else states.GREETING)
+                     else command_constants.COMMAND__GREETING)
     button = [
         [
             InlineKeyboardButton(text='Начнем', callback_data=callback_data)

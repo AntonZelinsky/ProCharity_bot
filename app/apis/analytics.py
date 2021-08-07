@@ -38,7 +38,6 @@ class Analytics(MethodResource, Resource):
                                      users_unsubscribed=get_statistics_by_days(ReasonCanceling.added_date),
                                      distinct_users_unsubscribed=get_statistics_by_days(
                                          ReasonCanceling.added_date, ReasonCanceling.telegram_id),
-                                     active_users=get_statistics_by_days(Statistics.added_date, Statistics.telegram_id),
                                      active_users_statistic=users_activity_statistic(Statistics.added_date,
                                                                                      Statistics.telegram_id),
                                      active_users_per_month=get_monthly_statistics(

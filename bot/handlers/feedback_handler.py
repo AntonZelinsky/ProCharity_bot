@@ -14,6 +14,7 @@ from bot.constants import constants
 from bot import email_client 
 from bot.logger import log_command
 from bot.user_db import UserDB
+from bot.actions import send_typing_action
 
 ASK_EMAIL_FLAG = 'ask_email_flag'
 ASK_EMAIL_MESSAGE_ID = 'ask_email_message_id'
@@ -141,7 +142,7 @@ def save_email(update: Update, context: CallbackContext):
     else:
         return save_user_input(update, context)
 
-
+@send_typing_action
 @log_command(command=constants.LOG_COMMANDS_NAME['after_get_feedback'])
 def after_get_feedback(update: Update, context: CallbackContext):
     if context.user_data.get(ASK_EMAIL_FLAG):

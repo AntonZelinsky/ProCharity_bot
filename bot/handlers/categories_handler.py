@@ -107,19 +107,18 @@ def choose_category(update: Update, context: CallbackContext, save_prev_msg: boo
         ],
     ]
     keyboard = InlineKeyboardMarkup(buttons)
+    text = ('Чтобы я знал, с какими задачами ты готов помогать, '
+            'выбери свои профессиональные компетенции (можно выбрать '
+            'несколько). После этого, нажми на пункт "Готово 👌"')
     if save_prev_msg:
         context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text='Чтобы я знал, с какими задачами ты готов помогать, '
-                 'выбери свои профессиональные компетенции (можно выбрать '
-                 'несколько). После этого, нажми на пункт "Готово 👌"',
+            text=text,
             reply_markup=keyboard,
         )
     else:
         update.callback_query.edit_message_text(
-            text='Чтобы я знал, с какими задачами ты готов помогать, '
-                 'выбери свои профессиональные компетенции (можно выбрать '
-                 'несколько). После этого, нажми на пункт "Готово 👌"',
+            text=text,
             reply_markup=keyboard,
         )
 
@@ -185,9 +184,7 @@ def show_open_task(update: Update, context: CallbackContext):
         [
             InlineKeyboardButton(text='Посмотреть ещё', callback_data=command_constants.COMMAND__OPEN_TASK)
         ],
-        [
-            InlineKeyboardButton(text='Открыть меню', callback_data=command_constants.COMMAND__OPEN_MENU)
-        ]
+        [common_comands.open_menu_button]
     ]
     keyboard = InlineKeyboardMarkup(buttons)
 
@@ -204,7 +201,7 @@ def show_open_task(update: Update, context: CallbackContext):
         update.callback_query.edit_message_text(
             text='Нет доступных заданий',
             reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton(text='Открыть меню', callback_data=command_constants.COMMAND__OPEN_MENU)]]
+                [[common_comands.open_menu_button]]
             )
         )
     else:
@@ -230,8 +227,7 @@ def show_open_task(update: Update, context: CallbackContext):
                     chat_id=update.effective_chat.id,
                     text='Ты просмотрел все открытые задания на текущий момент.',
                     reply_markup=InlineKeyboardMarkup(
-                        [[InlineKeyboardButton(text='Открыть меню',
-                                               callback_data=command_constants.COMMAND__OPEN_MENU)]]
+                        [[common_comands.open_menu_button]]
                     )
                 )
                 return states.OPEN_TASKS
@@ -247,13 +243,15 @@ def show_open_task(update: Update, context: CallbackContext):
     return states.OPEN_TASKS
 
 
+open_tasks_handler = CallbackQueryHandler(show_open_task, pattern=command_constants.COMMAND__OPEN_TASK)
+
 categories_conv = ConversationHandler(
     entry_points=[
         CallbackQueryHandler(choose_category_after_start, pattern=command_constants.COMMAND__GREETING),
         CallbackQueryHandler(before_confirm_specializations,
                              pattern=command_constants.COMMAND__GREETING_REGISTERED_USER),
         CallbackQueryHandler(choose_category, pattern=command_constants.COMMAND__CHANGE_CATEGORY),
-        CallbackQueryHandler(show_open_task, pattern=command_constants.COMMAND__OPEN_TASK),
+        open_tasks_handler,
     ],
     states={
         states.GREETING: [
@@ -266,22 +264,22 @@ categories_conv = ConversationHandler(
             CallbackQueryHandler(no_relevant_category, pattern=command_constants.COMMAND__NO_RELEVANT)
         ],
         states.AFTER_CATEGORY_REPLY: [
-            CallbackQueryHandler(show_open_task, pattern=command_constants.COMMAND__OPEN_TASK),
-            CallbackQueryHandler(common_comands.open_menu, pattern=command_constants.COMMAND__OPEN_MENU)
+            open_tasks_handler,
+            common_comands.open_menu_handler
         ],
         states.NO_CATEGORY: [
             feedback_conv,
-            CallbackQueryHandler(show_open_task, pattern=command_constants.COMMAND__OPEN_TASK),
-            CallbackQueryHandler(common_comands.open_menu, pattern=command_constants.COMMAND__OPEN_MENU)
+            open_tasks_handler,
+            common_comands.open_menu_handler
         ],
         states.OPEN_TASKS: [
-            CallbackQueryHandler(show_open_task, pattern=command_constants.COMMAND__OPEN_TASK),
-            CallbackQueryHandler(common_comands.open_menu, pattern=command_constants.COMMAND__OPEN_MENU)
+            open_tasks_handler,
+            common_comands.open_menu_handler
         ]
     },
     fallbacks=[
-        CommandHandler('start', common_comands.start),
-        CommandHandler('menu', common_comands.open_menu_fall)
+        common_comands.start_command_handler,
+        common_comands.menu_command_handler
     ],
     map_to_parent={
         states.MENU: states.MENU

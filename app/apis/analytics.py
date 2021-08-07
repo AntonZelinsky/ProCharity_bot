@@ -22,9 +22,9 @@ class Analytics(MethodResource, Resource):
         users = db_session.query(User.has_mailing).all()
         number_users = len(users)
         number_subscribed_users = len([user for user in users if user['has_mailing']])
-        number_not_subscribed_users = number_users - number_subscribed_users              
-        
-        reasons_canceling_from_db = get_statistics(ReasonCanceling.reason_canceling)       
+        number_not_subscribed_users = number_users - number_subscribed_users
+
+        reasons_canceling_from_db = get_statistics(ReasonCanceling.reason_canceling)
         reasons_canceling = {
             constants.REASONS.get(key, 'Другое'):
                 value for key, value in reasons_canceling_from_db
@@ -35,94 +35,82 @@ class Analytics(MethodResource, Resource):
                                      number_not_subscribed_users=number_not_subscribed_users,
                                      command_stats=dict(get_statistics(Statistics.command)),
                                      reasons_canceling=reasons_canceling,
-                                     users_unsubscribed = get_statistics_by_days(ReasonCanceling.added_date),
-                                     distinct_users_unsubscribed = get_statistics_by_days(
+                                     users_unsubscribed=get_statistics_by_days(ReasonCanceling.added_date),
+                                     distinct_users_unsubscribed=get_statistics_by_days(
                                          ReasonCanceling.added_date, ReasonCanceling.telegram_id),
-                                     active_users = get_statistics_by_days(Statistics.added_date, Statistics.telegram_id),
-                                     active_users_statistic = users_activity_statistic(Statistics.added_date, Statistics.telegram_id),
-                                     active_users_per_month = get_monthly_statistics(
+                                     active_users=get_statistics_by_days(Statistics.added_date, Statistics.telegram_id),
+                                     active_users_statistic=users_activity_statistic(Statistics.added_date,
+                                                                                     Statistics.telegram_id),
+                                     active_users_per_month=get_monthly_statistics(
                                          Statistics.added_date, Statistics.telegram_id)
-                                    ), 200)
-    
+                                     ), 200)
 
-def get_statistics(column_name:Column) ->list:
+
+TODAY = datetime.now().date()
+DATE_BEGIN = TODAY - timedelta(days=30)
+
+
+def get_statistics(column_name: Column) -> list:
     result = db_session.query(
         column_name, func.count(column_name)
-        ).group_by(column_name).all()
+    ).group_by(column_name).all()
     return result
- 
 
-def get_statistics_by_days(column_name:Column, second_column_name:Column=None) -> dict:
-    today = datetime.now().date()
-    date_begin = today - timedelta(days=30)
+
+def get_monthly_statistics(column_name: Column, second_column_name: Column):
+    result = db_session.query(
+        func.count(distinct(second_column_name))
+    ).filter(column_name > DATE_BEGIN).all()
+    return result[0][0]
+
+
+def get_statistics_by_days(column_name: Column, second_column_name: Column = None) -> dict:
     column_to_count = column_name if second_column_name is None else distinct(second_column_name)
     result = dict(
         db_session.query(
             func.to_char(column_name, 'YYYY-MM-DD'),
             func.count(column_to_count)
-            ).filter(column_name > date_begin
-            ).group_by(func.to_char(column_name, 'YYYY-MM-DD')
-        ).all())
+        ).filter(column_name > DATE_BEGIN
+                 ).group_by(func.to_char(column_name, 'YYYY-MM-DD')
+                            ).all())
+    return get_dict_by_days(result)
+
+
+def get_dict_by_days(result):
     return {
-        (date_begin + timedelta(days=n)).strftime('%Y-%m-%d'):
-            result.get((date_begin + timedelta(days=n)).strftime(
+        (DATE_BEGIN + timedelta(days=n)).strftime('%Y-%m-%d'):
+            result.get((DATE_BEGIN + timedelta(days=n)).strftime(
                 '%Y-%m-%d'
             ), 0) for n in range(1, 31)
     }
 
 
-def get_monthly_statistics(column_name:Column, second_column_name:Column):
-    date_begin = datetime.now().date() - timedelta(days=30)
-    result = db_session.query(
-        func.count(distinct(second_column_name))
-        ).filter(column_name > date_begin).all()
-    return result[0][0]
-
-
-def users_activity_statistic(column_name:Column, second_column_name:Column=None):
-    today = datetime.now().date()
-    date_begin = today - timedelta(days=30)
+def get_statistic_by_days_with_filtration(column_name: Column, second_column_name: Column, filter_list: list):
     column_to_count = distinct(second_column_name)
-    
+    result = dict(
+        db_session.query(
+            func.to_char(column_name, 'YYYY-MM-DD'),
+            func.count(column_to_count)
+        ).filter(column_name > DATE_BEGIN
+                 ).filter(second_column_name.in_(filter_list)).group_by(func.to_char(column_name, 'YYYY-MM-DD')
+                                                                        ).all())
+    return get_dict_by_days(result)
+
+
+def users_activity_statistic(column_name: Column, second_column_name: Column = None):
     users = db_session.query(User.telegram_id, User.has_mailing).all()
     subscribed_users_ids = [user[0] for user in users if user[1] is True]
     unsubscribed_users_ids = [user[0] for user in users if user[1] is False]
-    
-    all_active_users = dict(
-        db_session.query(
-            func.to_char(column_name, 'YYYY-MM-DD'),
-            func.count(column_to_count)
-            ).filter(column_name > date_begin
-            ).group_by(func.to_char(column_name, 'YYYY-MM-DD')
-        ).all())
-    subscribed_active_users =  dict(
-        db_session.query(
-            func.to_char(column_name, 'YYYY-MM-DD'),
-            func.count(column_to_count)
-            ).filter(column_name > date_begin
-            ).filter(second_column_name.in_(subscribed_users_ids)).group_by(func.to_char(column_name, 'YYYY-MM-DD')
-        ).all())
-    unsubscribed_active_users =  dict(
-        db_session.query(
-            func.to_char(column_name, 'YYYY-MM-DD'),
-            func.count(column_to_count)
-            ).filter(column_name > date_begin
-            ).filter(second_column_name.in_(unsubscribed_users_ids)).group_by(func.to_char(column_name, 'YYYY-MM-DD')
-        ).all())
 
-    result = [
-        {
-       'all': {(date_begin + timedelta(days=n)).strftime('%Y-%m-%d'):
-            all_active_users.get((date_begin + timedelta(days=n)).strftime(
-                '%Y-%m-%d'
-            ), 0)},
-       'subscribed': {(date_begin + timedelta(days=n)).strftime('%Y-%m-%d'):
-            subscribed_active_users.get((date_begin + timedelta(days=n)).strftime(
-                '%Y-%m-%d'
-            ), 0)},
-        'unsubscribed':{(date_begin + timedelta(days=n)).strftime('%Y-%m-%d'):
-            unsubscribed_active_users.get((date_begin + timedelta(days=n)).strftime(
-                '%Y-%m-%d'
-            ), 0)}} for n in range(1,31)
-    ]
+    all_active_users = get_statistics_by_days(column_name, second_column_name)
+    subscribed_active_users = get_statistic_by_days_with_filtration(column_name, second_column_name,
+                                                                    subscribed_users_ids)
+    unsubscribed_active_users = get_statistic_by_days_with_filtration(column_name, second_column_name,
+                                                                      unsubscribed_users_ids)
+
+    result = {
+        'all': all_active_users,
+        'subscribed': subscribed_active_users,
+        'unsubscribed': unsubscribed_active_users
+    }
     return result

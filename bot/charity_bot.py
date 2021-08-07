@@ -88,7 +88,7 @@ def init() -> None:
                 categories_conv,
                 subscription_conv,
                 CallbackQueryHandler(about, pattern=command_constants.COMMAND__ABOUT),                
-                CallbackQueryHandler(common_comands.open_menu, pattern=command_constants.COMMAND__OPEN_MENU)
+                common_comands.open_menu_handler
             ],            
         },
         fallbacks=[

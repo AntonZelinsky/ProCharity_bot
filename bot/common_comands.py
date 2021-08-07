@@ -2,7 +2,7 @@ from telegram import (Update,
                       InlineKeyboardMarkup,
                       InlineKeyboardButton,
                       ParseMode)
-from telegram.ext import CallbackContext
+from telegram.ext import CallbackContext, CallbackQueryHandler
 
 from telegram import InlineKeyboardButton
 from bot.constants import states
@@ -126,3 +126,6 @@ def get_menu_and_tasks_buttons():
     ]
     keyboard = InlineKeyboardMarkup(buttons)
     return keyboard
+
+
+open_menu_handler = CallbackQueryHandler(open_menu, pattern=command_constants.COMMAND__OPEN_MENU)

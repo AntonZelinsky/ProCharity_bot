@@ -2,7 +2,7 @@ from telegram import (Update,
                       InlineKeyboardMarkup,
                       InlineKeyboardButton,
                       ParseMode)
-from telegram.ext import CallbackContext, CallbackQueryHandler
+from telegram.ext import CallbackContext, CallbackQueryHandler, CommandHandler
 
 from telegram import InlineKeyboardButton
 from bot.constants import states
@@ -79,16 +79,11 @@ def start(update: Update, context: CallbackContext) -> int:
 def open_menu(update: Update, context: CallbackContext):
     keyboard = get_full_menu_buttons(context)
     text = 'Меню'
-    update.callback_query.answer()
-    update.callback_query.edit_message_text(text=text, reply_markup=keyboard)
-
-    return states.MENU
-
-
-def open_menu_fall(update: Update, context: CallbackContext):
-    keyboard = get_full_menu_buttons(context)
-    text = 'Меню'
-    context.bot.send_message(
+    if update.callback_query is not None:
+        update.callback_query.answer()
+        update.callback_query.edit_message_text(text=text, reply_markup=keyboard)
+    else:
+        context.bot.send_message(
         chat_id=update.effective_chat.id,
         text=text,
         reply_markup=keyboard
@@ -127,6 +122,9 @@ def get_menu_and_tasks_buttons():
     keyboard = InlineKeyboardMarkup(buttons)
     return keyboard
 
-open_menu_button = [InlineKeyboardButton(text='Открыть меню', callback_data=command_constants.COMMAND__OPEN_MENU)]
+open_menu_button = InlineKeyboardButton(text='Открыть меню', callback_data=command_constants.COMMAND__OPEN_MENU)
 
 open_menu_handler = CallbackQueryHandler(open_menu, pattern=command_constants.COMMAND__OPEN_MENU)
+
+start_command_handler = CommandHandler('start', start)
+menu_command_handler = CommandHandler('menu', open_menu)

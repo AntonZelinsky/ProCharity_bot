@@ -184,7 +184,7 @@ def show_open_task(update: Update, context: CallbackContext):
         [
             InlineKeyboardButton(text='Посмотреть ещё', callback_data=command_constants.COMMAND__OPEN_TASK)
         ],
-        common_comands.open_menu_button
+        [common_comands.open_menu_button]
     ]
     keyboard = InlineKeyboardMarkup(buttons)
 
@@ -201,7 +201,7 @@ def show_open_task(update: Update, context: CallbackContext):
         update.callback_query.edit_message_text(
             text='Нет доступных заданий',
             reply_markup=InlineKeyboardMarkup(
-                [common_comands.open_menu_button]
+                [[common_comands.open_menu_button]]
             )
         )
     else:
@@ -227,7 +227,7 @@ def show_open_task(update: Update, context: CallbackContext):
                     chat_id=update.effective_chat.id,
                     text='Ты просмотрел все открытые задания на текущий момент.',
                     reply_markup=InlineKeyboardMarkup(
-                        [common_comands.open_menu_button]
+                        [[common_comands.open_menu_button]]
                     )
                 )
                 return states.OPEN_TASKS
@@ -278,8 +278,8 @@ categories_conv = ConversationHandler(
         ]
     },
     fallbacks=[
-        CommandHandler('start', common_comands.start),
-        CommandHandler('menu', common_comands.open_menu_fall)
+        common_comands.start_command_handler,
+        common_comands.menu_command_handler
     ],
     map_to_parent={
         states.MENU: states.MENU

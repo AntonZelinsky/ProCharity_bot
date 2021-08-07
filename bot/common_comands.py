@@ -127,5 +127,6 @@ def get_menu_and_tasks_buttons():
     keyboard = InlineKeyboardMarkup(buttons)
     return keyboard
 
+open_menu_button = [InlineKeyboardButton(text='Открыть меню', callback_data=command_constants.COMMAND__OPEN_MENU)]
 
 open_menu_handler = CallbackQueryHandler(open_menu, pattern=command_constants.COMMAND__OPEN_MENU)

@@ -1,14 +1,17 @@
 import inspect
 import logging
 
+from sqlalchemy.exc import SQLAlchemyError
+
 from app.models import Statistics
 from app.database import db_session
 from datetime import datetime
+from app.logger import bot_logger as logger
 
 
 def log_command(command, ignore_func: list = None):
     def log(func):
-        def wrapper(*args, **kwargs):            
+        def wrapper(*args, **kwargs):
             try:
                 update = args[0]
                 if ignore_func:
@@ -26,10 +29,10 @@ def log_command(command, ignore_func: list = None):
 
                 db_session.add(statistic)
                 db_session.commit()
-
                 return func(*args, **kwargs)
-            except Exception as e:
-                logging.getLogger(__name__).error(f"Ошибка {e} после команды '{ command }'")
+            except SQLAlchemyError as ex:
+                logger.error(f"The error {str(ex)} after command: '{command}'")
+
         return wrapper
 
     return log

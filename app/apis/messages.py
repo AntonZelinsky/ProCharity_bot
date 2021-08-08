@@ -58,7 +58,7 @@ class SendTelegramNotification(Resource, MethodResource):
         has_mailing = kwargs.get('has_mailing')
 
         if not message or not has_mailing:
-            logger.info("The <message> and  <has_mailing> parameters have not been passed")
+            logger.info("Messages: The <message> and  <has_mailing> parameters have not been passed")
             return make_response(jsonify(result="Необходимо указать параметры <message> и <has_mailing>."), 400)
 
         authorized_user = get_jwt_identity()
@@ -69,7 +69,7 @@ class SendTelegramNotification(Resource, MethodResource):
             job_queue = TelegramNotification(has_mailing)
 
             if not job_queue.send_notification(message=message.message):
-                logger.info(f"Passed invalid <has_mailing> parameter. Passed: {has_mailing}")
+                logger.info(f"Messages: Passed invalid <has_mailing> parameter. Passed: {has_mailing}")
                 return make_response(jsonify(result=f"Неверно указан параметр <has_mailing>. "
                                                     f"Сообщение не отправлено."), 400)
 
@@ -78,9 +78,10 @@ class SendTelegramNotification(Resource, MethodResource):
             db_session.commit()
 
         except SQLAlchemyError as ex:
-            logger.exception(str(ex))
+            logger.error(f'Messages: Database commit error "{str(ex)}"')
             db_session.rollback()
             return make_response(jsonify(message=f'Bad request: {str(ex)}'), 400)
 
-        logger.info(f"The message '{message.message[0:30]}...' has been successfully added to the mailing list.")
+        logger.info(f"Messages: The message '{message.message[0:30]}...' "
+                    f"has been successfully added to the mailing list.")
         return make_response(jsonify(result=f"Сообщение успешно добавлено в очередь рассылки."), 200)

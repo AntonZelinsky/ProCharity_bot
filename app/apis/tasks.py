@@ -24,6 +24,7 @@ class CreateTasks(MethodResource, Resource):
          )
     def post(self):
         if not request.json:
+            logger.info('Tasks: The request has no data in passed json.')
             return make_response(jsonify(result='the request cannot be empty'), 400)
 
         tasks = request.json
@@ -80,13 +81,13 @@ class CreateTasks(MethodResource, Resource):
         try:
             db_session.commit()
         except SQLAlchemyError as ex:
-            logger.exception(str(ex))
+            logger.error(f'Tasks: database commit error "{str(ex)}"')
             db_session.rollback()
-            return make_response(jsonify(message=f'Bad request: {str(ex)}'), 400)
+            return make_response(jsonify(message=f'Bad request'), 400)
 
         self.send_task(task_to_send)
 
-        logger.info('New tasks received')
+        logger.info('Tasks: New tasks received')
         return make_response(jsonify(result='ok'), 200)
 
     def send_task(self, task_to_send):

@@ -20,5 +20,5 @@ class Refresh(MethodResource, Resource):
         identity = get_jwt_identity()
         access_token = create_access_token(identity=identity, fresh=False)
         refresh_token = create_refresh_token(identity=identity)
-        logger.info(f'The token for the user {identity} has been successfully updated')
+        logger.info(f'Token refresh: The token for the user {identity} has been successfully updated')
         return make_response(jsonify(access_token=access_token, refresh_token=refresh_token), 200)

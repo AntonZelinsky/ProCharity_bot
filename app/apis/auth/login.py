@@ -51,20 +51,20 @@ class Login(MethodResource, Resource):
     @use_kwargs(LoginSchema)
     def post(self, **kwargs):
         if not kwargs:
-            logger.info('Received an empty request.')
+            logger.info('Login: Received the empty request.')
             return make_response(jsonify(message="Запрос не может быть пустым."), 403)
 
         email = kwargs.get("email").lower()
         password = kwargs.get("password")
 
         if not email or not password:
-            logger.info('The request did not contain a username or password.')
+            logger.info('Login: The request did not contain a username or a password.')
             return make_response(jsonify(message="Необходимо указать <email> и <password>."), 403)
 
         user = AdminUser.query.filter_by(email=email).first()
 
         if not user or not user.check_password(password):
-            logger.info(f'Passed incorrect email or password. Email: {email}.')
+            logger.info(f"Login: Passed incorrect email or password. Email: '{email}'.")
             return make_response(jsonify(message="Неверный почтовый адрес или пароль."), 403)
 
         access_token = create_access_token(identity=email)
@@ -75,10 +75,10 @@ class Login(MethodResource, Resource):
         try:
             db_session.commit()
         except SQLAlchemyError as ex:
-            logger.exception(str(ex))
+            logger.error(f'Login: Database commit error "{str(ex)}"')
             db_session.rollback()
             return make_response(jsonify(message=f'Bad request: {str(ex)}'), 400)
 
-        logger.info(f'The User {email} successfully logged in . Token has been generated.')
+        logger.info(f"Login: The User '{email}' successfully logged in. Token has been generated.")
         return make_response(jsonify(access_token=access_token,
                                      refresh_token=refresh_token), 200)

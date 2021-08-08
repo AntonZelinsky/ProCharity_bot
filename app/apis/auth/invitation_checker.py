@@ -33,8 +33,8 @@ class InvitationChecker(MethodResource, Resource):
         record = AdminRegistrationRequest.query.filter_by(token=token).first()
 
         if not record or record.token_expiration_date < datetime.now():
-            logger.error(f'Token {token} not confirmed.')
+            logger.error(f"Invitation Checker: Token '{token}' not confirmed.")
             return make_response(jsonify(message="Приглашение не было найдено или просрочено. "
                                                  "Пожалуйста свяжитесь с своим системным администратором."), 403)
-        logger.info(f'Token {token} confirmed.')
+        logger.info(f"Invitation Checker: Token '{token}' confirmed.")
         return make_response(jsonify(message='Токен подтвержден.'), 200)

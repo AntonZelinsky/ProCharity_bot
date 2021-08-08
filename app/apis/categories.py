@@ -14,8 +14,8 @@ class CreateCategories(MethodResource, Resource):
          tags=['Create categories'])
     def post(self):
         if not request.json:
-            logger.error('The request has no parameters.')
-            make_response(jsonify(result='is not json'), 400)
+            logger.error('Categories: The request has no data in passed json.')
+            return make_response(jsonify(result='Json contains no data '), 400)
 
         categories = request.json
         categories_db = Category.query.options(load_only('archive')).all()
@@ -49,9 +49,9 @@ class CreateCategories(MethodResource, Resource):
         try:
             db_session.commit()
         except SQLAlchemyError as ex:
-            logger.exception(str(ex))
+            logger.error(f'Categories: Database commit error "{str(ex)}"')
             db_session.rollback()
-            return make_response(jsonify(message=f'Bad request: {str(ex)}'), 400)
+            return make_response(jsonify(message=f"Bad request: {str(ex)}"), 400)
 
-        logger.info('New categories successfully added.')
+        logger.info("Categories: New categories successfully added.")
         return make_response(jsonify(result='ok'), 200)

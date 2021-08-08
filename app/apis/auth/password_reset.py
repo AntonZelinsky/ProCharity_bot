@@ -40,7 +40,7 @@ class PasswordReset(MethodResource, Resource):
         user = AdminUser.query.filter_by(email=email).first()
 
         if not user:
-            logger.info(f"The specified user {email} does not exist.")
+            logger.info(f"Password reset: The specified user '{email}' does not exist.")
             return make_response(jsonify(message="Указанный пользователь не существует."), 400)
         password = self.random_password()
 
@@ -53,19 +53,19 @@ class PasswordReset(MethodResource, Resource):
             send_email(subject=subject, template=template, recipients=[user.email])
 
         except SQLAlchemyError as ex:
-            logger.exception(str(ex))
+            logger.error(f'Password reset: Database commit error "{str(ex)}"')
             db_session.rollback()
-            return make_response(jsonify(message=f'Bad request: {str(ex)}'), 400)
+            return make_response(jsonify(message=f"Bad request: {str(ex)}"), 400)
 
         except SMTPException as ex:
-            logger.error(str(ex))
-            return make_response(jsonify(message=f'The invitation message cannot be sent.'), 400)
+            logger.error(f"Password reset:{str(ex)}")
+            return make_response(jsonify(message=f"The invitation message cannot be sent."), 400)
 
-        logger.info(f"A new password for the user {email} has been sent to the specified email.")
+        logger.info(f"Password reset: A new password for the user {email} has been sent to the specified email.")
         return make_response(jsonify(message="Новый пароль был выслан на указанную почту."), 200)
 
     def random_password(self):
         length = config.PASSWORD_POLICY["min_length"]
-        chars = string.ascii_letters + string.digits + '!@#$%^&*()'
+        chars = string.ascii_letters + string.digits + "!@#$%^&*()"
         rnd = random.SystemRandom()
         return ''.join(rnd.choice(chars) for i in range(length))

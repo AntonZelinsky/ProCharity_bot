@@ -1,5 +1,6 @@
 from flask import jsonify, make_response, request
 from flask_jwt_extended import jwt_required
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.logger import app_logger as logger
 from app.swagger_schemas import USERS_SCHEMA
@@ -13,7 +14,6 @@ from email_validator import validate_email, EmailNotValidError
 from marshmallow import fields
 from sqlalchemy_pagination import paginate
 from app import formatter
-
 
 USER_SCHEMA = {
     'username': fields.Str(),
@@ -94,9 +94,9 @@ class UserItem(MethodResource, Resource):
     def get(self, telegram_id):
         user = User.query.get(telegram_id)
         if not user:
-            logger.info(f'The user{telegram_id} not found.')
+            logger.info(f'Users: The user{telegram_id} not found.')
             return make_response(jsonify(message='Данный пользователь не найден.'), 400)
-        logger.info(f'Requested users list was provided.')
+        logger.info(f'Users: Requested users list was provided.')
         return make_response(jsonify(formatter.user_formatter(user)), 200)
 
     @doc(description="Update user's database information.",
@@ -143,23 +143,30 @@ class UserItem(MethodResource, Resource):
         email = kwargs.get('email')
 
         if User.query.filter_by(username=username).first():
-            logger.info(f'The specified user {username} already exists')
+            logger.info(f'Users: The specified user {username} already exists')
             return make_response(jsonify(message='Указанный пользователь уже существует.'), 400)
 
         if User.query.filter_by(email=email).first():
-            logger.info(f'The specified email {email} already exists')
+            logger.info(f'Users: The specified email {email} already exists')
             return make_response(jsonify(message='Указанный почтовый адрес уже существует.'), 400)
 
         if email:
             try:
                 validate_email(email, check_deliverability=False)
-
             except EmailNotValidError as ex:
+                logger.error(f'Users: {str(ex)}')
                 return make_response(jsonify(message=str(ex)), 400)
 
         User.query.filter_by(telegram_id=telegram_id).update(kwargs)
-        db_session.commit()
-        logger.info(f'The user {email} information was successfully updated')
+
+        try:
+            db_session.commit()
+        except SQLAlchemyError as ex:
+            logger.error(f'Users: database commit error "{str(ex)}"')
+            db_session.rollback()
+            return make_response(jsonify(message=f'Bad request'), 400)
+
+        logger.info(f'Users: The user {email} information was successfully updated')
         return make_response(jsonify(message='Информация о пользователе успешно обновлена.'), 200)
 
     @doc(description="Delete user record.",
@@ -170,9 +177,16 @@ class UserItem(MethodResource, Resource):
     def delete(self, telegram_id):
         user = User.query.get(telegram_id)
         if not user:
-            logger.info(f'The user {user} not found.')
+            logger.info(f'Users: The user {user} not found.')
             return make_response(jsonify(message=f'Пользователь не найден.'), 400)
         db_session.delete(user)
-        db_session.commit()
-        logger.info(f'The user {user} successfully deleted.')
+
+        try:
+            db_session.commit()
+        except SQLAlchemyError as ex:
+            logger.error(f'Users: database commit error "{str(ex)}"')
+            db_session.rollback()
+            return make_response(jsonify(message=f'Bad request'), 400)
+
+        logger.info(f'Users: The user {user} successfully deleted.')
         return make_response(jsonify(message=f'Пользователь:{id} успешно удален.'), 200)

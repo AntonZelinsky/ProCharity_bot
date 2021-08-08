@@ -40,8 +40,6 @@ class Analytics(MethodResource, Resource):
                                          ReasonCanceling.added_date, ReasonCanceling.telegram_id),
                                      active_users_statistic=users_activity_statistic(Statistics.added_date,
                                                                                      Statistics.telegram_id),
-                                     active_users_per_month=get_monthly_statistics(
-                                         Statistics.added_date, Statistics.telegram_id)
                                      ), 200)
 
 
@@ -107,10 +105,11 @@ def users_activity_statistic(column_name: Column, second_column_name: Column = N
                                                                     subscribed_users_ids)
     unsubscribed_active_users = get_statistic_by_days_with_filtration(column_name, second_column_name,
                                                                       unsubscribed_users_ids)
-
+    active_users_per_month = get_monthly_statistics(column_name, second_column_name)
     result = {
         'all': all_active_users,
         'subscribed': subscribed_active_users,
-        'unsubscribed': unsubscribed_active_users
+        'unsubscribed': unsubscribed_active_users,
+        'active_users_per_month': active_users_per_month
     }
     return result

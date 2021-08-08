@@ -57,7 +57,7 @@ class PasswordReset(MethodResource, Resource):
             db_session.rollback()
             return make_response(jsonify(message=f"Bad request: {str(ex)}"), 400)
 
-        except SMTPException as ex:
+        except SMTPException as ex:  # base smtplib exception
             logger.error(f"Password reset:{str(ex)}")
             return make_response(jsonify(message=f"The invitation message cannot be sent."), 400)
 

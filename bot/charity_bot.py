@@ -72,7 +72,7 @@ def init() -> None:
     dispatcher = updater.dispatcher
     conv_handler = ConversationHandler(
         entry_points=[
-            CommandHandler('start', common_comands.start)
+            common_comands.start_command_handler
         ],
         states={
             states.GREETING: [
@@ -83,12 +83,12 @@ def init() -> None:
                 categories_conv,
                 subscription_conv,
                 CallbackQueryHandler(about, pattern=command_constants.COMMAND__ABOUT),                
-                CallbackQueryHandler(common_comands.open_menu, pattern=command_constants.COMMAND__OPEN_MENU)
+                common_comands.open_menu_handler
             ],            
         },
         fallbacks=[
-            CommandHandler('start', common_comands.start),
-            CommandHandler('menu', common_comands.open_menu_fall)
+            common_comands.start_command_handler,
+            common_comands.menu_command_handler
         ],
         persistent=True,
         name='conv_handler'

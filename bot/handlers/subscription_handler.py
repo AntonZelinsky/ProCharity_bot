@@ -90,8 +90,8 @@ subscription_conv = ConversationHandler(
             ]
     },
     fallbacks=[
-        CommandHandler('start', common_comands.start),
-        CommandHandler('menu', common_comands.open_menu_fall)
+        common_comands.start_command_handler,
+        common_comands.menu_command_handler
     ],
     map_to_parent={
         states.MENU: states.MENU

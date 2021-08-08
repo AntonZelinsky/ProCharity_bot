@@ -68,19 +68,19 @@ def get_statistics_by_days(column_name: Column, second_column_name: Column = Non
     result = dict(
         db_session.query(
             func.to_char(column_name, 'YYYY-MM-DD'),
-            func.count(column_to_count)
-        ).filter(column_name > DATE_BEGIN
-                 ).group_by(func.to_char(column_name, 'YYYY-MM-DD')
-                            ).all())
+            func.count(column_to_count))
+            .filter(column_name > DATE_BEGIN)
+            .group_by(func.to_char(column_name, 'YYYY-MM-DD'))
+            .all())
     return get_dict_by_days(result)
 
 
 def get_dict_by_days(result):
     return {
         (DATE_BEGIN + timedelta(days=n)).strftime('%Y-%m-%d'):
-            result.get((DATE_BEGIN + timedelta(days=n)).strftime(
-                '%Y-%m-%d'
-            ), 0) for n in range(1, 31)
+            result.get((DATE_BEGIN + timedelta(days=n))
+            .strftime('%Y-%m-%d'), 0)
+            for n in range(1, 31)
     }
 
 
@@ -89,10 +89,11 @@ def get_statistic_by_days_with_filtration(column_name: Column, second_column_nam
     result = dict(
         db_session.query(
             func.to_char(column_name, 'YYYY-MM-DD'),
-            func.count(column_to_count)
-        ).filter(column_name > DATE_BEGIN
-                 ).filter(second_column_name.in_(filter_list)).group_by(func.to_char(column_name, 'YYYY-MM-DD')
-                                                                        ).all())
+            func.count(column_to_count))
+            .filter(column_name > DATE_BEGIN)
+            .filter(second_column_name.in_(filter_list))
+            .group_by(func.to_char(column_name, 'YYYY-MM-DD'))
+            .all())
     return get_dict_by_days(result)
 
 

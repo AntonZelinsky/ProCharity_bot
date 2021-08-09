@@ -1,7 +1,4 @@
 import inspect
-import logging
-
-from sqlalchemy.exc import SQLAlchemyError
 
 from app.models import Statistics
 from app.database import db_session
@@ -30,7 +27,7 @@ def log_command(command, ignore_func: list = None):
                 db_session.add(statistic)
                 db_session.commit()
                 return func(*args, **kwargs)
-            except SQLAlchemyError as ex:
+            except Exception as ex:
                 logger.error(f"The error {str(ex)} after command: '{command}'")
 
         return wrapper

@@ -15,10 +15,12 @@ from bot.constants import states
 from bot import user_db
 from bot.logger import log_command
 from bot.user_db import UserDB
+from bot.actions import send_typing_action
 
 user_db = UserDB()
 
 
+@send_typing_action
 @log_command(command=constants.LOG_COMMANDS_NAME['start_task_subscription'])
 def start_task_subscription(update: Update, context: CallbackContext):
     context.user_data[states.SUBSCRIPTION_FLAG] = user_db.change_subscription(update.effective_user.id)
@@ -38,6 +40,7 @@ def start_task_subscription(update: Update, context: CallbackContext):
     return states.MENU
 
 
+@send_typing_action
 @log_command(command=constants.LOG_COMMANDS_NAME['stop_task_subscription'])
 def stop_task_subscription(update: Update, context: CallbackContext):
     context.user_data[states.SUBSCRIPTION_FLAG] = user_db.change_subscription(update.effective_user.id)
@@ -60,6 +63,7 @@ def stop_task_subscription(update: Update, context: CallbackContext):
     return states.CANCEL_FEEDBACK
 
 
+@send_typing_action
 @log_command(command=constants.LOG_COMMANDS_NAME['cancel_feedback'])
 def cancel_feedback(update: Update, context: CallbackContext):
     keyboard = common_comands.get_full_menu_buttons(context)

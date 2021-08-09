@@ -20,6 +20,7 @@ from bot import user_db
 from bot.logger import log_command
 from bot.user_db import UserDB
 from bot.handlers.feedback_handler import feedback_conv
+from bot.actions import send_typing_action
 
 user_db = UserDB()
 
@@ -42,6 +43,7 @@ def before_confirm_specializations(update: Update, context: CallbackContext):
     return confirm_specializations(update, context)
 
 
+@send_typing_action
 @log_command(command=constants.LOG_COMMANDS_NAME['confirm_specializations'])
 def confirm_specializations(update: Update, context: CallbackContext):
     buttons = [
@@ -72,6 +74,7 @@ def confirm_specializations(update: Update, context: CallbackContext):
     return states.CATEGORY
 
 
+@send_typing_action
 @log_command(command=constants.LOG_COMMANDS_NAME['change_user_categories'])
 def change_user_categories(update: Update, context: CallbackContext):
     """Auxiliary function for selecting a category and changing the status of subscriptions."""
@@ -84,6 +87,7 @@ def change_user_categories(update: Update, context: CallbackContext):
     update.callback_query.answer()
 
 
+@send_typing_action
 @log_command(command=constants.LOG_COMMANDS_NAME['choose_category'],
              ignore_func=['change_user_categories'])
 def choose_category(update: Update, context: CallbackContext, save_prev_msg: bool = False):
@@ -125,6 +129,7 @@ def choose_category(update: Update, context: CallbackContext, save_prev_msg: boo
     return states.CATEGORY
 
 
+@send_typing_action
 @log_command(command=constants.LOG_COMMANDS_NAME['after_category_choose'])
 def after_category_choose(update: Update, context: CallbackContext):
     user_categories = ', '.join([spec['name'] for spec
@@ -149,6 +154,7 @@ def after_category_choose(update: Update, context: CallbackContext):
     return states.AFTER_CATEGORY_REPLY
 
 
+@send_typing_action
 @log_command(command=constants.LOG_COMMANDS_NAME['no_relevant_category'])
 def no_relevant_category(update: Update, context: CallbackContext):
     buttons = [
@@ -178,6 +184,7 @@ def no_relevant_category(update: Update, context: CallbackContext):
     return states.NO_CATEGORY
 
 
+@send_typing_action
 @log_command(command=constants.LOG_COMMANDS_NAME['show_open_task'])
 def show_open_task(update: Update, context: CallbackContext):
     buttons = [

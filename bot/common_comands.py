@@ -10,6 +10,7 @@ from bot.constants import command_constants
 from bot.constants import constants
 from bot.logger import log_command
 from bot.user_db import UserDB
+from bot.actions import send_typing_action
 
 MENU_BUTTONS = [
     [
@@ -48,6 +49,7 @@ MENU_BUTTONS = [
 user_db = UserDB()
 
 
+@send_typing_action
 @log_command(command=constants.LOG_COMMANDS_NAME['start'])
 def start(update: Update, context: CallbackContext) -> int:
     deeplink_passed_param = context.args
@@ -75,6 +77,7 @@ def start(update: Update, context: CallbackContext) -> int:
     return states.GREETING
 
 
+@send_typing_action
 @log_command(command=constants.LOG_COMMANDS_NAME['open_menu'])
 def open_menu(update: Update, context: CallbackContext):
     keyboard = get_full_menu_buttons(context)

@@ -192,17 +192,17 @@ feedback_conv = ConversationHandler(
     states={
         states.TYPING: [
             MessageHandler(Filters.text & ~Filters.command, save_user_input),
-            CallbackQueryHandler(common_comands.open_menu, pattern=command_constants.COMMAND__OPEN_MENU)
+            common_comands.open_menu_handler
         ],
         states.ASK_EMAIL: [
-            CallbackQueryHandler(common_comands.open_menu, pattern=command_constants.COMMAND__OPEN_MENU),
+            common_comands.open_menu_handler,
             CallbackQueryHandler(no_wait_answer, pattern=command_constants.COMMAND__NO_WAIT),
             MessageHandler(Filters.text & ~Filters.command, save_email)
         ]
     },
     fallbacks=[
-        CommandHandler('start', common_comands.start),
-        CommandHandler('menu', common_comands.open_menu_fall)
+        common_comands.start_command_handler,
+        common_comands.menu_command_handler
     ],
     map_to_parent={
         states.MENU: states.MENU

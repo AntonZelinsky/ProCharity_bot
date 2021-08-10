@@ -7,7 +7,6 @@ from telegram import (Update,
                       InlineKeyboardButton,
                       ParseMode)
 from telegram.ext import (Updater,
-                          CommandHandler,
                           ConversationHandler,
                           CallbackContext,
                           CallbackQueryHandler,
@@ -24,7 +23,6 @@ from bot.handlers.feedback_handler import feedback_conv
 from bot.handlers.subscription_handler import subscription_conv
 from bot.decorators.logger import log_command
 from bot.user_db import UserDB
-from bot.decorators.actions import send_typing_action
 
 load_dotenv()
 
@@ -45,7 +43,6 @@ updater = Updater(token=os.getenv('TOKEN'), persistence=bot_persistence, use_con
 user_db = UserDB()
 
 
-@send_typing_action
 @log_command(command=constants.LOG_COMMANDS_NAME['about'])
 def about(update: Update, context: CallbackContext):
     button = [

@@ -31,7 +31,6 @@ MSG_TEXT = 'msg_text'
 user_db = UserDB()
 
 
-@send_typing_action
 @log_command(command=constants.LOG_COMMANDS_NAME['ask_new_category'])
 def ask_new_category(update: Update, context: CallbackContext):
     button = [
@@ -50,7 +49,6 @@ def ask_new_category(update: Update, context: CallbackContext):
     return states.TYPING
 
 
-@send_typing_action
 @log_command(command=constants.LOG_COMMANDS_NAME['ask_question'])
 def ask_question(update: Update, context: CallbackContext):
     button = [
@@ -68,7 +66,6 @@ def ask_question(update: Update, context: CallbackContext):
     return states.TYPING
 
 
-@send_typing_action
 @log_command(command=constants.LOG_COMMANDS_NAME['add_new_feature'])
 def add_new_feature(update: Update, context: CallbackContext):
     button = [

@@ -78,7 +78,6 @@ def start(update: Update, context: CallbackContext) -> int:
     return states.GREETING
 
 
-@send_typing_action
 @log_command(command=constants.LOG_COMMANDS_NAME['open_menu'])
 def open_menu(update: Update, context: CallbackContext):
     keyboard = get_full_menu_buttons(context)

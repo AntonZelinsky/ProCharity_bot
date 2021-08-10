@@ -75,7 +75,6 @@ def confirm_specializations(update: Update, context: CallbackContext):
     return states.CATEGORY
 
 
-@send_typing_action
 @log_command(command=constants.LOG_COMMANDS_NAME['change_user_categories'])
 def change_user_categories(update: Update, context: CallbackContext):
     """Auxiliary function for selecting a category and changing the status of subscriptions."""
@@ -88,7 +87,6 @@ def change_user_categories(update: Update, context: CallbackContext):
     update.callback_query.answer()
 
 
-@send_typing_action
 @log_command(command=constants.LOG_COMMANDS_NAME['choose_category'],
              ignore_func=['change_user_categories'])
 def choose_category(update: Update, context: CallbackContext, save_prev_msg: bool = False):
@@ -153,7 +151,6 @@ def after_category_choose(update: Update, context: CallbackContext):
     return states.AFTER_CATEGORY_REPLY
 
 
-@send_typing_action
 @log_command(command=constants.LOG_COMMANDS_NAME['no_relevant_category'])
 def no_relevant_category(update: Update, context: CallbackContext):
     buttons = [

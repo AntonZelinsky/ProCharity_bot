@@ -54,7 +54,7 @@ def confirm_specializations(update: Update, context: CallbackContext):
         ]
     ]
     specializations = ', '.join([spec['name'] for spec
-                                 in user_db.get_category(update.effective_user.id)
+                                 in user_db.get_categories_with_selected_status(update.effective_user.id)
                                  if spec['user_selected']])
 
     if not specializations:
@@ -88,16 +88,15 @@ def change_user_categories(update: Update, context: CallbackContext):
              ignore_func=['change_user_categories'])
 def choose_category(update: Update, context: CallbackContext, save_prev_msg: bool = False):
     """The main function is to select categories for subscribing to them."""
-    categories = user_db.get_category(update.effective_user.id)
-    selected_caregories_counter = 0
+    categories = user_db.get_categories_with_selected_status(update.effective_user.id)
     buttons = []
     for cat in categories:
         if cat['user_selected']:
             cat['name'] += " ✅"
-            selected_caregories_counter += 1
         buttons.append([InlineKeyboardButton(text=cat['name'], callback_data=f'up_cat{cat["category_id"]}'
                                              )])
-    if selected_caregories_counter == 0:
+    selected_categories_list = [cat for cat in categories if cat['user_selected']]
+    if selected_categories_list == []:
          buttons += [
             [
                 InlineKeyboardButton(text='Нет моих компетенций 😕',
@@ -135,7 +134,7 @@ def choose_category(update: Update, context: CallbackContext, save_prev_msg: boo
 @log_command(command=constants.LOG_COMMANDS_NAME['after_category_choose'])
 def after_category_choose(update: Update, context: CallbackContext):
     user_categories = ', '.join([spec['name'] for spec
-                                 in user_db.get_category(update.effective_user.id)
+                                 in user_db.get_categories_with_selected_status(update.effective_user.id)
                                  if spec['user_selected']])
 
     if not user_categories:

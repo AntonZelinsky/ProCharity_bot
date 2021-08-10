@@ -70,7 +70,7 @@ class UserDB:
         return True
 
 
-    def get_category(self, telegram_id):
+    def get_categories_with_selected_status(self, telegram_id):
         """
         Returns a collection of categories. If the user has selected one of them, it returns True in dictionary.
         :param telegram_id: chat_id of current user
@@ -93,18 +93,18 @@ class UserDB:
 
     def get_user_active_tasks(self, telegram_id, shown_task):
         users_categories_telegram_ids = db_session.query(Users_Categories.telegram_id).all()
-        telegram_ids = [user[0] for user in users_categories_telegram_ids]
+        telegram_ids = [telegram_id[0] for telegram_id in users_categories_telegram_ids]
         if telegram_id in telegram_ids:
-            stmt = select(Task, Category.name). \
+            db_query = select(Task, Category.name). \
                 where(Users_Categories.telegram_id == telegram_id). \
                 where(Task.archive == False).where(~Task.id.in_(shown_task)). \
                 join(Users_Categories, Users_Categories.category_id == Task.category_id). \
                 join(Category, Category.id == Users_Categories.category_id)
         else:
-            stmt = select(Task, Category.name). \
+            db_query = select(Task, Category.name). \
                 where(Task.archive == False).where(~Task.id.in_(shown_task)). \
                 join(Category, Category.id == Task.category_id)
-        result = db_session.execute(stmt)
+        result = db_session.execute(db_query)
         return [[task, category_name] for task, category_name in result]
     
     

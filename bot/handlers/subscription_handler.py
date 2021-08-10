@@ -23,7 +23,7 @@ user_db = UserDB()
 def start_task_subscription(update: Update, context: CallbackContext):
     context.user_data[states.SUBSCRIPTION_FLAG] = user_db.change_subscription(update.effective_user.id)
     user_categories = [
-        c['name'] for c in user_db.get_category(update.effective_user.id)
+        c['name'] for c in user_db.get_categories_with_selected_status(update.effective_user.id)
         if c['user_selected']
     ]
 

@@ -57,7 +57,7 @@ def confirm_specializations(update: Update, context: CallbackContext):
         ]
     ]
     specializations = ', '.join([spec['name'] for spec
-                                 in user_db.get_category(update.effective_user.id)
+                                 in user_db.get_categories(update.effective_user.id)
                                  if spec['user_selected']])
 
     if not specializations:
@@ -91,22 +91,32 @@ def change_user_categories(update: Update, context: CallbackContext):
              ignore_func=['change_user_categories'])
 def choose_category(update: Update, context: CallbackContext, save_prev_msg: bool = False):
     """The main function is to select categories for subscribing to them."""
-    categories = user_db.get_category(update.effective_user.id)
+    categories = user_db.get_categories(update.effective_user.id)
+
     buttons = []
-    for cat in categories:
-        if cat['user_selected']:
-            cat['name'] += " ✅"
-        buttons.append([InlineKeyboardButton(text=cat['name'], callback_data=f'up_cat{cat["category_id"]}'
+    for category in categories:
+        if category['user_selected']:
+            category['name'] += " ✅"
+        buttons.append([InlineKeyboardButton(text=category['name'], callback_data=f'up_cat{category["category_id"]}'
                                              )])
-    buttons += [
-        [
-            InlineKeyboardButton(text='Нет моих компетенций 😕',
-                                 callback_data=command_constants.COMMAND__NO_RELEVANT)
-        ],
-        [
-            InlineKeyboardButton(text='Готово 👌', callback_data=command_constants.COMMAND__READY),
-        ],
-    ]
+    selected_categories_list = [category for category in categories if category['user_selected']]
+    if selected_categories_list == []:
+         buttons += [
+            [
+                InlineKeyboardButton(text='Нет моих компетенций 😕',
+                                     callback_data=command_constants.COMMAND__NO_RELEVANT)
+            ]]
+    else:
+        buttons += [
+            [
+                InlineKeyboardButton(text='Нет моих компетенций 😕',
+                                     callback_data=command_constants.COMMAND__NO_RELEVANT)
+            ],
+            [
+                InlineKeyboardButton(text='Готово 👌', callback_data=command_constants.COMMAND__READY),
+            ]
+        ]
+
     keyboard = InlineKeyboardMarkup(buttons)
     text = ('Чтобы я знал, с какими задачами ты готов помогать, '
             'выбери свои профессиональные компетенции (можно выбрать '
@@ -129,9 +139,9 @@ def choose_category(update: Update, context: CallbackContext, save_prev_msg: boo
 @send_typing_action
 @log_command(command=constants.LOG_COMMANDS_NAME['after_category_choose'])
 def after_category_choose(update: Update, context: CallbackContext):
-    user_categories = ', '.join([spec['name'] for spec
-                                 in user_db.get_category(update.effective_user.id)
-                                 if spec['user_selected']])
+    user_categories = ', '.join([category['name'] for category
+                                 in user_db.get_categories(update.effective_user.id)
+                                 if category['user_selected']])
 
     if not user_categories:
         user_categories = 'Категории ещё не выбраны'

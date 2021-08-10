@@ -12,7 +12,6 @@ from bot import common_comands
 from bot.constants import constants
 from bot.constants import command_constants
 from bot.constants import states
-from bot.decorators.actions import send_typing_action
 from bot.decorators.logger import log_command
 from bot.user_db import UserDB
 
@@ -24,8 +23,8 @@ user_db = UserDB()
 def start_task_subscription(update: Update, context: CallbackContext):
     context.user_data[states.SUBSCRIPTION_FLAG] = user_db.change_subscription(update.effective_user.id)
     user_categories = [
-        c['name'] for c in user_db.get_category(update.effective_user.id)
-        if c['user_selected']
+        category['name'] for category in user_db.get_categories(update.effective_user.id)
+        if category['user_selected']
     ]
 
     answer = f'Отлично! Теперь я буду присылать тебе уведомления о ' \

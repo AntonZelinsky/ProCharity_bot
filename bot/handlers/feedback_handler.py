@@ -11,9 +11,11 @@ from bot import common_comands
 from bot.constants import states
 from bot.constants import command_constants
 from bot.constants import constants
-from bot import email_client 
-from bot.logger import log_command
+from bot import email_client
+from bot.decorators.actions import send_typing_action
+from bot.decorators.logger import log_command
 from bot.user_db import UserDB
+
 
 ASK_EMAIL_FLAG = 'ask_email_flag'
 ASK_EMAIL_MESSAGE_ID = 'ask_email_message_id'
@@ -81,7 +83,7 @@ def add_new_feature(update: Update, context: CallbackContext):
 
     return states.TYPING
 
-
+@send_typing_action
 @log_command(command=constants.LOG_COMMANDS_NAME['save_user_input'])
 def save_user_input(update: Update, context: CallbackContext):
     user = user_db.get_user(update.effective_user.id)
@@ -119,6 +121,7 @@ def ask_email(update: Update, context: CallbackContext):
     return states.ASK_EMAIL
 
 
+@send_typing_action
 @log_command(command=constants.LOG_COMMANDS_NAME['no_wait_answer'])
 def no_wait_answer(update: Update, context: CallbackContext):
     email_client.send_email(
@@ -132,7 +135,8 @@ def no_wait_answer(update: Update, context: CallbackContext):
     return states.MENU
 
 
-# @log_command(command=LOG_COMMANDS_NAME['save_email'])
+@send_typing_action
+@log_command(command=constants.LOG_COMMANDS_NAME['email_feedback'])
 def save_email(update: Update, context: CallbackContext):
     user_input_email = update.message.text
     email_status = user_db.set_user_email(update.effective_user.id, user_input_email)
@@ -142,7 +146,6 @@ def save_email(update: Update, context: CallbackContext):
         return save_user_input(update, context)
 
 
-@log_command(command=constants.LOG_COMMANDS_NAME['after_get_feedback'])
 def after_get_feedback(update: Update, context: CallbackContext):
     if context.user_data.get(ASK_EMAIL_FLAG):
         context.bot.edit_message_text(

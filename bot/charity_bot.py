@@ -7,7 +7,6 @@ from telegram import (Update,
                       InlineKeyboardButton,
                       ParseMode)
 from telegram.ext import (Updater,
-                          CommandHandler,
                           ConversationHandler,
                           CallbackContext,
                           CallbackQueryHandler,
@@ -22,9 +21,8 @@ from bot.constants import command_constants
 from bot.handlers.categories_handler import categories_conv, change_user_categories
 from bot.handlers.feedback_handler import feedback_conv
 from bot.handlers.subscription_handler import subscription_conv
-from bot.logger import log_command
+from bot.decorators.logger import log_command
 from bot.user_db import UserDB
-
 
 load_dotenv()
 

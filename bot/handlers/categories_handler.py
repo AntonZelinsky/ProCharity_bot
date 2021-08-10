@@ -17,9 +17,11 @@ from bot.constants import constants
 from bot.constants import command_constants
 from bot.constants import states
 from bot import user_db
-from bot.logger import log_command
+from bot.decorators.actions import send_typing_action
+from bot.decorators.logger import log_command
 from bot.user_db import UserDB
 from bot.handlers.feedback_handler import feedback_conv
+
 
 user_db = UserDB()
 
@@ -42,6 +44,7 @@ def before_confirm_specializations(update: Update, context: CallbackContext):
     return confirm_specializations(update, context)
 
 
+@send_typing_action
 @log_command(command=constants.LOG_COMMANDS_NAME['confirm_specializations'])
 def confirm_specializations(update: Update, context: CallbackContext):
     buttons = [
@@ -89,6 +92,7 @@ def change_user_categories(update: Update, context: CallbackContext):
 def choose_category(update: Update, context: CallbackContext, save_prev_msg: bool = False):
     """The main function is to select categories for subscribing to them."""
     categories = user_db.get_categories_with_selected_status(update.effective_user.id)
+
     buttons = []
     for cat in categories:
         if cat['user_selected']:
@@ -112,6 +116,7 @@ def choose_category(update: Update, context: CallbackContext, save_prev_msg: boo
                 InlineKeyboardButton(text='Готово 👌', callback_data=command_constants.COMMAND__READY),
             ]
         ]
+
     keyboard = InlineKeyboardMarkup(buttons)
     text = ('Чтобы я знал, с какими задачами ты готов помогать, '
             'выбери свои профессиональные компетенции (можно выбрать '
@@ -131,6 +136,7 @@ def choose_category(update: Update, context: CallbackContext, save_prev_msg: boo
     return states.CATEGORY
 
 
+@send_typing_action
 @log_command(command=constants.LOG_COMMANDS_NAME['after_category_choose'])
 def after_category_choose(update: Update, context: CallbackContext):
     user_categories = ', '.join([spec['name'] for spec
@@ -184,6 +190,7 @@ def no_relevant_category(update: Update, context: CallbackContext):
     return states.NO_CATEGORY
 
 
+@send_typing_action
 @log_command(command=constants.LOG_COMMANDS_NAME['show_open_task'])
 def show_open_task(update: Update, context: CallbackContext):
     buttons = [

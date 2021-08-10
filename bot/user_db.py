@@ -70,24 +70,24 @@ class UserDB:
         return True
 
 
-    def get_categories_with_selected_status(self, telegram_id):
+    def get_categories(self, telegram_id):
         """
         Returns a collection of categories. If the user has selected one of them, it returns True in dictionary.
         :param telegram_id: chat_id of current user
         :return:
         """
         result = []
-        user_categories = [cat.id for cat in User.query.filter_by(telegram_id=telegram_id).first().categories]
+        user_categories = [category.id for category in User.query.filter_by(telegram_id=telegram_id).first().categories]
         all_categories = Category.query.options(load_only('id')).filter_by(archive=False)
-        for category in all_categories:
-            cat = {}
-            cat['category_id'] = category.id
-            cat['name'] = category.name
-            if category.id in user_categories:
-                cat['user_selected'] = True
+        for one_category in all_categories:
+            category = {}
+            category['category_id'] = one_category.id
+            category['name'] = one_category.name
+            if one_category.id in user_categories:
+                category['user_selected'] = True
             else:
-                cat['user_selected'] = False
-            result.append(cat)
+                category['user_selected'] = False
+            result.append(category)
         return result
 
 

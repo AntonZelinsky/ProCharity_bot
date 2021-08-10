@@ -2,7 +2,10 @@ name: Testing CI Procharity Bot
 
 on:
   pull_request:
-    branches: [ develop, master ]
+    branches:
+      - develop
+      - master
+    types: [closed]
 
   workflow_dispatch:
 
@@ -13,6 +16,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
       - name: Update repo and restart bot
         uses: appleboy/ssh-action@master
         with:

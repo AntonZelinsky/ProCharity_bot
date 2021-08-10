@@ -1,3 +1,6 @@
+![example workflow](https://github.com/kr0t/ProCharrity_bot/actions/workflows/bot_ci.yml/badge.svg)
+
+
 ## Первоначальная подготовка проекта
 
 ### Необходимо создать виртуальное окружение и установить все зависимости:

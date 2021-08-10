@@ -89,23 +89,30 @@ def change_user_categories(update: Update, context: CallbackContext):
 def choose_category(update: Update, context: CallbackContext, save_prev_msg: bool = False):
     """The main function is to select categories for subscribing to them."""
     categories = user_db.get_category(update.effective_user.id)
-
+    selected_caregories_counter = 0
     buttons = []
     for cat in categories:
         if cat['user_selected']:
             cat['name'] += " ✅"
+            selected_caregories_counter += 1
         buttons.append([InlineKeyboardButton(text=cat['name'], callback_data=f'up_cat{cat["category_id"]}'
                                              )])
-
-    buttons += [
-        [
-            InlineKeyboardButton(text='Нет моих компетенций 😕',
-                                 callback_data=command_constants.COMMAND__NO_RELEVANT)
-        ],
-        [
-            InlineKeyboardButton(text='Готово 👌', callback_data=command_constants.COMMAND__READY),
-        ],
-    ]
+    if selected_caregories_counter == 0:
+         buttons += [
+            [
+                InlineKeyboardButton(text='Нет моих компетенций 😕',
+                                     callback_data=command_constants.COMMAND__NO_RELEVANT)
+            ]]
+    else:
+        buttons += [
+            [
+                InlineKeyboardButton(text='Нет моих компетенций 😕',
+                                     callback_data=command_constants.COMMAND__NO_RELEVANT)
+            ],
+            [
+                InlineKeyboardButton(text='Готово 👌', callback_data=command_constants.COMMAND__READY),
+            ]
+        ]
     keyboard = InlineKeyboardMarkup(buttons)
     text = ('Чтобы я знал, с какими задачами ты готов помогать, '
             'выбери свои профессиональные компетенции (можно выбрать '

@@ -8,8 +8,10 @@ from telegram import InlineKeyboardButton
 from bot.constants import states
 from bot.constants import command_constants
 from bot.constants import constants
-from bot.logger import log_command
+from bot.decorators.actions import send_typing_action
+from bot.decorators.logger import log_command
 from bot.user_db import UserDB
+
 
 MENU_BUTTONS = [
     [
@@ -48,6 +50,7 @@ MENU_BUTTONS = [
 user_db = UserDB()
 
 
+@send_typing_action
 @log_command(command=constants.LOG_COMMANDS_NAME['start'])
 def start(update: Update, context: CallbackContext) -> int:
     deeplink_passed_param = context.args

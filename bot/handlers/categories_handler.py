@@ -17,10 +17,11 @@ from bot.constants import constants
 from bot.constants import command_constants
 from bot.constants import states
 from bot import user_db
-from bot.logger import log_command
+from bot.decorators.actions import send_typing_action
+from bot.decorators.logger import log_command
 from bot.user_db import UserDB
 from bot.handlers.feedback_handler import feedback_conv
-from bot.actions import send_typing_action
+
 
 user_db = UserDB()
 
@@ -93,14 +94,12 @@ def change_user_categories(update: Update, context: CallbackContext):
 def choose_category(update: Update, context: CallbackContext, save_prev_msg: bool = False):
     """The main function is to select categories for subscribing to them."""
     categories = user_db.get_category(update.effective_user.id)
-
     buttons = []
     for cat in categories:
         if cat['user_selected']:
             cat['name'] += " ✅"
         buttons.append([InlineKeyboardButton(text=cat['name'], callback_data=f'up_cat{cat["category_id"]}'
                                              )])
-
     buttons += [
         [
             InlineKeyboardButton(text='Нет моих компетенций 😕',

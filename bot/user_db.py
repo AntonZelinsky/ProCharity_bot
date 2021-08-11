@@ -77,35 +77,43 @@ class UserDB:
             return False
         return True
 
-    def get_category(self, telegram_id):
+
+    def get_categories(self, telegram_id):
         """
         Returns a collection of categories. If the user has selected one of them, it returns True in dictionary.
         :param telegram_id: chat_id of current user
         :return:
         """
         result = []
-        user_categories = [cat.id for cat in User.query.filter_by(telegram_id=telegram_id).first().categories]
+        user_categories = [category.id for category in User.query.filter_by(telegram_id=telegram_id).first().categories]
         all_categories = Category.query.options(load_only('id')).filter_by(archive=False)
         for category in all_categories:
-            cat = {}
-            cat['category_id'] = category.id
-            cat['name'] = category.name
+            category_view_model = {}
+            category_view_model['category_id'] = category.id
+            category_view_model['name'] = category.name
             if category.id in user_categories:
-                cat['user_selected'] = True
+                category_view_model['user_selected'] = True
             else:
-                cat['user_selected'] = False
-            result.append(cat)
+                category_view_model['user_selected'] = False
+            result.append(category_view_model)
         return result
 
     def get_user_active_tasks(self, telegram_id, shown_task):
-        stmt = select(Task, Category.name). \
-            where(Users_Categories.telegram_id == telegram_id). \
-            where(Task.archive == False).where(~Task.id.in_(shown_task)). \
-            join(Users_Categories, Users_Categories.category_id == Task.category_id). \
-            join(Category, Category.id == Users_Categories.category_id)
-
-        result = db_session.execute(stmt)
+        users_categories_telegram_ids = db_session.query(Users_Categories.telegram_id).all()
+        telegram_ids = [telegram_id[0] for telegram_id in users_categories_telegram_ids]
+        if telegram_id in telegram_ids:
+            db_query = select(Task, Category.name). \
+                where(Users_Categories.telegram_id == telegram_id). \
+                where(Task.archive == False).where(~Task.id.in_(shown_task)). \
+                join(Users_Categories, Users_Categories.category_id == Task.category_id). \
+                join(Category, Category.id == Users_Categories.category_id)
+        else:
+            db_query = select(Task, Category.name). \
+                where(Task.archive == False).where(~Task.id.in_(shown_task)). \
+                join(Category, Category.id == Task.category_id)
+        result = db_session.execute(db_query)
         return [[task, category_name] for task, category_name in result]
+
 
     def change_subscription(self, telegram_id):
         """

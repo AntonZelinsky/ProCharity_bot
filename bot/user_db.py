@@ -45,6 +45,10 @@ class UserDB:
                 db_session.commit()
                 return user
 
+        if user.banned == True:
+            user.banned = False
+            record_updated = True
+
         if user.username != username:
             user.username = username
             record_updated = True

@@ -15,9 +15,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-
-      - name: Update repo and restart bot
+      - name: Update repo
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST_DEV }}
@@ -26,7 +24,7 @@ jobs:
           script: |
             cd /code
             git checkout develop
-            git pull
+            git pull https://github.com/kr0t/ProCharrity_bot.git
 
   deploy_master:
     if: ${{ github.ref == 'master' }}

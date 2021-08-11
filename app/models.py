@@ -7,7 +7,7 @@ from sqlalchemy import (Column,
                         Date,
                         text,
                         )
-
+from sqlalchemy.sql import expression
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -58,7 +58,7 @@ class User(Base):
     has_mailing = Column(Boolean, default=True)
     date_registration = Column(DateTime, server_default=text('now()'), nullable=False)
     external_signup_date = Column(DateTime, nullable=True)
-    banned = Column(Boolean, default=False, nullable=False)
+    banned = Column(Boolean, server_default=expression.false(), nullable=False)
 
     def __repr__(self):
         return f'<User {self.telegram_id}>'

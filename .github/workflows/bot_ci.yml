@@ -4,14 +4,32 @@ on:
   pull_request:
     branches:
       - develop
-#      - master
+      - master
     types: [closed]
 
   workflow_dispatch:
 
 jobs:
-  deploy:
+  deploy_develop:
     if: ${{ github.ref == 'develop' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Update repo and restart bot
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST_DEV }}
+          username: ${{ secrets.USER_DEV }}
+          key: ${{ secrets.SSH_KEY_DEV }}
+          script: |
+            cd /ProCharrity_bot/
+            source venv/bin/activate
+            git pull
+
+  deploy_master:
+    if: ${{ github.ref == 'master' }}
     runs-on: ubuntu-latest
 
     steps:

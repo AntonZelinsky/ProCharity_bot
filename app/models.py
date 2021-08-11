@@ -58,6 +58,7 @@ class User(Base):
     has_mailing = Column(Boolean, default=True)
     date_registration = Column(DateTime, server_default=text('now()'), nullable=False)
     external_signup_date = Column(DateTime, nullable=True)
+    banned = Column(Boolean, default=False)
 
     def __repr__(self):
         return f'<User {self.telegram_id}>'

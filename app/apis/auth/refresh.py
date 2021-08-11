@@ -5,6 +5,7 @@ from flask_apispec.views import MethodResource
 from flask_jwt_extended import (create_access_token, create_refresh_token,
                                 get_jwt_identity, jwt_required)
 from flask_restful import Resource
+from app.logger import app_logger as logger
 
 
 class Refresh(MethodResource, Resource):
@@ -19,4 +20,5 @@ class Refresh(MethodResource, Resource):
         identity = get_jwt_identity()
         access_token = create_access_token(identity=identity, fresh=False)
         refresh_token = create_refresh_token(identity=identity)
+        logger.info(f'Token refresh: The token for the user {identity} has been successfully updated')
         return make_response(jsonify(access_token=access_token, refresh_token=refresh_token), 200)

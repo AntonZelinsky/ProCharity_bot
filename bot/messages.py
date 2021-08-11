@@ -4,7 +4,8 @@ from telegram.error import Unauthorized
 from app import config
 from app.database import db_session
 from app.models import User
-from bot.charity_bot import updater, logger
+from bot.charity_bot import updater
+from app.logger import bot_logger as logger
 
 bot = Bot(config.TELEGRAM_TOKEN)
 

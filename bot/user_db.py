@@ -1,9 +1,12 @@
+from sqlalchemy.exc import SQLAlchemyError
+
 from app.models import ReasonCanceling, User, Category, Task, Users_Categories, ExternalSiteUser
 from app.database import db_session
 from datetime import datetime
 from sqlalchemy.orm import load_only
 from sqlalchemy import select
 from email_validator import validate_email, EmailNotValidError
+from app.logger import bot_logger as logger
 
 
 class UserDB:
@@ -33,7 +36,7 @@ class UserDB:
                 user.external_id = external_user.external_id
                 user.email = external_user.email
                 user.external_signup_date = external_user.created_date
-                
+
                 if external_user.specializations:
                     external_user_specializations = [int(x) for x in external_user.specializations.split(',')]
                     specializations = Category.query.filter(Category.id.in_(external_user_specializations)).all()
@@ -42,7 +45,10 @@ class UserDB:
                         user.categories.append(specialization)
 
                 db_session.delete(external_user)
-                db_session.commit()
+                try:
+                    db_session.commit()
+                except SQLAlchemyError as ex:
+                    logger.error(f"User DB - 'add_user' method: {str(ex)}")
                 return user
 
         if user.username != username:
@@ -59,9 +65,11 @@ class UserDB:
                 record_updated = True
 
         if record_updated:
-            db_session.commit()
+            try:
+                db_session.commit()
+            except SQLAlchemyError as ex:
+                logger.error(f"User DB - 'add_user' method: {str(ex)}")
         return user
-
 
     def check_user_category(telegram_id):
         user_categories = User.query.get(telegram_id).categories
@@ -90,7 +98,6 @@ class UserDB:
             result.append(category_view_model)
         return result
 
-
     def get_user_active_tasks(self, telegram_id, shown_task):
         users_categories_telegram_ids = db_session.query(Users_Categories.telegram_id).all()
         telegram_ids = [telegram_id[0] for telegram_id in users_categories_telegram_ids]
@@ -106,8 +113,8 @@ class UserDB:
                 join(Category, Category.id == Task.category_id)
         result = db_session.execute(db_query)
         return [[task, category_name] for task, category_name in result]
-    
-    
+
+
     def change_subscription(self, telegram_id):
         """
         Update subscription status of user.
@@ -120,10 +127,12 @@ class UserDB:
             user.has_mailing = False
         else:
             user.has_mailing = True
-        db_session.commit()
+        try:
+            db_session.commit()
+        except SQLAlchemyError as ex:
+            logger.error(f"User DB - 'change_subscription' method: {str(ex)}")
 
         return user.has_mailing
-
 
     def change_user_category(self, telegram_id, category_id):
         user = User.query.filter_by(telegram_id=telegram_id).first()
@@ -135,8 +144,10 @@ class UserDB:
         else:
             user.categories.append(category)
             db_session.add(user)
-        db_session.commit()
-
+        try:
+            db_session.commit()
+        except SQLAlchemyError as ex:
+            logger.error(f"User DB - 'change_user_category' method: {str(ex)}")
 
     def cancel_feedback_stat(self, telegram_id, reason_canceling):
         reason = ReasonCanceling(
@@ -145,12 +156,13 @@ class UserDB:
             added_date=datetime.now()
         )
         db_session.add(reason)
-        return db_session.commit()
-
+        try:
+            return db_session.commit()
+        except SQLAlchemyError as ex:
+            logger.error(f"User DB - 'cancel_feedback_stat' method: {str(ex)}")
 
     def get_user(self, telegram_id):
         return User.query.get(telegram_id)
-
 
     def set_user_email(self, telegram_id, email):
         user = User.query.filter_by(telegram_id=telegram_id).first()
@@ -159,5 +171,6 @@ class UserDB:
             user.email = email
             db_session.commit()
             return True
-        except EmailNotValidError:
+        except EmailNotValidError as ex:
+            logger.error(f"User DB - 'set_user_email' method: {str(ex)}")
             return False

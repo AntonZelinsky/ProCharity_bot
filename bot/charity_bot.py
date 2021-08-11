@@ -1,4 +1,3 @@
-import logging
 import os
 
 from dotenv import load_dotenv
@@ -23,14 +22,11 @@ from bot.handlers.feedback_handler import feedback_conv
 from bot.handlers.subscription_handler import subscription_conv
 from bot.decorators.logger import log_command
 from bot.user_db import UserDB
+from app.logger import bot_logger
 
 load_dotenv()
 
-logger = logging.getLogger(__name__)
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.DEBUG
-)
+logger = bot_logger
 
 bot_persistence = PicklePersistence(filename=BOT_PERSISTENCE_FILE,
                                     store_bot_data=True,

@@ -26,6 +26,7 @@ jobs:
           script: |
             cd /ProCharrity_bot/
             source venv/bin/activate
+            git checkout develop
             git pull
 
   deploy_master:

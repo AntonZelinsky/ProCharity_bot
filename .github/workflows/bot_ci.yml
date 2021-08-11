@@ -25,7 +25,6 @@ jobs:
           key: ${{ secrets.SSH_KEY_DEV }}
           script: |
             cd /code
-#            source venv/bin/activate
             git checkout develop
             git pull
 

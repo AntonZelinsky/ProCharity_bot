@@ -51,6 +51,10 @@ class UserDB:
                     logger.error(f"User DB - 'add_user' method: {str(ex)}")
                 return user
 
+        if user.banned == True:
+            user.banned = False
+            record_updated = True
+
         if user.username != username:
             user.username = username
             record_updated = True

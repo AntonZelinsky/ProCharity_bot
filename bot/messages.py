@@ -79,6 +79,7 @@ class TelegramNotification:
                 logger.error(f'{str(ex.message)}, telegram_id: {user.telegram_id}')
             except Unauthorized as ex:
                 logger.error(f'{str(ex.message)}: {user.telegram_id}')
+                User.query.filter_by(telegram_id=user.telegram_id).update({'banned': True})
                 User.query.filter_by(telegram_id=user.telegram_id).update({'has_mailing': False})
                 db_session.commit()
 

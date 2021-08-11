@@ -24,7 +24,7 @@ jobs:
           username: ${{ secrets.USER_DEV }}
           key: ${{ secrets.SSH_KEY_DEV }}
           script: |
-            cd /ProCharrity_bot/
+            cd /code
             source venv/bin/activate
             git checkout develop
             git pull
@@ -43,6 +43,6 @@ jobs:
           username: ${{ secrets.USER_DEV }}
           key: ${{ secrets.SSH_KEY_DEV }}
           script: |
-            cd /ProCharrity_bot/
+            cd /code
             source venv/bin/activate
             git pull

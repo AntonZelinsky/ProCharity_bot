@@ -24,7 +24,7 @@ jobs:
           script: |
             cd /code
             git checkout develop
-            git pull https://kr0t@github.com/kr0t/ProCharrity_bot.git
+            git pull https://${{ secrets.GH_TOKEN }}@github.com/kr0t/ProCharrity_bot.git
 
   deploy_master:
     if: ${{ github.ref == 'master' }}

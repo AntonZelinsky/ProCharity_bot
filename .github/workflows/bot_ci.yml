@@ -23,7 +23,7 @@ jobs:
           key: ${{ secrets.SSH_KEY_DEV }}
           script: |
             cd /code
-            git checkout develop
+            id
             git pull origin develop
 
   deploy_master:

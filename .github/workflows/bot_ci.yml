@@ -22,8 +22,9 @@ jobs:
           username: ${{ secrets.USER_DEV }}
           key: ${{ secrets.SSH_KEY_DEV }}
           script: |
-            cd ~/code
-            git pull origin develop
+            cd /code
+            ls -l
+            git pull origin develop > ~/git_log.txt
 
   deploy_master:
     if: ${{ github.ref == 'master' }}

@@ -23,8 +23,8 @@ jobs:
           key: ${{ secrets.SSH_KEY_DEV }}
           script: |
             cd /code
-            git checkout develop
-            git pull https://kr0t@github.com/kr0t/ProCharrity_bot.git
+            id
+            git pull origin develop
 
   deploy_master:
     if: ${{ github.ref == 'master' }}

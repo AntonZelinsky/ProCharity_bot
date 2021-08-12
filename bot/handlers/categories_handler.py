@@ -6,8 +6,7 @@ from telegram import (Update,
                       ParseMode)
 from telegram.ext import (CallbackContext,
                           ConversationHandler,
-                          CallbackQueryHandler,
-                          CommandHandler)
+                          CallbackQueryHandler)
 
 from telegram import InlineKeyboardButton
 
@@ -92,7 +91,6 @@ def change_user_categories(update: Update, context: CallbackContext):
 def choose_category(update: Update, context: CallbackContext, save_prev_msg: bool = False):
     """The main function is to select categories for subscribing to them."""
     categories = user_db.get_categories(update.effective_user.id)
-
     buttons = []
     for category in categories:
         if category['user_selected']:
@@ -101,12 +99,15 @@ def choose_category(update: Update, context: CallbackContext, save_prev_msg: boo
                                              )])
     selected_categories_list = [category for category in categories if category['user_selected']]
     if selected_categories_list == []:
-         buttons += [
+        context.user_data[states.SUBSCRIPTION_FLAG] = user_db.set_user_unsubscribed(update.effective_user.id)
+        buttons += [
             [
                 InlineKeyboardButton(text='Нет моих компетенций 😕',
                                      callback_data=command_constants.COMMAND__NO_RELEVANT)
             ]]
     else:
+        if len(selected_categories_list) == 1:
+            context.user_data[states.SUBSCRIPTION_FLAG] = user_db.set_user_subscribed(update.effective_user.id)
         buttons += [
             [
                 InlineKeyboardButton(text='Нет моих компетенций 😕',
@@ -264,7 +265,9 @@ categories_conv = ConversationHandler(
         CallbackQueryHandler(before_confirm_specializations,
                              pattern=command_constants.COMMAND__GREETING_REGISTERED_USER),
         CallbackQueryHandler(choose_category, pattern=command_constants.COMMAND__CHANGE_CATEGORY),
-        open_tasks_handler,
+        CallbackQueryHandler(after_category_choose, pattern=command_constants.COMMAND__READY),
+        CallbackQueryHandler(no_relevant_category, pattern=command_constants.COMMAND__NO_RELEVANT),
+        open_tasks_handler
     ],
     states={
         states.GREETING: [

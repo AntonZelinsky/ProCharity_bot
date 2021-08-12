@@ -6,6 +6,7 @@ from flask_apispec.views import MethodResource
 from flask_jwt_extended import jwt_required
 from flask_restful import Resource
 from sqlalchemy.sql import func
+from sqlalchemy.sql.sqltypes import Boolean
 
 from app.models import ReasonCanceling, Statistics, User
 from app.database import db_session
@@ -43,15 +44,20 @@ DATE_BEGIN = TODAY - timedelta(days=30)
 
 def get_number_users_statistic():
     users = db_session.query(User.has_mailing).all()
-    number_users = len(users)
-    number_subscribed_users = len([user for user in users if user['has_mailing']])
-    number_not_subscribed_users = number_users - number_subscribed_users
+    number_users = len(users)   
     banned_users = len(db_session.query(User.banned).filter(User.banned == True).all())
     return {
-        'number_subscribed_users': number_subscribed_users,
-        'number_not_subscribed_users': number_not_subscribed_users,
+        'all_users': number_users,
+        'subscribed_users': get_not_banned_users(True),
+        'not_subscribed_users': get_not_banned_users(False),
         'banned_users': banned_users,
     }
+
+
+def get_not_banned_users(flag: Boolean):
+    result = db_session.query(User).filter(User.banned == False) \
+             .filter(User.has_mailing == flag).all()
+    return len(result)
 
 
 def get_statistics(column_name: Column) -> list:

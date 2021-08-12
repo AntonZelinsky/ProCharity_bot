@@ -22,8 +22,7 @@ jobs:
           username: ${{ secrets.USER_DEV }}
           key: ${{ secrets.SSH_KEY_DEV }}
           script: |
-            cd /code
-            id
+            cd ~/code
             git pull origin develop
 
   deploy_master:

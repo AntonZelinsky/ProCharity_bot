@@ -19,11 +19,6 @@ class Analytics(MethodResource, Resource):
          tags=['Analytics'])
     @jwt_required()
     def get(self):
-        users = db_session.query(User.has_mailing).all()
-        number_users = len(users)
-        number_subscribed_users = len([user for user in users if user['has_mailing']])
-        number_not_subscribed_users = number_users - number_subscribed_users
-
         reasons_canceling_from_db = get_statistics(ReasonCanceling.reason_canceling)
         reasons_canceling = {
             constants.REASONS.get(key, 'Другое'):
@@ -31,8 +26,7 @@ class Analytics(MethodResource, Resource):
         }
         return make_response(jsonify(added_users=get_statistics_by_days(User.date_registration),
                                      added_external_users=get_statistics_by_days(User.external_signup_date),
-                                     number_subscribed_users=number_subscribed_users,
-                                     number_not_subscribed_users=number_not_subscribed_users,
+                                     number_users = get_number_users_statistic(),
                                      command_stats=dict(get_statistics(Statistics.command)),
                                      reasons_canceling=reasons_canceling,
                                      users_unsubscribed=get_statistics_by_days(ReasonCanceling.added_date),
@@ -45,6 +39,19 @@ class Analytics(MethodResource, Resource):
 
 TODAY = datetime.now().date()
 DATE_BEGIN = TODAY - timedelta(days=30)
+
+
+def get_number_users_statistic():
+    users = db_session.query(User.has_mailing).all()
+    number_users = len(users)
+    number_subscribed_users = len([user for user in users if user['has_mailing']])
+    number_not_subscribed_users = number_users - number_subscribed_users
+    banned_users = len(db_session.query(User.banned).filter(User.banned == True).all())
+    return {
+        'number_subscribed_users': number_subscribed_users,
+        'number_not_subscribed_users': number_not_subscribed_users,
+        'banned_users': banned_users,
+    }
 
 
 def get_statistics(column_name: Column) -> list:

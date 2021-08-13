@@ -178,3 +178,21 @@ class UserDB:
         except EmailNotValidError as ex:
             logger.error(f"User DB - 'set_user_email' method: {str(ex)}")
             return False
+    
+    def set_user_unsubscribed(self, telegram_id):
+        user = User.query.options(load_only('has_mailing')).filter_by(telegram_id=telegram_id).first()
+        try:
+            user.has_mailing = False
+            db_session.commit()
+        except SQLAlchemyError as ex:
+            logger.error(f"User DB - 'set_user_unsubscribed' method: {str(ex)}")
+        return user.has_mailing
+
+    def set_user_subscribed(self, telegram_id):
+        user = User.query.options(load_only('has_mailing')).filter_by(telegram_id=telegram_id).first()
+        try:
+            user.has_mailing = True
+            db_session.commit()
+        except SQLAlchemyError as ex:
+            logger.error(f"User DB - 'set_user_subscribed' method: {str(ex)}")
+        return user.has_mailing

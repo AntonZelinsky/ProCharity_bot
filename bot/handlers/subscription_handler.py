@@ -3,7 +3,6 @@ from telegram import (Update,
                       InlineKeyboardButton,
                       ParseMode)
 from telegram.ext import (CallbackContext,
-                          CommandHandler,
                           ConversationHandler,
                           CallbackQueryHandler,)
 
@@ -14,7 +13,7 @@ from bot.constants import command_constants
 from bot.constants import states
 from bot.decorators.logger import log_command
 from bot.user_db import UserDB
-
+from bot.handlers import categories_handler
 
 user_db = UserDB()
 
@@ -26,14 +25,17 @@ def start_task_subscription(update: Update, context: CallbackContext):
         category['name'] for category in user_db.get_categories(update.effective_user.id)
         if category['user_selected']
     ]
+    if user_categories == []:
+        # TODO Fix this method. Now it returns states.MENU (and work), but should return states.CATEGORY
+        categories_handler.choose_category_after_start(update, context)
+    else:
+        answer = f'Отлично! Теперь я буду присылать тебе уведомления о ' \
+                 f'новых заданиях в ' \
+                 f'категориях: *{", ".join(user_categories)}*.\n\n' \
+                 f'А пока можешь посмотреть открытые задания.'
 
-    answer = f'Отлично! Теперь я буду присылать тебе уведомления о ' \
-             f'новых заданиях в ' \
-             f'категориях: *{", ".join(user_categories)}*.\n\n' \
-             f'А пока можешь посмотреть открытые задания.'
-
-    update.callback_query.edit_message_text(text=answer, parse_mode=ParseMode.MARKDOWN,
-                                            reply_markup=common_comands.get_menu_and_tasks_buttons())
+        update.callback_query.edit_message_text(text=answer, parse_mode=ParseMode.MARKDOWN,
+                                                reply_markup=common_comands.get_menu_and_tasks_buttons())
 
     return states.MENU
 
@@ -66,7 +68,7 @@ def cancel_feedback(update: Update, context: CallbackContext):
     reason_canceling = update['callback_query']['data']
     telegram_id = update['callback_query']['message']['chat']['id']
     user_db.cancel_feedback_stat(telegram_id, reason_canceling)
-    
+ 
     update.callback_query.edit_message_text(
         text='Спасибо, я передал информацию команде ProCharity!',
         reply_markup=keyboard
@@ -77,17 +79,17 @@ def cancel_feedback(update: Update, context: CallbackContext):
 subscription_conv = ConversationHandler(
     entry_points=[
          CallbackQueryHandler(start_task_subscription, pattern=command_constants.COMMAND__START_SUBSCRIPTION),
-         CallbackQueryHandler(stop_task_subscription, pattern=command_constants.COMMAND__STOP_SUBSCRIPTION),        
+         CallbackQueryHandler(stop_task_subscription, pattern=command_constants.COMMAND__STOP_SUBSCRIPTION),       
     ],
     states={
-       states.CANCEL_FEEDBACK: [
+        states.CANCEL_FEEDBACK: [
                 CallbackQueryHandler(cancel_feedback, pattern=command_constants.CANCEL_FEEDBACK__MANY_NOTIFICATION),
                 CallbackQueryHandler(cancel_feedback, pattern=command_constants.CANCEL_FEEDBACK__NO_TIME),
                 CallbackQueryHandler(cancel_feedback, pattern=command_constants.CANCEL_FEEDBACK__NO_RELEVANT_TASK),
                 CallbackQueryHandler(cancel_feedback, pattern=command_constants.CANCEL_FEEDBACK__BOT_IS_BAD),
                 CallbackQueryHandler(cancel_feedback, pattern=command_constants.CANCEL_FEEDBACK__FOND_IGNORE),
                 CallbackQueryHandler(cancel_feedback, pattern=command_constants.CANCEL_FEEDBACK__ANOTHER)
-            ]
+            ],
     },
     fallbacks=[
         common_comands.start_command_handler,

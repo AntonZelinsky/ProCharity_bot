@@ -26,6 +26,7 @@ def start_task_subscription(update: Update, context: CallbackContext):
         if category['user_selected']
     ]
     if user_categories == []:
+        # TODO Fix this method. Now it returns states.MENU (and work), but should return states.CATEGORY
         categories_handler.choose_category_after_start(update, context)
     else:
         answer = f'Отлично! Теперь я буду присылать тебе уведомления о ' \

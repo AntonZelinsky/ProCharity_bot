@@ -23,7 +23,7 @@ jobs:
           key: ${{ secrets.SSH_KEY_DEV }}
           script: |
             cd /code
-            ls -l
+            git checkout develop
             git pull
 
   deploy_master:
@@ -39,5 +39,5 @@ jobs:
           key: ${{ secrets.SSH_KEY_DEV }}
           script: |
             cd /code
-            ls -l
+            git checkout master
             git pull

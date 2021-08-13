@@ -43,11 +43,12 @@ DATE_BEGIN = TODAY - timedelta(days=30)
 
 
 def get_number_users_statistic():
-    users = [(user.has_mailing, user.banned)  for user in User.query.all()]
+    users = db_session.query(User.has_mailing, User.banned).all()
     number_users = len(users)
-    subscribed_users = len([user for user in users if user[0] == True and user[1] == False])
-    not_subscribed_users = len([user for user in users if user[0] == False and user[1] == False])
-    banned_users = len([user for user in users if user[1] == True])
+    # user[0] - has_mailing, user[1] - banned
+    subscribed_users = len([user for user in users if user[0] and not user[1]])
+    not_subscribed_users = len([user for user in users if not user[0] and not user[1]])
+    banned_users = len([user for user in users if user[1]])
     return {
         'all_users': number_users,
         'subscribed_users': subscribed_users,

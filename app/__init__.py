@@ -25,4 +25,4 @@ docs = FlaskApiSpec(app)
 
 from . import api, routers, swagger
 from bot import charity_bot
-# charity_bot.init()
+charity_bot.init()

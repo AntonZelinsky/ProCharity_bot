@@ -6,7 +6,6 @@ from flask_apispec.views import MethodResource
 from flask_jwt_extended import jwt_required
 from flask_restful import Resource
 from sqlalchemy.sql import func
-from sqlalchemy.sql.sqltypes import Boolean
 
 from app.models import ReasonCanceling, Statistics, User
 from app.database import db_session

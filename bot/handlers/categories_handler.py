@@ -100,6 +100,7 @@ def choose_category(update: Update, context: CallbackContext, save_prev_msg: boo
     selected_categories_list = [category for category in categories if category['user_selected']]
     if selected_categories_list == []:
         context.user_data[states.SUBSCRIPTION_FLAG] = user_db.set_user_unsubscribed(update.effective_user.id)
+        context.user_data[states.CATEGORIES_SELECTED] = user_db.check_user_category(update.effective_user.id)
         buttons += [
             [
                 InlineKeyboardButton(text='Нет моих компетенций 😕',
@@ -108,6 +109,7 @@ def choose_category(update: Update, context: CallbackContext, save_prev_msg: boo
     else:
         if len(selected_categories_list) == 1:
             context.user_data[states.SUBSCRIPTION_FLAG] = user_db.set_user_subscribed(update.effective_user.id)
+            context.user_data[states.CATEGORIES_SELECTED] = user_db.check_user_category(update.effective_user.id)
         buttons += [
             [
                 InlineKeyboardButton(text='Нет моих компетенций 😕',
@@ -265,8 +267,6 @@ categories_conv = ConversationHandler(
         CallbackQueryHandler(before_confirm_specializations,
                              pattern=command_constants.COMMAND__GREETING_REGISTERED_USER),
         CallbackQueryHandler(choose_category, pattern=command_constants.COMMAND__CHANGE_CATEGORY),
-        CallbackQueryHandler(after_category_choose, pattern=command_constants.COMMAND__READY),
-        CallbackQueryHandler(no_relevant_category, pattern=command_constants.COMMAND__NO_RELEVANT),
         open_tasks_handler
     ],
     states={

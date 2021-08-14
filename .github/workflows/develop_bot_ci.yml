@@ -1,4 +1,4 @@
-name: CI Procharity Bot
+name: Develop Branch Procharity Bot
 
 on:
   pull_request:

@@ -35,9 +35,9 @@ jobs:
       - name: Update repo
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.HOST_DEV }}
-          username: ${{ secrets.USER_DEV }}
-          key: ${{ secrets.SSH_KEY_DEV }}
+          host: ${{ secrets.HOST_PROD }}
+          username: ${{ secrets.USER_PROD }}
+          key: ${{ secrets.SSH_KEY_PROD }}
           script: |
             cd /code
             git checkout master

@@ -25,7 +25,7 @@ jobs:
             cd /code
             git checkout develop
             git pull
-            sudo systemctl restart procharitybot.service
+            sudo systemctl status procharritybot.service
 
   deploy_master:
     if: ${{ github.ref == 'master' }}
@@ -42,4 +42,4 @@ jobs:
             cd /code
             git checkout master
             git pull
-            sudo systemctl restart procharitybot.service
+            sudo systemctl status procharritybot.service

@@ -24,4 +24,4 @@ jobs:
             cd /code
             git checkout master
             git pull
-            sudo systemctl status procharitybot.service
+            sudo systemctl restart procharitybot.service

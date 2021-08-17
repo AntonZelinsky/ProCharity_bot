@@ -24,5 +24,5 @@ app.config.update(**config.APISPEC_SPEC)
 docs = FlaskApiSpec(app)
 
 from . import api, routers, swagger
-from bot import charity_bot 
+from bot import charity_bot
 charity_bot.init()

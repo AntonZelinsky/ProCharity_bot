@@ -13,7 +13,6 @@ from bot.constants import command_constants
 from bot.constants import states
 from bot.decorators.logger import log_command
 from bot.user_db import UserDB
-from bot.handlers import categories_handler
 
 user_db = UserDB()
 
@@ -25,16 +24,12 @@ def start_task_subscription(update: Update, context: CallbackContext):
         category['name'] for category in user_db.get_categories(update.effective_user.id)
         if category['user_selected']
     ]
-    if user_categories == []:
-        # TODO Fix this method. Now it returns states.MENU (and work), but should return states.CATEGORY
-        categories_handler.choose_category_after_start(update, context)
-    else:
-        answer = f'Отлично! Теперь я буду присылать тебе уведомления о ' \
+    answer = f'Отлично! Теперь я буду присылать тебе уведомления о ' \
                  f'новых заданиях в ' \
                  f'категориях: *{", ".join(user_categories)}*.\n\n' \
                  f'А пока можешь посмотреть открытые задания.'
 
-        update.callback_query.edit_message_text(text=answer, parse_mode=ParseMode.MARKDOWN,
+    update.callback_query.edit_message_text(text=answer, parse_mode=ParseMode.MARKDOWN,
                                                 reply_markup=common_comands.get_menu_and_tasks_buttons())
 
     return states.MENU
@@ -48,7 +43,6 @@ def stop_task_subscription(update: Update, context: CallbackContext):
             InlineKeyboardButton(text=reason[1], callback_data=reason[0])
         ] for reason in constants.REASONS.items()
     ]
-
     cancel_feedback_keyboard = InlineKeyboardMarkup(cancel_feedback_buttons)
 
     answer = ('Ты больше не будешь получать новые задания от фондов, но '

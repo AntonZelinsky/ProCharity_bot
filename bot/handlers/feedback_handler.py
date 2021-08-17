@@ -1,6 +1,6 @@
 from telegram import (Update,
                       InlineKeyboardMarkup,
-                      InlineKeyboardButton)
+                      InlineKeyboardButton, replymarkup)
 from telegram.ext import (CommandHandler,
                           ConversationHandler,
                           CallbackContext,
@@ -82,6 +82,7 @@ def add_new_feature(update: Update, context: CallbackContext):
     user_data[FEEDBACK_TYPE] = FEATURE_TYPE
 
     return states.TYPING
+
 
 @send_typing_action
 @log_command(command=constants.LOG_COMMANDS_NAME['save_user_input'])
@@ -179,7 +180,11 @@ def after_get_feedback(update: Update, context: CallbackContext):
     text = f'Спасибо, я передал информацию команде ProCharity! Ответ придет на почту {user.email}'
     context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text=text,
+        text=text
+    )
+    context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text='Меню',
         reply_markup=keyboard
     )
     return states.MENU
@@ -200,7 +205,7 @@ feedback_conv = ConversationHandler(
             common_comands.open_menu_handler,
             CallbackQueryHandler(no_wait_answer, pattern=command_constants.COMMAND__NO_WAIT),
             MessageHandler(Filters.text & ~Filters.command, save_email)
-        ]
+        ],
     },
     fallbacks=[
         common_comands.start_command_handler,

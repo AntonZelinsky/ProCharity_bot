@@ -75,7 +75,7 @@ class UserDB:
                 logger.error(f"User DB - 'add_user' method: {str(ex)}")
         return user
 
-    def check_user_category(telegram_id):
+    def check_user_category(self, telegram_id):
         user_categories = User.query.get(telegram_id).categories
         if not user_categories:
             return False

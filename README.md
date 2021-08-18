@@ -2,33 +2,42 @@
 ![example workflow](https://github.com/kr0t/ProCharrity_bot/actions/workflows/master_bot_ci.yml/badge.svg)
 
 
-## Первоначальная подготовка проекта
+## Подготовка проекта
 
-### Необходимо создать виртуальное окружение и установить все зависимости:
-- python -m venv venv
-- source venv/bin/activate
-- pip install -r requirements.txt
-
-### Создать файл .env и указать в нем
-- Используемую базу. Тестовая:
-  
-`DATABASE_URL=sqlite:///db.db`
-
-- токен бота:
-`TOKEN=<TOKEN_BOT>`
-
+### Необходимо создать виртуальное окружение
+```
+python -m venv venv
+```
+### И активировать его
+```
+source venv/bin/activate
+```
+### Установить все зависимости
+```
+pip install -r requirements.txt
+```
+### Создать файл .env и указать в нем используемую базу данных и токен бота
+```
+DATABASE_URL=sqlite:///db.db
+TOKEN=<ваш токен>
+```
 ### Создать базу и применить миграции:
-- alembic upgrade head
-### Создание новой миграции в случае изменения базы:
+```
+alembic upgrade head
+```
+### В случае изменения базы создать миграции:
 ```
 alembic revision --autogenerate -m "<описание миграции>"
 ```
-
+### Запустить проект
+```
+flask run
+```
 ### Документация API:
-- <http://127.0.0.1:5000/api/doc/swagger-ui/>
+<http://127.0.0.1:5000/api/doc/swagger-ui/>
 
 ### Формат POST запроса для добавления категорий:
--<http://127.0.0.1:5000/api/webhook/categories/>
+<http://127.0.0.1:5000/api/webhook/categories/>
 ```json
 [
    {
@@ -42,7 +51,7 @@ alembic revision --autogenerate -m "<описание миграции>"
 ]
 ```
 ### Формат POST запроса для добавления заданий:
--<http://127.0.0.1:5000/api/webhook/tasks/>
+<http://127.0.0.1:5000/api/webhook/tasks/>
 
 ```json
 [

@@ -10,7 +10,6 @@ on:
 
 jobs:
   deploy_develop:
-    if: ${{ github.ref == 'develop' }}
     runs-on: ubuntu-latest
 
     steps:

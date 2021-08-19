@@ -2,8 +2,8 @@
 ![example workflow](https://github.com/kr0t/ProCharrity_bot/actions/workflows/master_bot_ci.yml/badge.svg)
 
 ## ProCharitybot - чат-бот для рассылки заданий волонтером с сайта [procharity.ru](https://procharity.ru/) <br> [Cхема](https://miro.com/app/board/o9J_leJfeFc=/) работы бота.
-## Подготовка проекта
 
+## Подготовка проекта
 ### Создать и активировать виртуальное окружение, установить зависимости:
 ```
 python -m venv venv
@@ -12,7 +12,7 @@ source venv/bin/activate
 
 pip install -r requirements.txt
 ```
-### Создать файл .env и указать в нем используемую базу данных и токен бота:
+### Переименовать файл .env.dev в .env и указать в нем недостающую информацию (используемую базу данных и токен бота):
 ```
 DATABASE_URL=postgres://{user}:{password}@{hostname}:{port}/{database-name}
 TOKEN=<ваш токен>
@@ -76,14 +76,3 @@ flask run
       "description":""
    }
 ]
-```
-### Формат POST запроса для авторизации в боте через сайт Procharity:
-<http://178.154.202.217/api/v1/auth/invitation/>
-
-```json
-{
-   "email": "musserg@rambler.ru"
-}
-```
-### GET запрос для получения аналитики
-<http://localhost:5000/api/v1/analytics/>

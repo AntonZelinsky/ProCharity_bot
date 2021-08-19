@@ -97,20 +97,7 @@ def choose_category(update: Update, context: CallbackContext, save_prev_msg: boo
             category['name'] += " ✅"
         buttons.append([InlineKeyboardButton(text=category['name'], callback_data=f'up_cat{category["category_id"]}'
                                              )])
-    selected_categories_list = [category for category in categories if category['user_selected']]
-    if selected_categories_list == []:
-        context.user_data[states.SUBSCRIPTION_FLAG] = user_db.set_user_unsubscribed(update.effective_user.id)
-        context.user_data[states.CATEGORIES_SELECTED] = user_db.check_user_category(update.effective_user.id)
-        buttons += [
-            [
-                InlineKeyboardButton(text='Нет моих компетенций 😕',
-                                     callback_data=command_constants.COMMAND__NO_RELEVANT)
-            ]]
-    else:
-        if len(selected_categories_list) == 1:
-            context.user_data[states.SUBSCRIPTION_FLAG] = user_db.set_user_subscribed(update.effective_user.id)
-            context.user_data[states.CATEGORIES_SELECTED] = user_db.check_user_category(update.effective_user.id)
-        buttons += [
+    buttons += [
             [
                 InlineKeyboardButton(text='Нет моих компетенций 😕',
                                      callback_data=command_constants.COMMAND__NO_RELEVANT)

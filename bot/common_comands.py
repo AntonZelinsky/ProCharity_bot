@@ -107,15 +107,9 @@ def get_subscription_button(context: CallbackContext):
             text='⏹ Остановить подписку на задания',
             callback_data=command_constants.COMMAND__STOP_SUBSCRIPTION
         )
-    elif not context.user_data[states.CATEGORIES_SELECTED]:
-        return InlineKeyboardButton(
-        text='▶️ Включить подписку на задания',
-        callback_data=command_constants.COMMAND__CHANGE_CATEGORY
-    )
-    else:
-        return InlineKeyboardButton(
-        text='▶️ Включить подписку на задания',
-        callback_data=command_constants.COMMAND__START_SUBSCRIPTION
+    return InlineKeyboardButton(
+    text='▶️ Включить подписку на задания',
+    callback_data=command_constants.COMMAND__START_SUBSCRIPTION
     )
 
 

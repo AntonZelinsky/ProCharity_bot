@@ -1,7 +1,7 @@
 ![example workflow](https://github.com/kr0t/ProCharrity_bot/actions/workflows/develop_bot_ci.yml/badge.svg)
 ![example workflow](https://github.com/kr0t/ProCharrity_bot/actions/workflows/master_bot_ci.yml/badge.svg)
 
-## [ProCharity_bot](https://github.com/AntonZelinsky/ProCharrity_bot/) - чат-бот для рассылки заданий волонтером с сайта [procharity.ru](https://procharity.ru/) <br> [Cхема](https://miro.com/app/board/o9J_leJfeFc=/) работы бота. [Бот](https://t.me/procharity_bot) в телеграм.
+## [ProCharity_bot](https://github.com/AntonZelinsky/ProCharrity_bot/) - чат-бот для рассылки заданий волонтером с сайта [procharity.ru](https://procharity.ru/) <br> [Cхема](https://miro.com/app/board/o9J_leJfeFc=/) работы бота. Ссылка на телеграм бот: [@procharity_bot](https://t.me/procharity_bot)
 
 ## Подготовка проекта
 ### Создать и активировать виртуальное окружение, установить зависимости:

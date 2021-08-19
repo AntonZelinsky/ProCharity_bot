@@ -1,35 +1,31 @@
 ![example workflow](https://github.com/kr0t/ProCharrity_bot/actions/workflows/develop_bot_ci.yml/badge.svg)
 ![example workflow](https://github.com/kr0t/ProCharrity_bot/actions/workflows/master_bot_ci.yml/badge.svg)
 
-
+## ProCharitybot - чат-бот для рассылки заданий волонтером с сайта [procharity.ru](https://procharity.ru/) <br> [Cхема](https://miro.com/app/board/o9J_leJfeFc=/) работы бота.
 ## Подготовка проекта
 
-### Необходимо создать виртуальное окружение
+### Создать и активировать виртуальное окружение, установить зависимости:
 ```
 python -m venv venv
-```
-### И активировать его
-```
+
 source venv/bin/activate
-```
-### Установить все зависимости
-```
+
 pip install -r requirements.txt
 ```
-### Создать файл .env и указать в нем используемую базу данных и токен бота
+### Создать файл .env и указать в нем используемую базу данных и токен бота:
 ```
-DATABASE_URL=sqlite:///db.db
+DATABASE_URL=postgres://{user}:{password}@{hostname}:{port}/{database-name}
 TOKEN=<ваш токен>
 ```
 ### Создать базу и применить миграции:
 ```
 alembic upgrade head
 ```
-### В случае изменения базы создать миграции:
+В случае изменения базы создать миграции:
 ```
 alembic revision --autogenerate -m "<описание миграции>"
 ```
-### Запустить проект
+### Запустить проект:
 ```
 flask run
 ```
@@ -81,3 +77,13 @@ flask run
    }
 ]
 ```
+### Формат POST запроса для авторизации в боте через сайт Procharity:
+<http://178.154.202.217/api/v1/auth/invitation/>
+
+```json
+{
+   "email": "musserg@rambler.ru"
+}
+```
+### GET запрос для получения аналитики
+<http://localhost:5000/api/v1/analytics/>

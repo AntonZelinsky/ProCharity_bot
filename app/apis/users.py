@@ -5,7 +5,8 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.logger import app_logger as logger
 from app.swagger_schemas import USERS_SCHEMA
 from app.models import User
-from app import config, api
+from app import config
+from app.app_init import api
 from app.database import db_session
 from flask_restful import Resource
 from flask_apispec.views import MethodResource

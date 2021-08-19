@@ -1,4 +1,4 @@
-from app import docs
+from app.app_init import docs
 from app.apis.users import UsersList, UserItem
 from app.apis.auth.refresh import Refresh
 from app.apis.auth.login import Login

@@ -1,34 +1,39 @@
 ![example workflow](https://github.com/kr0t/ProCharrity_bot/actions/workflows/develop_bot_ci.yml/badge.svg)
 ![example workflow](https://github.com/kr0t/ProCharrity_bot/actions/workflows/master_bot_ci.yml/badge.svg)
 
+## [ProCharity_bot](https://github.com/AntonZelinsky/ProCharrity_bot/) - чат-бот для рассылки заданий волонтером с сайта [procharity.ru](https://procharity.ru/) <br> [Cхема](https://miro.com/app/board/o9J_leJfeFc=/) работы бота. Ссылка на телеграм бот: [@procharity_bot](https://t.me/procharity_bot)
 
-## Первоначальная подготовка проекта
+## Подготовка проекта
+### Создать и активировать виртуальное окружение, установить зависимости:
+```
+python -m venv venv
 
-### Необходимо создать виртуальное окружение и установить все зависимости:
-- python -m venv venv
-- source venv/bin/activate
-- pip install -r requirements.txt
+source venv/bin/activate
 
-### Создать файл .env и указать в нем
-- Используемую базу. Тестовая:
-  
-`DATABASE_URL=sqlite:///db.db`
-
-- токен бота:
-`TOKEN=<TOKEN_BOT>`
-
+pip install -r requirements.txt
+```
+### Переименовать файл .env.dev в .env и указать в нем недостающую информацию (используемую базу данных и токен бота):
+```
+DATABASE_URL=postgres://{user}:{password}@{hostname}:{port}/{database-name}
+TOKEN=<ваш токен>
+```
 ### Создать базу и применить миграции:
-- alembic upgrade head
-### Создание новой миграции в случае изменения базы:
+```
+alembic upgrade head
+```
+В случае изменения базы создать миграции:
 ```
 alembic revision --autogenerate -m "<описание миграции>"
 ```
-
+### Запустить проект:
+```
+flask run
+```
 ### Документация API:
-- <http://127.0.0.1:5000/api/doc/swagger-ui/>
+<http://127.0.0.1:5000/api/doc/swagger-ui/>
 
 ### Формат POST запроса для добавления категорий:
--<http://127.0.0.1:5000/api/webhook/categories/>
+<http://127.0.0.1:5000/api/webhook/categories/>
 ```json
 [
    {
@@ -42,7 +47,7 @@ alembic revision --autogenerate -m "<описание миграции>"
 ]
 ```
 ### Формат POST запроса для добавления заданий:
--<http://127.0.0.1:5000/api/webhook/tasks/>
+<http://127.0.0.1:5000/api/webhook/tasks/>
 
 ```json
 [
@@ -71,4 +76,3 @@ alembic revision --autogenerate -m "<описание миграции>"
       "description":""
    }
 ]
-```

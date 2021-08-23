@@ -35,6 +35,3 @@ def create_app():
     charity_bot.init()
     
     return app
-
-
-app = create_app()

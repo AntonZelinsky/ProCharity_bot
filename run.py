@@ -1,7 +1,6 @@
-from app.app_init import app
-from bot import charity_bot
+from app import create_app
 
+app = create_app()
 
 if __name__ == "__main__":
-    charity_bot.init()
     app.run()

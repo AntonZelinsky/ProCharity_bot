@@ -5,7 +5,7 @@ from flask import render_template
 from flask_mail import Message
 
 from app import config
-from app.app_init import app, mail
+from app import app, mail
 from app.models import User
 from app.logger import bot_logger as logger
 

@@ -2,7 +2,7 @@ from datetime import datetime
 
 from sqlalchemy.exc import SQLAlchemyError
 
-from app.app_init import password_policy
+from app import password_policy
 from app.database import db_session
 from app.models import AdminRegistrationRequest, AdminUser
 from flask import jsonify, make_response

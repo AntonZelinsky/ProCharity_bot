@@ -1,4 +1,4 @@
-from app.app_init import api
+from app import api
 from app.apis.users import UsersList, UserItem
 from app.apis.categories import CreateCategories
 from app.apis.tasks import CreateTasks

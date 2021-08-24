@@ -31,7 +31,7 @@ def start_task_subscription(update: Update, context: CallbackContext):
 
     update.callback_query.edit_message_text(text=answer, parse_mode=ParseMode.MARKDOWN,
                                                 reply_markup=common_comands.get_menu_and_tasks_buttons())
-
+    update.callback_query.answer()
     return states.MENU
 
 
@@ -52,7 +52,7 @@ def stop_task_subscription(update: Update, context: CallbackContext):
     update.callback_query.edit_message_text(
         text=answer, reply_markup=cancel_feedback_keyboard, disable_web_page_preview=True
     )
-
+    update.callback_query.answer()
     return states.CANCEL_FEEDBACK
 
 
@@ -67,6 +67,7 @@ def cancel_feedback(update: Update, context: CallbackContext):
         text='Спасибо, я передал информацию команде ProCharity!',
         reply_markup=keyboard
     )
+    update.callback_query.answer()
     return states.MENU
 
 

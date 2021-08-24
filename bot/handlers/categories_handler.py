@@ -136,7 +136,7 @@ def choose_category(update: Update, context: CallbackContext, save_prev_msg: boo
             text=text,
             reply_markup=keyboard,
         )
-
+    update.callback_query.answer()
     return states.CATEGORY
 
 

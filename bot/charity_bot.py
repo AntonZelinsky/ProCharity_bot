@@ -55,7 +55,7 @@ def about(update: Update, context: CallbackContext):
         reply_markup=keyboard,
         parse_mode=ParseMode.HTML, disable_web_page_preview=True
     )
-
+    update.callback_query.answer()
     return states.MENU
 
 

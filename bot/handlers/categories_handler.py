@@ -71,6 +71,7 @@ def confirm_specializations(update: Update, context: CallbackContext):
         parse_mode=ParseMode.MARKDOWN,
         reply_markup=keyboard,
     )
+    update.callback_query.answer()
     return states.CATEGORY
 
 
@@ -160,7 +161,7 @@ def after_category_choose(update: Update, context: CallbackContext):
         text='А пока можешь посмотреть открытые задания.',
         reply_markup=common_comands.get_menu_and_tasks_buttons()
     )
-
+    update.callback_query.answer()
     return states.AFTER_CATEGORY_REPLY
 
 
@@ -255,7 +256,7 @@ def show_open_task(update: Update, context: CallbackContext):
             text='Есть ещё задания, показать?',
             reply_markup=keyboard
         )
-
+    update.callback_query.answer()
     return states.OPEN_TASKS
 
 

@@ -45,7 +45,7 @@ def ask_new_category(update: Update, context: CallbackContext):
     user_data[MSG_ID] = message.message_id
     user_data[MSG_TEXT] = message.text
     user_data[FEEDBACK_TYPE] = CATEGORY_TYPE
-
+    update.callback_query.answer()
     return states.TYPING
 
 
@@ -62,7 +62,7 @@ def ask_question(update: Update, context: CallbackContext):
     user_data[MSG_ID] = message.message_id
     user_data[MSG_TEXT] = message.text
     user_data[FEEDBACK_TYPE] = QUESTION_TYPE
-
+    update.callback_query.answer()
     return states.TYPING
 
 
@@ -80,7 +80,7 @@ def add_new_feature(update: Update, context: CallbackContext):
     user_data[MSG_ID] = message.message_id
     user_data[MSG_TEXT] = message.text
     user_data[FEEDBACK_TYPE] = FEATURE_TYPE
-
+    update.callback_query.answer()
     return states.TYPING
 
 
@@ -118,7 +118,7 @@ def ask_email(update: Update, context: CallbackContext):
 
     context.user_data[ASK_EMAIL_MESSAGE_ID] = message.message_id
     context.user_data[ASK_EMAIL_MESSAGE_TEXT] = message.text
-
+    update.callback_query.answer()
     return states.ASK_EMAIL
 
 
@@ -132,7 +132,7 @@ def no_wait_answer(update: Update, context: CallbackContext):
     keyboard = common_comands.get_full_menu_buttons(context)
     text = 'Спасибо, я передал информацию команде ProCharity!'
     update.callback_query.edit_message_text(text=text, reply_markup=keyboard)
-
+    update.callback_query.answer()
     return states.MENU
 
 
@@ -187,6 +187,7 @@ def after_get_feedback(update: Update, context: CallbackContext):
         text='Меню',
         reply_markup=keyboard
     )
+    update.callback_query.answer()
     return states.MENU
 
 

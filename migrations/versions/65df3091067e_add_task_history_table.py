@@ -1,8 +1,8 @@
-"""create_tasks_histiry_table
+"""add_task_history_table
 
-Revision ID: 934723d61c8e
+Revision ID: 65df3091067e
 Revises: 0ea530c95a28
-Create Date: 2021-08-25 15:08:47.660695
+Create Date: 2021-08-25 19:10:18.090908
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '934723d61c8e'
+revision = '65df3091067e'
 down_revision = '0ea530c95a28'
 branch_labels = None
 depends_on = None
@@ -24,6 +24,7 @@ def upgrade():
     sa.Column('new_tasks', sa.Integer(), nullable=False),
     sa.Column('updated_tasks', sa.Integer(), nullable=False),
     sa.Column('archived_tasks', sa.Integer(), nullable=False),
+    sa.Column('unarchived_tasks', sa.Integer(), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     # ### end Alembic commands ###

@@ -161,5 +161,4 @@ class TasksHistory(Base):
     new_tasks = Column(Integer, nullable=False)
     updated_tasks = Column(Integer, nullable=False)
     archived_tasks = Column(Integer, nullable=False)
-
-
+    unarchived_tasks = Column(Integer, nullable=False)

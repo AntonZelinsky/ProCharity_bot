@@ -45,7 +45,6 @@ class CreateTasks(MethodResource, Resource):
             set(task_id_db_not_archive) - set(task_id_json)
         )
         task_to_send = []
-
         for task in tasks:
             if int(task['id']) in task_for_adding_db:
                 del task['category']
@@ -77,10 +76,12 @@ class CreateTasks(MethodResource, Resource):
                         }
                     )
                     task_to_send.append(unarchive_task)
+        updated_tasks = [task for task in task_id_db_not_archive if task in task_id_json ]
         task_history = TasksHistory(
             new_tasks = len(task_for_adding_db),
-            updated_tasks = len(task_id_json)-len(task_for_adding_db) ,
-            archived_tasks = len(task_for_archive)
+            updated_tasks = len(updated_tasks),
+            archived_tasks = len(archive_records),
+            unarchived_tasks = len(unarchive_records)
             )
         db_session.add(task_history)
         try:

@@ -152,3 +152,14 @@ class ExternalSiteUser(Base):
 
     def __repr__(self):
         return f'<SiteUser {self.email}>'
+
+
+class TasksHistory(Base):
+    __tablename__ = 'tasks_history'
+    id = Column(Integer, primary_key=True)
+    datetime = Column(DateTime, server_default=text('now()'), nullable=False)
+    new_tasks = Column(Integer, nullable=False)
+    updated_tasks = Column(Integer, nullable=False)
+    archived_tasks = Column(Integer, nullable=False)
+
+

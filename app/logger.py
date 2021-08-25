@@ -27,6 +27,7 @@ def app_logging():
     app_handler.setFormatter(formatter)
     app_loggers = [
         module_logger,
+        logging.getLogger("external_endpoints"),
         logging.getLogger("werkzeug"),
         logging.getLogger("sqlalchemy.engine"),
         logging.getLogger("smtplib"),

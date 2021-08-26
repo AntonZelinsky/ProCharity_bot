@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 
 from flask import request, jsonify, make_response
@@ -11,7 +12,8 @@ from app.database import db_session
 from app.models import Task, User
 from bot.formatter import display_task_notification
 from bot.messages import TelegramNotification
-from app.logger import logger
+
+logger = logging.getLogger("webhooks")
 
 
 class CreateTasks(MethodResource, Resource):
@@ -45,6 +47,7 @@ class CreateTasks(MethodResource, Resource):
             set(task_id_db_not_archive) - set(task_id_json)
         )
         task_to_send = []
+        
         for task in tasks:
             if int(task['id']) in task_for_adding_db:
                 del task['category']
@@ -101,3 +104,4 @@ class CreateTasks(MethodResource, Resource):
 
                 if chats_list:
                     notification.send_new_tasks(message=display_task_notification(task), send_to=chats_list)
+

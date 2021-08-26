@@ -1,12 +1,15 @@
+import logging
+
 from flask import request, jsonify, make_response
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import load_only
 from app.models import Category
 from app.database import db_session
 from flask_restful import Resource
-from app.logger import logger
 from flask_apispec.views import MethodResource
 from flask_apispec import doc
+
+logger = logging.getLogger("webhooks")
 
 
 class CreateCategories(MethodResource, Resource):

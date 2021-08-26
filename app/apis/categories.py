@@ -4,7 +4,7 @@ from sqlalchemy.orm import load_only
 from app.models import Category
 from app.database import db_session
 from flask_restful import Resource
-from app.logger import app_logger as logger
+from app.logger import logger
 from flask_apispec.views import MethodResource
 from flask_apispec import doc
 

@@ -8,10 +8,10 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import load_only
 
 from app.database import db_session
-from app.models import Task, User, TasksHistory
+from app.models import Task, User
 from bot.formatter import display_task_notification
 from bot.messages import TelegramNotification
-from app.logger import app_logger as logger
+from app.logger import logger
 
 
 class CreateTasks(MethodResource, Resource):
@@ -76,14 +76,6 @@ class CreateTasks(MethodResource, Resource):
                         }
                     )
                     task_to_send.append(unarchive_task)
-        updated_tasks = [task for task in task_id_db_not_archive if task in task_id_json ]
-        task_history = TasksHistory(
-            new_tasks = len(task_for_adding_db),
-            updated_tasks = len(updated_tasks),
-            archived_tasks = len(archive_records),
-            unarchived_tasks = len(unarchive_records)
-            )
-        db_session.add(task_history)
         try:
             db_session.commit()
         except SQLAlchemyError as ex:

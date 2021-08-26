@@ -10,7 +10,7 @@ from flask_apispec import doc, use_kwargs
 from flask_apispec.views import MethodResource
 from flask_restful import Resource
 from marshmallow import fields
-from app.logger import app_logger as logger
+from app.logger import logger
 
 
 class ExternalUserRegistration(MethodResource, Resource):

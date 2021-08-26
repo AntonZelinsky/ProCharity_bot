@@ -27,7 +27,6 @@ def app_logging():
     app_handler.setFormatter(formatter)
     app_loggers = [
         module_logger,
-        logging.getLogger("external_endpoints"),
         logging.getLogger("werkzeug"),
         logging.getLogger("sqlalchemy.engine"),
         logging.getLogger("smtplib"),
@@ -67,3 +66,4 @@ def bot_logging():
 create_log_directory(config.LOG_PATH)
 app_logger = app_logging()
 bot_logger = bot_logging()
+logger = logging.getLogger("webhooks")

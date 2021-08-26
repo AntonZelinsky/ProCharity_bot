@@ -86,14 +86,14 @@ class CreateTasks(MethodResource, Resource):
 
                 db_session.add(new_task)
                 task_to_send.append(new_task)
-        logger.info(f"Added {len(task_for_adding_db)} new tasks.")
+        logger.info(f"Tasks: Added {len(task_for_adding_db)} new tasks.")
 
 
     def __archive_tasks(self, archive_records):
         for task in archive_records:
             task.archive = True
             task.updated_date = datetime.now()
-        logger.info(f"Archived {len(archive_records)} tasks.")
+        logger.info(f"Tasks: Archived {len(archive_records)} tasks.")
 
 
     def __unarchive_tasks(self, tasks, unarchive_records, task_to_send):
@@ -109,4 +109,4 @@ class CreateTasks(MethodResource, Resource):
                         }
                     )
                     task_to_send.append(unarchive_task)
-        logger.info(f"Unarchived {len(unarchive_records)} tasks.")
+        logger.info(f"Tasks: Unarchived {len(unarchive_records)} tasks.")

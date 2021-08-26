@@ -62,7 +62,25 @@ def bot_logging():
 
     return bot_logger
 
+def webhooks_logging():
+    webhooks_logger = logging.getLogger("webhooks")
+    webhooks_logger.setLevel(logging.INFO)
+    webhooks_handler = TimedRotatingFileHandler(
+        f'{config.LOG_PATH}\\webhooks_logs',
+        when="midnight",
+        interval=1,
+        encoding='utf-8',
+        backupCount=14
+    )
+    formatter = logging.Formatter(FORMATTER)
+    webhooks_handler.setFormatter(formatter)
+    
+    webhooks_logger.addHandler(webhooks_handler)
+
+    return webhooks_logger
+
 
 create_log_directory(config.LOG_PATH)
 app_logger = app_logging()
 bot_logger = bot_logging()
+webhooks_logger = webhooks_logging()

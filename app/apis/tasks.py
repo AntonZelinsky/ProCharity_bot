@@ -1,4 +1,3 @@
-import logging
 from datetime import datetime
 
 from flask import request, jsonify, make_response
@@ -13,7 +12,7 @@ from app.models import Task, User
 from bot.formatter import display_task_notification
 from bot.messages import TelegramNotification
 
-logger = logging.getLogger("webhooks")
+from app.logger import webhooks_logger as logger
 
 
 class CreateTasks(MethodResource, Resource):

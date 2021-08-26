@@ -1,5 +1,3 @@
-import logging
-
 from flask import request, jsonify, make_response
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import load_only
@@ -9,7 +7,7 @@ from flask_restful import Resource
 from flask_apispec.views import MethodResource
 from flask_apispec import doc
 
-logger = logging.getLogger("webhooks")
+from app.logger import webhooks_logger as logger
 
 
 class CreateCategories(MethodResource, Resource):

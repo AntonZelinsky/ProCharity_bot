@@ -1,4 +1,3 @@
-import logging
 from datetime import datetime
 
 from sqlalchemy.exc import SQLAlchemyError
@@ -12,7 +11,7 @@ from flask_apispec.views import MethodResource
 from flask_restful import Resource
 from marshmallow import fields
 
-logger = logging.getLogger("webhooks")
+from app.logger import webhooks_logger as logger
 
 class ExternalUserRegistration(MethodResource, Resource):
 

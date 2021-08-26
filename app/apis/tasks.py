@@ -34,51 +34,19 @@ class CreateTasks(MethodResource, Resource):
         task_id_json = [int(task['id']) for task in tasks]
         task_id_db = [task.id for task in tasks_db]
         task_id_db_not_archive = [task.id for task in tasks_db if task.archive == False]
-        task_id_db_archive = list(
-            set(task_id_db) - set(task_id_db_not_archive)
-        )
-        task_for_unarchive = list(
-            set(task_id_db_archive) & set(task_id_json)
-        )
-        task_for_adding_db = list(
-            set(task_id_json) - set(task_id_db)
-        )
-        task_for_archive = list(
-            set(task_id_db_not_archive) - set(task_id_json)
-        )
+        task_id_db_archive = list(set(task_id_db) - set(task_id_db_not_archive))
+        task_for_unarchive = list(set(task_id_db_archive) & set(task_id_json))
+        task_for_adding_db = list(set(task_id_json) - set(task_id_db))
+        task_for_archive = list(set(task_id_db_not_archive) - set(task_id_json))
+        
+        archive_records = [task for task in tasks_db if task.id in task_for_archive]
+        unarchive_records = [task for task in tasks_db if task.id in task_for_unarchive]
         task_to_send = []
         
-        for task in tasks:
-            if int(task['id']) in task_for_adding_db:
-                del task['category']
-                task['deadline'] = datetime.strptime(task['deadline'], '%d.%m.%Y').date()
-
-                new_task = Task(**task)
-                new_task.archive = False
-
-                db_session.add(new_task)
-                task_to_send.append(new_task)
-
-        archive_records = [task for task in tasks_db if task.id in task_for_archive]
-
-        for task in archive_records:
-            task.archive = True
-            task.updated_date = datetime.now()
-
-        unarchive_records = [task for task in tasks_db if task.id in task_for_unarchive]
-
-        for task in tasks:
-            for unarchive_task in unarchive_records:
-                if unarchive_task.id == int(task['id']):
-                    del task['category']
-                    Task.query.filter_by(id=unarchive_task.id).update(
-                        {
-                            **task,
-                            'updated_date': datetime.now(),
-                            'archive': False
-                        }
-                    )
-                    task_to_send.append(unarchive_task)
+        self.__add_tasks(tasks, task_for_adding_db, task_to_send)       
+        self.__archive_tasks(archive_records)
+        self.__unarchive_tasks(tasks, unarchive_records, task_to_send)
+        
         try:
             db_session.commit()
         except SQLAlchemyError as ex:
@@ -90,6 +58,7 @@ class CreateTasks(MethodResource, Resource):
 
         logger.info('Tasks: New tasks received')
         return make_response(jsonify(result='ok'), 200)
+
 
     def send_task(self, task_to_send):
         if task_to_send:
@@ -105,3 +74,39 @@ class CreateTasks(MethodResource, Resource):
                 if chats_list:
                     notification.send_new_tasks(message=display_task_notification(task), send_to=chats_list)
 
+
+    def __add_tasks(self, tasks, task_for_adding_db, task_to_send):
+        for task in tasks:
+            if int(task['id']) in task_for_adding_db:
+                del task['category']
+                task['deadline'] = datetime.strptime(task['deadline'], '%d.%m.%Y').date()
+
+                new_task = Task(**task)
+                new_task.archive = False
+
+                db_session.add(new_task)
+                task_to_send.append(new_task)
+        logger.info(f"Added {len(task_for_adding_db)} new tasks.")
+
+
+    def __archive_tasks(self, archive_records):
+        for task in archive_records:
+            task.archive = True
+            task.updated_date = datetime.now()
+        logger.info(f"Archived {len(archive_records)} tasks.")
+
+
+    def __unarchive_tasks(self, tasks, unarchive_records, task_to_send):
+        for task in tasks:
+            for unarchive_task in unarchive_records:
+                if unarchive_task.id == int(task['id']):
+                    del task['category']
+                    Task.query.filter_by(id=unarchive_task.id).update(
+                        {
+                            **task,
+                            'updated_date': datetime.now(),
+                            'archive': False
+                        }
+                    )
+                    task_to_send.append(unarchive_task)
+        logger.info(f"Unarchived {len(unarchive_records)} tasks.")

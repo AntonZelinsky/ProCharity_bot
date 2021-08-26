@@ -41,9 +41,11 @@ class CreateTasks(MethodResource, Resource):
         
         archive_records = [task for task in tasks_db if task.id in task_for_archive]
         unarchive_records = [task for task in tasks_db if task.id in task_for_unarchive]
+        
+        tasks_to_add = [task for task in tasks if int(task['id']) in task_for_adding_db]
         task_to_send = []
         
-        self.__add_tasks(tasks, task_for_adding_db, task_to_send)       
+        self.__add_tasks(tasks_to_add, task_to_send)
         self.__archive_tasks(archive_records)
         self.__unarchive_tasks(tasks, unarchive_records, task_to_send)
         
@@ -75,18 +77,18 @@ class CreateTasks(MethodResource, Resource):
                     notification.send_new_tasks(message=display_task_notification(task), send_to=chats_list)
 
 
-    def __add_tasks(self, tasks, task_for_adding_db, task_to_send):
-        for task in tasks:
-            if int(task['id']) in task_for_adding_db:
-                del task['category']
-                task['deadline'] = datetime.strptime(task['deadline'], '%d.%m.%Y').date()
+    
+    def __add_tasks(self, tasks_to_add, task_to_send):
+        for task in tasks_to_add:
+            del task['category']
+            task['deadline'] = datetime.strptime(task['deadline'], '%d.%m.%Y').date()
 
-                new_task = Task(**task)
-                new_task.archive = False
+            new_task = Task(**task)
+            new_task.archive = False
 
-                db_session.add(new_task)
-                task_to_send.append(new_task)
-        logger.info(f"Tasks: Added {len(task_for_adding_db)} new tasks.")
+            db_session.add(new_task)
+            task_to_send.append(new_task)
+        logger.info(f"Tasks: Added {len(tasks_to_add)} new tasks.")
 
 
     def __archive_tasks(self, archive_records):

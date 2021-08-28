@@ -1,8 +1,8 @@
 import logging
 import os
 from logging.handlers import TimedRotatingFileHandler
-
 from app import config
+
 
 FORMATTER = u'%(asctime)s\t%(levelname)s\t%(filename)s:%(lineno)d\t%(message)s'
 
@@ -12,9 +12,8 @@ def create_log_directory(directory):
         os.makedirs(directory)
 
 
-def set_logger(logger, level, path_name, loggers=None):
-    logger.setLevel(level)
-    logger_handler = TimedRotatingFileHandler(
+def add_handler(path_name):
+    handler = TimedRotatingFileHandler(
         f'{config.LOG_PATH}\\{path_name}',
         when="midnight",
         interval=1,
@@ -22,33 +21,51 @@ def set_logger(logger, level, path_name, loggers=None):
         backupCount=14
     )
     formatter = logging.Formatter(FORMATTER)
-    logger_handler.setFormatter(formatter)
-    if loggers:
-        for log in loggers:
-            log.addHandler(logger_handler)
-    logger.addHandler(logger_handler)
-    return logger
+    handler.setFormatter(formatter)
+    return handler
 
 
-logger_for_app = logging.getLogger('app')
-app_loggers = [
-        logger_for_app,
+def app_logging():
+    module_logger = logging.getLogger('app')
+    module_logger.setLevel(logging.INFO)
+    app_handler = add_handler('app_logs')
+    app_loggers = [
+        module_logger,
         logging.getLogger("werkzeug"),
         logging.getLogger("sqlalchemy.engine"),
         logging.getLogger("smtplib"),
     ]
+    for log in app_loggers:
+        log.addHandler(app_handler)
+    return module_logger
 
-logger_for_bot = logging.getLogger("telegram")
-bot_loggers = [
+
+def bot_logging():
+    bot_logger = logging.getLogger("telegram")
+    bot_logger.setLevel(logging.INFO)
+    bot_handler = add_handler('bot_logs')
+    bot_logger.addHandler(bot_handler)
+    app_loggers = [
         logging.getLogger("bot"),
         logging.getLogger("sqlalchemy.engine"),
         logging.getLogger("smtplib"),
     ]
+    for log in app_loggers:
+        log.addHandler(bot_handler)
 
-webhooks_logger = logging.getLogger("webhooks")
+    return bot_logger
+
+
+def webhooks_logging():
+    webhooks_logger = logging.getLogger("webhooks")
+    webhooks_logger.setLevel(logging.INFO)
+    webhooks_handler = add_handler('webhooks_logs')
+    webhooks_logger.addHandler(webhooks_handler)
+
+    return webhooks_logger
 
 
 create_log_directory(config.LOG_PATH)
-app_logger = set_logger(logger_for_app, logging.INFO, 'app_logs', app_loggers)
-bot_logger = set_logger(logger_for_bot, logging.INFO, 'bot_logs', bot_loggers)
-webhooks_logger = set_logger(webhooks_logger, logging.INFO, 'webhooks_logs')
+app_logger = app_logging()
+bot_logger = bot_logging()
+webhooks_logger = webhooks_logging()

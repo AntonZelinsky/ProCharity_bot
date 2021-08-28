@@ -4,9 +4,10 @@ from sqlalchemy.orm import load_only
 from app.models import Category
 from app.database import db_session
 from flask_restful import Resource
-from app.logger import app_logger as logger
 from flask_apispec.views import MethodResource
 from flask_apispec import doc
+
+from app.logger import webhooks_logger as logger
 
 
 class CreateCategories(MethodResource, Resource):

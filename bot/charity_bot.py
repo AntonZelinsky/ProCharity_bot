@@ -90,7 +90,7 @@ def init() -> None:
             common_comands.menu_command_handler
         ],
         persistent=True,
-        name='conv_handler'
+        name='main_handler'
     )
 
     update_users_category = CallbackQueryHandler(change_user_categories, pattern='^up_cat[0-9]{1,2}$')

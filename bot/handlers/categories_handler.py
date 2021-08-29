@@ -263,6 +263,9 @@ def show_open_task(update: Update, context: CallbackContext):
 open_tasks_handler = CallbackQueryHandler(show_open_task, pattern=command_constants.COMMAND__OPEN_TASK)
 
 categories_conv = ConversationHandler(
+    allow_reentry=True,
+    persistent=True,
+    name='category_handler',
     entry_points=[
         CallbackQueryHandler(choose_category_after_start, pattern=command_constants.COMMAND__GREETING),
         CallbackQueryHandler(before_confirm_specializations,

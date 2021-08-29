@@ -192,6 +192,9 @@ def after_get_feedback(update: Update, context: CallbackContext):
 
 
 feedback_conv = ConversationHandler(
+    allow_reentry=True,
+    persistent=True,
+    name='feedback_handler',
     entry_points=[
         CallbackQueryHandler(ask_new_category, pattern=command_constants.COMMAND__ASK_NEW_CATEGORY),
         CallbackQueryHandler(ask_question, pattern=command_constants.COMMAND__ASK_QUESTION),

@@ -8,4 +8,5 @@ def user_formatter(user):
         'external_id': user.external_id,
         'has_mailing': user.has_mailing,
         'date_registration': user.date_registration.strftime('%Y-%m-%d'),
+        'banned': user.banned
     }

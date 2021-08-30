@@ -14,7 +14,7 @@ def create_log_directory(directory):
 
 def add_handler(path_name):
     handler = TimedRotatingFileHandler(
-        f'{config.LOG_PATH}\\{path_name}',
+        f'{config.LOG_PATH}/{path_name}',
         when="midnight",
         interval=1,
         encoding='utf-8',

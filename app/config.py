@@ -9,7 +9,7 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 # -----------------------
 # Basic project settings
-PROJECT_NAME = "ProCharrity bot"
+PROJECT_NAME = "ProCharity bot"
 SQL_ALCHEMY_DATABASE_URL = os.getenv('DATABASE_URL')
 HOST_NAME = os.getenv('HOST_NAME')
 
@@ -24,7 +24,7 @@ PROCHARRITY_TEMPLATE = 'email_templates/send_question.html'
 
 # ------------------------
 # Registration settings
-REGISTRATION_SUBJECT = 'Регистрация на портале ProCharrity bot'
+REGISTRATION_SUBJECT = 'Регистрация на портале ProCharity bot'
 INVITATION_TEMPLATE = 'email_templates/invitation_email.html'
 
 PASSWORD_RESET_SUBJECT = 'Password Reset'

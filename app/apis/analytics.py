@@ -35,8 +35,8 @@ class Analytics(MethodResource, Resource):
                                          ReasonCanceling.added_date, ReasonCanceling.telegram_id),
                                      active_users_statistic=users_activity_statistic(Statistics.added_date,
                                                                                      Statistics.telegram_id),
-                                     last_update=health_check.get_last_update(),
-                                     active_tasks = health_check.get_count_active_tasks()), 200)
+                                     tasks=dict(last_update=health_check.get_last_update(),
+                                     active_tasks=health_check.get_count_active_tasks())), 200)
 
 
 TODAY = datetime.now().date()

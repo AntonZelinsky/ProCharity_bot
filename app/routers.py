@@ -11,6 +11,7 @@ from app.apis.auth.invitation_checker import InvitationChecker
 from app.apis.auth.send_registration_invite import SendRegistrationInvite
 from app.apis.messages import SendTelegramNotification
 from app.apis.analytics import Analytics
+from app.apis.health_check import Health
 
 
 # users endpoints
@@ -30,4 +31,4 @@ api.add_resource(SendTelegramNotification, '/api/v1/send_telegram_notification/'
 api.add_resource(CreateTasks, '/api/v1/tasks/')
 api.add_resource(CreateCategories, '/api/v1/categories/')
 api.add_resource(Analytics, '/api/v1/analytics/')
-
+api.add_resource(Health, '/api/v1/health_check/')

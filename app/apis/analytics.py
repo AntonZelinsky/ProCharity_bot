@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from flask import jsonify, make_response
 from sqlalchemy import distinct
 from sqlalchemy.sql.schema import Column
@@ -9,7 +10,7 @@ from sqlalchemy.sql import func
 
 from app.models import ReasonCanceling, Statistics, User
 from app.database import db_session
-from datetime import datetime, timedelta
+from app.apis import health_check
 
 from bot.constants import constants
 
@@ -34,7 +35,8 @@ class Analytics(MethodResource, Resource):
                                          ReasonCanceling.added_date, ReasonCanceling.telegram_id),
                                      active_users_statistic=users_activity_statistic(Statistics.added_date,
                                                                                      Statistics.telegram_id),
-                                     ), 200)
+                                     last_update=health_check.get_last_update(),
+                                     active_tasks = health_check.get_count_active_tasks()), 200)
 
 
 TODAY = datetime.now().date()

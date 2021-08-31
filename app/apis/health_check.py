@@ -24,13 +24,13 @@ class HealthCheck(MethodResource, Resource):
 def check_db_connection():
         try:
             db_session.query(User).first()
-            logger.info(f'Health check: database connection succeeded')
-            return dict(db_connection=True,
+            logger.info(f'Health check: Database connection succeeded')
+            return dict(status=True,
                         last_update=get_last_update(),
                         active_tasks = get_count_active_tasks())
         except SQLAlchemyError as ex:
             logger.error(f'Health check: Database error "{str(ex)}"')
-            return dict(db_connection=False,
+            return dict(status=False,
                         db_connection_error=f'{ex}')
 
 def get_last_update():
@@ -41,13 +41,15 @@ def get_last_update():
 
 
 def get_count_active_tasks():
-    result = len(db_session.query(Task.archive).filter(Task.archive == False).all())
-    return result
+    result = db_session.query(func.count(Task.archive)).filter(Task.archive == False).all()
+    return result[0][0]
 
 
 def check_bot():
     try:
-        result = charity_bot.updater.bot.get_webhook_info()
-        return dict(bot_connection=True, method='pulling', info=f'{result}')
+        charity_bot.updater.bot.get_webhook_info()
+        logger.info(f'Health check: Bot connection succeeded')
+        return dict(status=True, method='pulling')
     except Exception as ex:
-        return dict(bot_connection=False, error=f'{ex}')
+        logger.critical(f'Health check: Bot error "{str(ex)}"')
+        return dict(status=False, error=f'{ex}')

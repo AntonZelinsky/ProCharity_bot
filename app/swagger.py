@@ -1,3 +1,4 @@
+from telegram.ext.extbot import HandledTypes
 from app import docs
 from app.apis.users import UsersList, UserItem
 from app.apis.auth.refresh import Refresh
@@ -11,7 +12,7 @@ from app.apis.messages import SendTelegramNotification
 from app.apis.categories import CreateCategories
 from app.apis.tasks import CreateTasks
 from app.apis.analytics import Analytics
-
+from app.apis.health_check import HealthCheck
 
 docs.register(Login)
 docs.register(Refresh)
@@ -26,4 +27,4 @@ docs.register(CreateCategories)
 docs.register(CreateTasks)
 docs.register(Analytics)
 docs.register(ExternalUserRegistration)
-
+docs.register(HealthCheck)

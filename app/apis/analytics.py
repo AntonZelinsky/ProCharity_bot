@@ -27,7 +27,7 @@ class Analytics(MethodResource, Resource):
         }
         return make_response(jsonify(added_users=get_statistics_by_days(User.date_registration),
                                      added_external_users=get_statistics_by_days(User.external_signup_date),
-                                     number_users = get_number_users_statistic(),
+                                     number_users=get_number_users_statistic(),
                                      command_stats=dict(get_statistics(Statistics.command)),
                                      reasons_canceling=reasons_canceling,
                                      users_unsubscribed=get_statistics_by_days(ReasonCanceling.added_date),
@@ -36,7 +36,7 @@ class Analytics(MethodResource, Resource):
                                      active_users_statistic=users_activity_statistic(Statistics.added_date,
                                                                                      Statistics.telegram_id),
                                      tasks=dict(last_update=health_check.get_last_update(),
-                                     active_tasks=health_check.get_count_active_tasks())), 200)
+                                                active_tasks=health_check.get_count_active_tasks())), 200)
 
 
 TODAY = datetime.now().date()
@@ -88,8 +88,8 @@ def get_dict_by_days(result):
     return {
         (DATE_BEGIN + timedelta(days=n)).strftime('%Y-%m-%d'):
             result.get((DATE_BEGIN + timedelta(days=n))
-            .strftime('%Y-%m-%d'), 0)
-            for n in range(1, 31)
+                       .strftime('%Y-%m-%d'), 0)
+        for n in range(1, 31)
     }
 
 

@@ -15,28 +15,28 @@ from bot import charity_bot
 class HealthCheck(MethodResource, Resource):
     @doc(description='HealthСheck checks the connection to the database and bot',
          tags=['HealthCheck'])
-
     def get(self):
         return make_response(jsonify(db=check_db_connection(),
                                      bot=check_bot()), 200)
 
 
 def check_db_connection():
-        try:
-            db_session.query(User).first()
-            logger.info(f'Health check: Database connection succeeded')
-            return dict(status=True,
-                        last_update=get_last_update(),
-                        active_tasks = get_count_active_tasks())
-        except SQLAlchemyError as ex:
-            logger.error(f'Health check: Database error "{str(ex)}"')
-            return dict(status=False,
-                        db_connection_error=f'{ex}')
+    try:
+        db_session.query(User).first()
+        logger.info(f'Health check: Database connection succeeded')
+        return dict(status=True,
+                    last_update=get_last_update(),
+                    active_tasks=get_count_active_tasks())
+    except SQLAlchemyError as ex:
+        logger.critical(f'Health check: Database error "{str(ex)}"')
+        return dict(status=False,
+                    db_connection_error=f'{ex}')
+
 
 def get_last_update():
     result = db_session.query(
-                func.to_char(Task.updated_date, 'YYYY-MM-DD HH24:MI:SS')
-                ).order_by(Task.updated_date.desc()).first()
+        func.to_char(Task.updated_date, 'YYYY-MM-DD HH24:MI:SS')
+    ).order_by(Task.updated_date.desc()).first()
     return result[0]
 
 

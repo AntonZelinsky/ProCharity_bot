@@ -12,6 +12,7 @@ api = Api()
 mail = Mail()
 cors = CORS()
 docs = FlaskApiSpec()
+password_policy = PasswordPolicy(**config.PASSWORD_POLICY)
 
 
 def create_app():
@@ -19,17 +20,13 @@ def create_app():
     app.config.update(config.APPLICATION_CONFIGURATION)
     app.config.update(**config.APISPEC_SPEC)
 
+    from . import api, routers, swagger
+
     jwt.init_app(app)
     api.init_app(app)
     mail.init_app(app)
     docs.init_app(app)
 
-    password_policy = PasswordPolicy(**config.PASSWORD_POLICY)
-
     cors.init_app(app, resource={r"/*": {"origins": "*"}})
 
     return app
-
-
-from bot import charity_bot
-charity_bot.init()

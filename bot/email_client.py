@@ -4,7 +4,6 @@ from smtplib import SMTPException
 from flask import current_app, render_template
 from flask_mail import Message
 
-# from app import app, config, mail
 from app import config, mail
 from app.models import User
 from app.logger import bot_logger as logger
@@ -39,6 +38,6 @@ def send_email(telegram_id, message, subject):
         )
         try:
             mail.send(msg)
-        except SMTPException as ex:  # base smtplib exception
+        except SMTPException as ex:
             logger.error(f"Email client: {str(ex)}")
     return

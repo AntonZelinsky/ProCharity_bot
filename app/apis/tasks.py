@@ -59,10 +59,12 @@ class CreateTasks(MethodResource, Resource):
         self.send_task(task_to_send)
 
         logger.info('Tasks: New tasks received')
+        logger.info('-----------------------------------------------------')
         return make_response(jsonify(result='ok'), 200)
 
 
     def send_task(self, task_to_send):
+        task_ids = [task.id for task in task_to_send]
         if task_to_send:
             users = User.query.options(load_only('telegram_id')).filter_by(has_mailing=True).all()
             notification = TelegramNotification()
@@ -75,9 +77,10 @@ class CreateTasks(MethodResource, Resource):
 
                 if chats_list:
                     notification.send_new_tasks(message=display_task_notification(task), send_to=chats_list)
-
+        logger.info(f"Tasks: Tasks to send ids: {task_ids}")
     
     def __add_tasks(self, tasks_to_add, task_to_send):
+        task_ids = [task['id'] for task in tasks_to_add]
         for task in tasks_to_add:
             del task['category']
             task['deadline'] = datetime.strptime(task['deadline'], '%d.%m.%Y').date()
@@ -88,18 +91,23 @@ class CreateTasks(MethodResource, Resource):
             db_session.add(new_task)
             task_to_send.append(new_task)
         logger.info(f"Tasks: Added {len(tasks_to_add)} new tasks.")
+        logger.info(f"Tasks: Added task ids: {task_ids}")
 
 
     def __archive_tasks(self, archive_records):
+        task_ids = [task.id for task in archive_records]
         for task in archive_records:
             task.archive = True
             task.updated_date = datetime.now()
         logger.info(f"Tasks: Archived {len(archive_records)} tasks.")
+        logger.info(f"Tasks: Archived task ids: {task_ids}")
 
 
     def __unarchive_tasks(self, unarchive_records, task_to_send):
+        task_ids = [task.id for task in unarchive_records]
         for task in unarchive_records:
             task.archive = False
             task.updated_date = datetime.now()
             task_to_send.append(task)
         logger.info(f"Tasks: Unarchived {len(unarchive_records)} tasks.")
+        logger.info(f"Tasks: Unarchived task ids: {task_ids}")

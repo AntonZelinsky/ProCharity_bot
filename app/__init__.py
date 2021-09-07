@@ -1,5 +1,4 @@
 from flask import Flask
-from app.extra_init_app import api_extra_init, swagger_extra_init
 from app import config
 from flask_jwt_extended import JWTManager
 from flask_restful import Api
@@ -21,10 +20,9 @@ def create_app():
     app.config.update(config.APPLICATION_CONFIGURATION)
     app.config.update(**config.APISPEC_SPEC)
 
+    from app.extra_init_app import api_extra_init, swagger_extra_init
     api_extra_init(api)
     swagger_extra_init(docs)
-
-    # from . import api, routers, swagger
 
     jwt.init_app(app)
     api.init_app(app)

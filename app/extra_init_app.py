@@ -22,6 +22,12 @@ def api_extra_init(api):
     api.add_resource(PasswordReset, '/api/v1/auth/password_reset/')
     api.add_resource(UserRegister, '/api/v1/auth/register/')
     api.add_resource(SendRegistrationInvite, '/api/v1/auth/invitation/')
+    api.add_resource(ExternalUserRegistration, '/api/v1/auth/external_user_registration/')
+    api.add_resource(SendTelegramNotification, '/api/v1/send_telegram_notification/')
+    api.add_resource(CreateTasks, '/api/v1/tasks/')
+    api.add_resource(CreateCategories, '/api/v1/categories/')
+    api.add_resource(Analytics, '/api/v1/analytics/')
+    api.add_resource(HealthCheck, '/api/v1/health_check/')
 
 
 def swagger_extra_init(docs):

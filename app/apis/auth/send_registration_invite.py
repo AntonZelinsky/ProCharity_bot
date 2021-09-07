@@ -1,5 +1,9 @@
 import uuid
 from datetime import datetime, timedelta
+from smtplib import SMTPException
+
+from sqlalchemy.exc import SQLAlchemyError
+
 from app import config
 from app.database import db_session
 from app.messages import send_email
@@ -11,6 +15,7 @@ from flask_apispec.views import MethodResource
 from flask_jwt_extended import jwt_required
 from flask_restful import Resource
 from marshmallow import fields
+from app.logger import app_logger as logger
 
 
 class SendRegistrationInvite(MethodResource, Resource):
@@ -42,48 +47,58 @@ class SendRegistrationInvite(MethodResource, Resource):
         if email:
             try:
                 validate_email(email, check_deliverability=False)
-
             except EmailNotValidError as ex:
+                logger.error(f"Send registration invite: {str(ex)}")
                 return make_response(jsonify(message=str(ex)), 400)
-        
+
         admin_user = AdminUser.query.filter_by(email=email).first()
         if admin_user:
+            logger.info("Send registration invite:"
+                        f" The user with the specified mailing address {email} is already registered.")
             return make_response(jsonify(
                 message="Пользователь с указанным почтовым адресом уже зарегистрирован."), 400)
-        
+
         token_expiration = config.INV_TOKEN_EXPIRATION
         invitation_token_expiration_date = datetime.now() + timedelta(hours=token_expiration)
         invitation_token = str(uuid.uuid4())
 
         register_record = AdminRegistrationRequest.query.filter_by(email=email).first()
-        if register_record:
-            register_record.token = invitation_token
-            register_record.token_expiration_date = invitation_token_expiration_date
-            db_session.commit()
-        else:
-            user = AdminRegistrationRequest(
-                email=email,
-                token=invitation_token,
-                token_expiration_date=invitation_token_expiration_date
-            )
-            db_session.add(user)
-            db_session.commit()
-
-        invitation_link = f'{request.scheme}://{config.HOST_NAME}/#/register/{invitation_token}'
-
-        email_template = render_template(
-            config.INVITATION_TEMPLATE,
-            inv_link=invitation_link,
-            expiration=token_expiration
-        )
-
         try:
+            if register_record:
+                register_record.token = invitation_token
+                register_record.token_expiration_date = invitation_token_expiration_date
+                db_session.commit()
+            else:
+                user = AdminRegistrationRequest(
+                    email=email,
+                    token=invitation_token,
+                    token_expiration_date=invitation_token_expiration_date
+                )
+                db_session.add(user)
+                db_session.commit()
+
+            invitation_link = f'{request.scheme}://{config.HOST_NAME}/#/register/{invitation_token}'
+
+            email_template = render_template(
+                config.INVITATION_TEMPLATE,
+                inv_link=invitation_link,
+                expiration=token_expiration
+            )
             send_email(
                 recipients=[email],
                 subject=config.REGISTRATION_SUBJECT,
                 template=email_template
             )
-        except Exception as ex:
-            return make_response(jsonify(str(ex)), 500)
 
+        except SQLAlchemyError as ex:
+            logger.error(f'Send registration invite: Database commit error "{str(ex)}"')
+            db_session.rollback()
+            return make_response(jsonify(message=f'Bad request: {str(ex)}'), 400)
+
+        except SMTPException as ex: # base smtplib exception
+            logger.error(f"Send registration invite: {str(ex)}")
+            return make_response(jsonify(message=f"The invitation message cannot be sent."), 400)
+
+        logger.info(f"Send registration invite: "
+                    f"The mail of invitation was sent to the specified address: {email}.")
         return make_response(jsonify(message="Письмо с приглашением было отправлено на указанный адрес."), 200)

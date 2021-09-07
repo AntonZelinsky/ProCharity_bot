@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import load_only
 
 from app.database import db_session
@@ -11,6 +11,7 @@ from flask_apispec.views import MethodResource
 from flask_restful import Resource
 from marshmallow import fields
 
+from app.logger import webhooks_logger as logger
 
 class ExternalUserRegistration(MethodResource, Resource):
 
@@ -46,7 +47,10 @@ class ExternalUserRegistration(MethodResource, Resource):
 
         try:
             db_session.commit()
-        except IntegrityError:
-            return make_response(jsonify(message='some mistake'), 400)
+        except SQLAlchemyError as ex:
+            logger.error(f'External users registration: Database commit error "{str(ex)}"')
+            db_session.rollback()
+            return make_response(jsonify(message=f'Bad request: {str(ex)}'), 400)
 
+        logger.info(f'External users registration: The external user "{external_id}" successful registered.')
         return make_response(jsonify(message='successful'), 200)

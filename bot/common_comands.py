@@ -2,14 +2,16 @@ from telegram import (Update,
                       InlineKeyboardMarkup,
                       InlineKeyboardButton,
                       ParseMode)
-from telegram.ext import CallbackContext
+from telegram.ext import CallbackContext, CallbackQueryHandler, CommandHandler
 
 from telegram import InlineKeyboardButton
 from bot.constants import states
 from bot.constants import command_constants
 from bot.constants import constants
-from bot.logger import log_command
+from bot.decorators.actions import send_typing_action
+from bot.decorators.logger import log_command
 from bot.user_db import UserDB
+
 
 MENU_BUTTONS = [
     [
@@ -48,6 +50,7 @@ MENU_BUTTONS = [
 user_db = UserDB()
 
 
+@send_typing_action
 @log_command(command=constants.LOG_COMMANDS_NAME['start'])
 def start(update: Update, context: CallbackContext) -> int:
     deeplink_passed_param = context.args
@@ -79,16 +82,11 @@ def start(update: Update, context: CallbackContext) -> int:
 def open_menu(update: Update, context: CallbackContext):
     keyboard = get_full_menu_buttons(context)
     text = 'Меню'
-    update.callback_query.answer()
-    update.callback_query.edit_message_text(text=text, reply_markup=keyboard)
-
-    return states.MENU
-
-
-def open_menu_fall(update: Update, context: CallbackContext):
-    keyboard = get_full_menu_buttons(context)
-    text = 'Меню'
-    context.bot.send_message(
+    if update.callback_query is not None:
+        update.callback_query.answer()
+        update.callback_query.edit_message_text(text=text, reply_markup=keyboard)
+    else:
+        context.bot.send_message(
         chat_id=update.effective_chat.id,
         text=text,
         reply_markup=keyboard
@@ -109,7 +107,13 @@ def get_subscription_button(context: CallbackContext):
             text='⏹ Остановить подписку на задания',
             callback_data=command_constants.COMMAND__STOP_SUBSCRIPTION
         )
-    return InlineKeyboardButton(
+    elif not context.user_data.get(states.CATEGORIES_SELECTED):
+        return InlineKeyboardButton(
+        text='▶️ Включить подписку на задания',
+        callback_data=command_constants.COMMAND__CHANGE_CATEGORY
+    )
+    else:
+        return InlineKeyboardButton(
         text='▶️ Включить подписку на задания',
         callback_data=command_constants.COMMAND__START_SUBSCRIPTION
     )
@@ -126,3 +130,10 @@ def get_menu_and_tasks_buttons():
     ]
     keyboard = InlineKeyboardMarkup(buttons)
     return keyboard
+
+open_menu_button = InlineKeyboardButton(text='Открыть меню', callback_data=command_constants.COMMAND__OPEN_MENU)
+
+open_menu_handler = CallbackQueryHandler(open_menu, pattern=command_constants.COMMAND__OPEN_MENU)
+
+start_command_handler = CommandHandler('start', start)
+menu_command_handler = CommandHandler('menu', open_menu)

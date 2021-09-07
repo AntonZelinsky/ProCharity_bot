@@ -1,6 +1,6 @@
 from telegram import (Update,
                       InlineKeyboardMarkup,
-                      InlineKeyboardButton)
+                      InlineKeyboardButton, replymarkup)
 from telegram.ext import (CommandHandler,
                           ConversationHandler,
                           CallbackContext,
@@ -11,9 +11,11 @@ from bot import common_comands
 from bot.constants import states
 from bot.constants import command_constants
 from bot.constants import constants
-from bot import email_client 
-from bot.logger import log_command
+from bot import email_client
+from bot.decorators.actions import send_typing_action
+from bot.decorators.logger import log_command
 from bot.user_db import UserDB
+
 
 ASK_EMAIL_FLAG = 'ask_email_flag'
 ASK_EMAIL_MESSAGE_ID = 'ask_email_message_id'
@@ -43,7 +45,7 @@ def ask_new_category(update: Update, context: CallbackContext):
     user_data[MSG_ID] = message.message_id
     user_data[MSG_TEXT] = message.text
     user_data[FEEDBACK_TYPE] = CATEGORY_TYPE
-
+    update.callback_query.answer()
     return states.TYPING
 
 
@@ -60,7 +62,7 @@ def ask_question(update: Update, context: CallbackContext):
     user_data[MSG_ID] = message.message_id
     user_data[MSG_TEXT] = message.text
     user_data[FEEDBACK_TYPE] = QUESTION_TYPE
-
+    update.callback_query.answer()
     return states.TYPING
 
 
@@ -78,10 +80,11 @@ def add_new_feature(update: Update, context: CallbackContext):
     user_data[MSG_ID] = message.message_id
     user_data[MSG_TEXT] = message.text
     user_data[FEEDBACK_TYPE] = FEATURE_TYPE
-
+    update.callback_query.answer()
     return states.TYPING
 
 
+@send_typing_action
 @log_command(command=constants.LOG_COMMANDS_NAME['save_user_input'])
 def save_user_input(update: Update, context: CallbackContext):
     user = user_db.get_user(update.effective_user.id)
@@ -115,10 +118,11 @@ def ask_email(update: Update, context: CallbackContext):
 
     context.user_data[ASK_EMAIL_MESSAGE_ID] = message.message_id
     context.user_data[ASK_EMAIL_MESSAGE_TEXT] = message.text
-
+    update.callback_query.answer()
     return states.ASK_EMAIL
 
 
+@send_typing_action
 @log_command(command=constants.LOG_COMMANDS_NAME['no_wait_answer'])
 def no_wait_answer(update: Update, context: CallbackContext):
     email_client.send_email(
@@ -128,11 +132,12 @@ def no_wait_answer(update: Update, context: CallbackContext):
     keyboard = common_comands.get_full_menu_buttons(context)
     text = 'Спасибо, я передал информацию команде ProCharity!'
     update.callback_query.edit_message_text(text=text, reply_markup=keyboard)
-
+    update.callback_query.answer()
     return states.MENU
 
 
-# @log_command(command=LOG_COMMANDS_NAME['save_email'])
+@send_typing_action
+@log_command(command=constants.LOG_COMMANDS_NAME['email_feedback'])
 def save_email(update: Update, context: CallbackContext):
     user_input_email = update.message.text
     email_status = user_db.set_user_email(update.effective_user.id, user_input_email)
@@ -142,7 +147,6 @@ def save_email(update: Update, context: CallbackContext):
         return save_user_input(update, context)
 
 
-@log_command(command=constants.LOG_COMMANDS_NAME['after_get_feedback'])
 def after_get_feedback(update: Update, context: CallbackContext):
     if context.user_data.get(ASK_EMAIL_FLAG):
         context.bot.edit_message_text(
@@ -176,13 +180,21 @@ def after_get_feedback(update: Update, context: CallbackContext):
     text = f'Спасибо, я передал информацию команде ProCharity! Ответ придет на почту {user.email}'
     context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text=text,
+        text=text
+    )
+    context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text='Меню',
         reply_markup=keyboard
     )
+    update.callback_query.answer()
     return states.MENU
 
 
 feedback_conv = ConversationHandler(
+    allow_reentry=True,
+    persistent=True,
+    name='feedback_handler',
     entry_points=[
         CallbackQueryHandler(ask_new_category, pattern=command_constants.COMMAND__ASK_NEW_CATEGORY),
         CallbackQueryHandler(ask_question, pattern=command_constants.COMMAND__ASK_QUESTION),
@@ -191,17 +203,17 @@ feedback_conv = ConversationHandler(
     states={
         states.TYPING: [
             MessageHandler(Filters.text & ~Filters.command, save_user_input),
-            CallbackQueryHandler(common_comands.open_menu, pattern=command_constants.COMMAND__OPEN_MENU)
+            common_comands.open_menu_handler
         ],
         states.ASK_EMAIL: [
-            CallbackQueryHandler(common_comands.open_menu, pattern=command_constants.COMMAND__OPEN_MENU),
+            common_comands.open_menu_handler,
             CallbackQueryHandler(no_wait_answer, pattern=command_constants.COMMAND__NO_WAIT),
             MessageHandler(Filters.text & ~Filters.command, save_email)
-        ]
+        ],
     },
     fallbacks=[
-        CommandHandler('start', common_comands.start),
-        CommandHandler('menu', common_comands.open_menu_fall)
+        common_comands.start_command_handler,
+        common_comands.menu_command_handler
     ],
     map_to_parent={
         states.MENU: states.MENU

@@ -6,8 +6,7 @@ from telegram import (Update,
                       ParseMode)
 from telegram.ext import (CallbackContext,
                           ConversationHandler,
-                          CallbackQueryHandler,
-                          CommandHandler)
+                          CallbackQueryHandler)
 
 from telegram import InlineKeyboardButton
 
@@ -17,9 +16,11 @@ from bot.constants import constants
 from bot.constants import command_constants
 from bot.constants import states
 from bot import user_db
-from bot.logger import log_command
+from bot.decorators.actions import send_typing_action
+from bot.decorators.logger import log_command
 from bot.user_db import UserDB
 from bot.handlers.feedback_handler import feedback_conv
+
 
 user_db = UserDB()
 
@@ -42,6 +43,7 @@ def before_confirm_specializations(update: Update, context: CallbackContext):
     return confirm_specializations(update, context)
 
 
+@send_typing_action
 @log_command(command=constants.LOG_COMMANDS_NAME['confirm_specializations'])
 def confirm_specializations(update: Update, context: CallbackContext):
     buttons = [
@@ -54,7 +56,7 @@ def confirm_specializations(update: Update, context: CallbackContext):
         ]
     ]
     specializations = ', '.join([spec['name'] for spec
-                                 in user_db.get_category(update.effective_user.id)
+                                 in user_db.get_categories(update.effective_user.id)
                                  if spec['user_selected']])
 
     if not specializations:
@@ -69,6 +71,7 @@ def confirm_specializations(update: Update, context: CallbackContext):
         parse_mode=ParseMode.MARKDOWN,
         reply_markup=keyboard,
     )
+    update.callback_query.answer()
     return states.CATEGORY
 
 
@@ -88,49 +91,61 @@ def change_user_categories(update: Update, context: CallbackContext):
              ignore_func=['change_user_categories'])
 def choose_category(update: Update, context: CallbackContext, save_prev_msg: bool = False):
     """The main function is to select categories for subscribing to them."""
-    categories = user_db.get_category(update.effective_user.id)
-
+    categories = user_db.get_categories(update.effective_user.id)
     buttons = []
-    for cat in categories:
-        if cat['user_selected']:
-            cat['name'] += " ✅"
-        buttons.append([InlineKeyboardButton(text=cat['name'], callback_data=f'up_cat{cat["category_id"]}'
+    for category in categories:
+        if category['user_selected']:
+            category['name'] += " ✅"
+        buttons.append([InlineKeyboardButton(text=category['name'], callback_data=f'up_cat{category["category_id"]}'
                                              )])
+    selected_categories_list = [category for category in categories if category['user_selected']]
+    if selected_categories_list == []:
+        context.user_data[states.SUBSCRIPTION_FLAG] = user_db.set_user_unsubscribed(update.effective_user.id)
+        context.user_data[states.CATEGORIES_SELECTED] = user_db.check_user_category(update.effective_user.id)
+        buttons += [
+            [
+                InlineKeyboardButton(text='Нет моих компетенций 😕',
+                                     callback_data=command_constants.COMMAND__NO_RELEVANT)
+            ]]
+    else:
+        if len(selected_categories_list) == 1:
+            context.user_data[states.SUBSCRIPTION_FLAG] = user_db.set_user_subscribed(update.effective_user.id)
+            context.user_data[states.CATEGORIES_SELECTED] = user_db.check_user_category(update.effective_user.id)
+        buttons += [
+            [
+                InlineKeyboardButton(text='Нет моих компетенций 😕',
+                                     callback_data=command_constants.COMMAND__NO_RELEVANT)
+            ],
+            [
+                InlineKeyboardButton(text='Готово 👌', callback_data=command_constants.COMMAND__READY),
+            ]
+        ]
 
-    buttons += [
-        [
-            InlineKeyboardButton(text='Нет моих компетенций 😕',
-                                 callback_data=command_constants.COMMAND__NO_RELEVANT)
-        ],
-        [
-            InlineKeyboardButton(text='Готово 👌', callback_data=command_constants.COMMAND__READY),
-        ],
-    ]
     keyboard = InlineKeyboardMarkup(buttons)
+    text = ('Чтобы я знал, с какими задачами ты готов помогать, '
+            'выбери свои профессиональные компетенции (можно выбрать '
+            'несколько). После этого, нажми на пункт "Готово 👌"')
     if save_prev_msg:
         context.bot.send_message(
             chat_id=update.effective_chat.id,
-            text='Чтобы я знал, с какими задачами ты готов помогать, '
-                 'выбери свои профессиональные компетенции (можно выбрать '
-                 'несколько). После этого, нажми на пункт "Готово 👌"',
+            text=text,
             reply_markup=keyboard,
         )
     else:
         update.callback_query.edit_message_text(
-            text='Чтобы я знал, с какими задачами ты готов помогать, '
-                 'выбери свои профессиональные компетенции (можно выбрать '
-                 'несколько). После этого, нажми на пункт "Готово 👌"',
+            text=text,
             reply_markup=keyboard,
         )
-
+    update.callback_query.answer()
     return states.CATEGORY
 
 
+@send_typing_action
 @log_command(command=constants.LOG_COMMANDS_NAME['after_category_choose'])
 def after_category_choose(update: Update, context: CallbackContext):
-    user_categories = ', '.join([spec['name'] for spec
-                                 in user_db.get_category(update.effective_user.id)
-                                 if spec['user_selected']])
+    user_categories = ', '.join([category['name'] for category
+                                 in user_db.get_categories(update.effective_user.id)
+                                 if category['user_selected']])
 
     if not user_categories:
         user_categories = 'Категории ещё не выбраны'
@@ -146,7 +161,7 @@ def after_category_choose(update: Update, context: CallbackContext):
         text='А пока можешь посмотреть открытые задания.',
         reply_markup=common_comands.get_menu_and_tasks_buttons()
     )
-
+    update.callback_query.answer()
     return states.AFTER_CATEGORY_REPLY
 
 
@@ -179,15 +194,14 @@ def no_relevant_category(update: Update, context: CallbackContext):
     return states.NO_CATEGORY
 
 
+@send_typing_action
 @log_command(command=constants.LOG_COMMANDS_NAME['show_open_task'])
 def show_open_task(update: Update, context: CallbackContext):
     buttons = [
         [
             InlineKeyboardButton(text='Посмотреть ещё', callback_data=command_constants.COMMAND__OPEN_TASK)
         ],
-        [
-            InlineKeyboardButton(text='Открыть меню', callback_data=command_constants.COMMAND__OPEN_MENU)
-        ]
+        [common_comands.open_menu_button]
     ]
     keyboard = InlineKeyboardMarkup(buttons)
 
@@ -204,7 +218,7 @@ def show_open_task(update: Update, context: CallbackContext):
         update.callback_query.edit_message_text(
             text='Нет доступных заданий',
             reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton(text='Открыть меню', callback_data=command_constants.COMMAND__OPEN_MENU)]]
+                [[common_comands.open_menu_button]]
             )
         )
     else:
@@ -230,8 +244,7 @@ def show_open_task(update: Update, context: CallbackContext):
                     chat_id=update.effective_chat.id,
                     text='Ты просмотрел все открытые задания на текущий момент.',
                     reply_markup=InlineKeyboardMarkup(
-                        [[InlineKeyboardButton(text='Открыть меню',
-                                               callback_data=command_constants.COMMAND__OPEN_MENU)]]
+                        [[common_comands.open_menu_button]]
                     )
                 )
                 return states.OPEN_TASKS
@@ -243,17 +256,22 @@ def show_open_task(update: Update, context: CallbackContext):
             text='Есть ещё задания, показать?',
             reply_markup=keyboard
         )
-
+    update.callback_query.answer()
     return states.OPEN_TASKS
 
 
+open_tasks_handler = CallbackQueryHandler(show_open_task, pattern=command_constants.COMMAND__OPEN_TASK)
+
 categories_conv = ConversationHandler(
+    allow_reentry=True,
+    persistent=True,
+    name='category_handler',
     entry_points=[
         CallbackQueryHandler(choose_category_after_start, pattern=command_constants.COMMAND__GREETING),
         CallbackQueryHandler(before_confirm_specializations,
                              pattern=command_constants.COMMAND__GREETING_REGISTERED_USER),
         CallbackQueryHandler(choose_category, pattern=command_constants.COMMAND__CHANGE_CATEGORY),
-        CallbackQueryHandler(show_open_task, pattern=command_constants.COMMAND__OPEN_TASK),
+        open_tasks_handler
     ],
     states={
         states.GREETING: [
@@ -266,22 +284,22 @@ categories_conv = ConversationHandler(
             CallbackQueryHandler(no_relevant_category, pattern=command_constants.COMMAND__NO_RELEVANT)
         ],
         states.AFTER_CATEGORY_REPLY: [
-            CallbackQueryHandler(show_open_task, pattern=command_constants.COMMAND__OPEN_TASK),
-            CallbackQueryHandler(common_comands.open_menu, pattern=command_constants.COMMAND__OPEN_MENU)
+            open_tasks_handler,
+            common_comands.open_menu_handler
         ],
         states.NO_CATEGORY: [
             feedback_conv,
-            CallbackQueryHandler(show_open_task, pattern=command_constants.COMMAND__OPEN_TASK),
-            CallbackQueryHandler(common_comands.open_menu, pattern=command_constants.COMMAND__OPEN_MENU)
+            open_tasks_handler,
+            common_comands.open_menu_handler
         ],
         states.OPEN_TASKS: [
-            CallbackQueryHandler(show_open_task, pattern=command_constants.COMMAND__OPEN_TASK),
-            CallbackQueryHandler(common_comands.open_menu, pattern=command_constants.COMMAND__OPEN_MENU)
+            open_tasks_handler,
+            common_comands.open_menu_handler
         ]
     },
     fallbacks=[
-        CommandHandler('start', common_comands.start),
-        CommandHandler('menu', common_comands.open_menu_fall)
+        common_comands.start_command_handler,
+        common_comands.menu_command_handler
     ],
     map_to_parent={
         states.MENU: states.MENU

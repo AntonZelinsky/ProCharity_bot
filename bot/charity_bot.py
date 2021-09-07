@@ -1,4 +1,3 @@
-import logging
 import os
 
 from dotenv import load_dotenv
@@ -7,7 +6,6 @@ from telegram import (Update,
                       InlineKeyboardButton,
                       ParseMode)
 from telegram.ext import (Updater,
-                          CommandHandler,
                           ConversationHandler,
                           CallbackContext,
                           CallbackQueryHandler,
@@ -22,17 +20,13 @@ from bot.constants import command_constants
 from bot.handlers.categories_handler import categories_conv, change_user_categories
 from bot.handlers.feedback_handler import feedback_conv
 from bot.handlers.subscription_handler import subscription_conv
-from bot.logger import log_command
+from bot.decorators.logger import log_command
 from bot.user_db import UserDB
-
+from app.logger import bot_logger
 
 load_dotenv()
 
-logger = logging.getLogger(__name__)
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.DEBUG
-)
+logger = bot_logger
 
 bot_persistence = PicklePersistence(filename=BOT_PERSISTENCE_FILE,
                                     store_bot_data=True,
@@ -61,7 +55,7 @@ def about(update: Update, context: CallbackContext):
         reply_markup=keyboard,
         parse_mode=ParseMode.HTML, disable_web_page_preview=True
     )
-
+    update.callback_query.answer()
     return states.MENU
 
 
@@ -77,7 +71,7 @@ def init() -> None:
     dispatcher = updater.dispatcher
     conv_handler = ConversationHandler(
         entry_points=[
-            CommandHandler('start', common_comands.start)
+            common_comands.start_command_handler
         ],
         states={
             states.GREETING: [
@@ -88,15 +82,15 @@ def init() -> None:
                 categories_conv,
                 subscription_conv,
                 CallbackQueryHandler(about, pattern=command_constants.COMMAND__ABOUT),                
-                CallbackQueryHandler(common_comands.open_menu, pattern=command_constants.COMMAND__OPEN_MENU)
+                common_comands.open_menu_handler
             ],            
         },
         fallbacks=[
-            CommandHandler('start', common_comands.start),
-            CommandHandler('menu', common_comands.open_menu_fall)
+            common_comands.start_command_handler,
+            common_comands.menu_command_handler
         ],
         persistent=True,
-        name='conv_handler'
+        name='main_handler'
     )
 
     update_users_category = CallbackQueryHandler(change_user_categories, pattern='^up_cat[0-9]{1,2}$')

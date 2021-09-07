@@ -1,0 +1,26 @@
+name: Develop Branch Procharity Bot
+
+on:
+  pull_request:
+    branches:
+      - develop
+    types: [closed]
+
+  workflow_dispatch:
+
+jobs:
+  deploy_develop:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Update repo
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST_DEV }}
+          username: ${{ secrets.USER_DEV }}
+          key: ${{ secrets.SSH_KEY_DEV }}
+          script: |
+            cd /code
+            git checkout develop
+            git pull
+            sudo systemctl restart procharitybot.service

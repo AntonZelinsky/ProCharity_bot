@@ -1,0 +1,26 @@
+name: Master Branch Procharity Bot
+
+on:
+  pull_request:
+    branches:
+      - master
+    types: [closed]
+
+  workflow_dispatch:
+
+jobs:
+  deploy_master:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Update repo
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST_PROD }}
+          username: ${{ secrets.USER_PROD }}
+          key: ${{ secrets.SSH_KEY_PROD }}
+          script: |
+            cd /code
+            git checkout master
+            git pull
+            sudo systemctl restart procharitybot.service

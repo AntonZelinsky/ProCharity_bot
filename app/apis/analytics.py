@@ -1,18 +1,19 @@
 from datetime import datetime, timedelta
+
 from flask import jsonify, make_response, request
-from sqlalchemy import distinct
-from sqlalchemy.sql.schema import Column
-from flask_apispec import doc, use_kwargs
+from flask_apispec import doc
 from flask_apispec.views import MethodResource
 from flask_jwt_extended import jwt_required
 from flask_restful import Resource
+
+from sqlalchemy import distinct
 from sqlalchemy.sql import func
-from marshmallow import fields
+from sqlalchemy.sql.schema import Column
 
 from app import config
+from app.apis import health_check
 from app.models import ReasonCanceling, Statistics, User
 from app.database import db_session
-from app.apis import health_check
 
 from bot.constants import constants
 

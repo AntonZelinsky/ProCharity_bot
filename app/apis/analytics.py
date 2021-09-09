@@ -30,9 +30,12 @@ class Analytics(MethodResource, Resource):
              'Authorization': config.PARAM_HEADER_AUTH})
     @jwt_required()
     def get(self):
-        date_limit = datetime.strptime(request.args.get('date_limit'), '%Y-%m-%d').date()
         today = datetime.now().date()
-        if date_limit > today:
+        try:
+            date_limit = datetime.strptime(request.args.get('date_limit'), '%Y-%m-%d').date()
+            if date_limit > today:
+                date_limit = today
+        except Exception:
             date_limit = today
         date_begin = date_limit - timedelta(days=30)
         reasons_canceling_from_db = get_statistics(ReasonCanceling.reason_canceling)

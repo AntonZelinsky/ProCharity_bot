@@ -204,6 +204,7 @@ class UserDB:
         try:
             for reason in reasons:
                 reason.archive = True
+                reason.updated_date = datetime.now()
             return db_session.commit()
         except SQLAlchemyError as ex:
-            logger.error(f"User DB - 'cancel_feedback_stat' method: {str(ex)}")
+            logger.error(f"User DB - 'archive_reason_cancelling' method: {str(ex)}")

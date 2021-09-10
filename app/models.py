@@ -7,7 +7,7 @@ from sqlalchemy import (Column,
                         Date,
                         text,
                         )
-from sqlalchemy.sql import expression
+from sqlalchemy.sql import expression, func
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -135,7 +135,8 @@ class ReasonCanceling(Base):
     id = Column(Integer, primary_key=True)
     telegram_id = Column(Integer)
     reason_canceling = Column(String(48), nullable=False)
-    added_date = Column(DateTime, server_default=text('now()'), nullable=False)
+    added_date = Column(DateTime, server_default=func.now(), nullable=False)
+    updated_date = Column(DateTime, server_default=func.now(), nullable=False)
     archive = Column(Boolean, server_default=expression.false(), nullable=False)
 
 

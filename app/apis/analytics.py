@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from flask import jsonify, make_response, request
+from flask import jsonify, make_response
 from flask_apispec import doc
 from flask_apispec.views import MethodResource
 from flask_jwt_extended import jwt_required
@@ -17,12 +17,14 @@ from app.database import db_session
 
 from bot.constants import constants
 
+TODAY = datetime.now().date()
 
 class Analytics(MethodResource, Resource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         self.reqparse.add_argument('date_limit', required=False,
-                                   type=lambda x:datetime.strptime(x, '%Y-%m-%d').date())
+                                   type=lambda x:datetime.strptime(x, '%Y-%m-%d').date(),
+                                   default=TODAY)
 
     @doc(description='Analytics statistics',
          tags=['Analytics'],
@@ -33,13 +35,12 @@ class Analytics(MethodResource, Resource):
                  'type': 'date',
                  'required': True},
              'Authorization': config.PARAM_HEADER_AUTH})
-    
-    @jwt_required()   
+
+    @jwt_required()
     def get(self):
         date_limit = self.reqparse.parse_args().date_limit
-        today = datetime.now().date()
-        if not date_limit or date_limit > today:
-            date_limit = today
+        if date_limit > TODAY:
+            date_limit = TODAY
         date_begin = date_limit - timedelta(days=30)
         reasons_canceling_from_db = get_statistics(ReasonCanceling.reason_canceling)
         reasons_canceling = {

@@ -4,7 +4,7 @@ from flask import jsonify, make_response, request
 from flask_apispec import doc
 from flask_apispec.views import MethodResource
 from flask_jwt_extended import jwt_required
-from flask_restful import Resource
+from flask_restful import Resource, reqparse
 
 from sqlalchemy import distinct
 from sqlalchemy.sql import func
@@ -19,6 +19,11 @@ from bot.constants import constants
 
 
 class Analytics(MethodResource, Resource):
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        self.reqparse.add_argument('date_limit', required=False,
+                                   type=lambda x:datetime.strptime(x, '%Y-%m-%d').date())
+
     @doc(description='Analytics statistics',
          tags=['Analytics'],
          params={
@@ -28,14 +33,12 @@ class Analytics(MethodResource, Resource):
                  'type': 'date',
                  'required': True},
              'Authorization': config.PARAM_HEADER_AUTH})
-    @jwt_required()
+    
+    @jwt_required()   
     def get(self):
+        date_limit = self.reqparse.parse_args().date_limit
         today = datetime.now().date()
-        try:
-            date_limit = datetime.strptime(request.args.get('date_limit'), '%Y-%m-%d').date()
-            if date_limit > today:
-                date_limit = today
-        except Exception:
+        if not date_limit or date_limit > today:
             date_limit = today
         date_begin = date_limit - timedelta(days=30)
         reasons_canceling_from_db = get_statistics(ReasonCanceling.reason_canceling)

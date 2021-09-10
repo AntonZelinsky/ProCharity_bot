@@ -17,14 +17,15 @@ from app.database import db_session
 
 from bot.constants import constants
 
-TODAY = datetime.now().date()
+
+DAYS_NUMBER = 30
 
 class Analytics(MethodResource, Resource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         self.reqparse.add_argument('date_limit', required=False,
                                    type=lambda x:datetime.strptime(x, '%Y-%m-%d').date(),
-                                   default=TODAY)
+                                   default=datetime.now().date())
 
     @doc(description='Analytics statistics',
          tags=['Analytics'],
@@ -39,7 +40,7 @@ class Analytics(MethodResource, Resource):
     @jwt_required()
     def get(self):
         date_limit = self.reqparse.parse_args().date_limit
-        date_begin = date_limit - timedelta(days=30)
+        date_begin = date_limit - timedelta(days=DAYS_NUMBER)
         reasons_canceling_from_db = get_statistics(ReasonCanceling.reason_canceling)
         reasons_canceling = {
             constants.REASONS.get(key, 'Другое'):
@@ -106,7 +107,7 @@ def get_dict_by_days(date_begin, result):
         (date_begin + timedelta(days=n)).strftime('%Y-%m-%d'):
             result.get((date_begin + timedelta(days=n))
                        .strftime('%Y-%m-%d'), 0)
-        for n in range(1, 31)
+        for n in range(1, DAYS_NUMBER+1)
     }
 
 

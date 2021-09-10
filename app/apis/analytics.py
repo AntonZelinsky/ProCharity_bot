@@ -1,46 +1,64 @@
 from datetime import datetime, timedelta
+
 from flask import jsonify, make_response
-from sqlalchemy import distinct
-from sqlalchemy.sql.schema import Column
 from flask_apispec import doc
 from flask_apispec.views import MethodResource
 from flask_jwt_extended import jwt_required
-from flask_restful import Resource
-from sqlalchemy.sql import func
+from flask_restful import Resource, reqparse
 
+from sqlalchemy import distinct
+from sqlalchemy.sql import func
+from sqlalchemy.sql.schema import Column
+
+from app import config
+from app.apis import health_check
 from app.models import ReasonCanceling, Statistics, User
 from app.database import db_session
-from app.apis import health_check
 
 from bot.constants import constants
 
 
+DAYS_NUMBER = 30
+
 class Analytics(MethodResource, Resource):
+    def __init__(self):
+        self.reqparse = reqparse.RequestParser()
+        self.reqparse.add_argument('date_limit', required=False,
+                                   type=lambda x:datetime.strptime(x, '%Y-%m-%d').date(),
+                                   default=datetime.now().date())
+
     @doc(description='Analytics statistics',
-         tags=['Analytics'])
+         tags=['Analytics'],
+         params={
+             'date_limit': {
+                 'description': 'The date until which statistics for 30 days will be displayed',
+                 'in': 'query',
+                 'type': 'date',
+                 'required': True},
+             'Authorization': config.PARAM_HEADER_AUTH})
+
     @jwt_required()
     def get(self):
+        date_limit = self.reqparse.parse_args().date_limit
+        date_begin = date_limit - timedelta(days=DAYS_NUMBER)
         reasons_canceling_from_db = get_statistics(ReasonCanceling.reason_canceling)
         reasons_canceling = {
             constants.REASONS.get(key, 'Другое'):
                 value for key, value in reasons_canceling_from_db
         }
-        return make_response(jsonify(added_users=get_statistics_by_days(User.date_registration),
-                                     added_external_users=get_statistics_by_days(User.external_signup_date),
+        return make_response(jsonify(added_users=get_statistics_by_days(date_begin, User.date_registration),
+                                     added_external_users=get_statistics_by_days(date_begin, User.external_signup_date),
                                      number_users=get_number_users_statistic(),
                                      command_stats=dict(get_statistics(Statistics.command)),
                                      reasons_canceling=reasons_canceling,
-                                     users_unsubscribed=get_statistics_by_days(ReasonCanceling.added_date),
-                                     distinct_users_unsubscribed=get_statistics_by_days(
-                                         ReasonCanceling.added_date, ReasonCanceling.telegram_id),
-                                     active_users_statistic=users_activity_statistic(Statistics.added_date,
+                                     users_unsubscribed=get_statistics_by_days(date_begin, ReasonCanceling.added_date),
+                                     distinct_users_unsubscribed=get_statistics_by_days(date_begin,
+                                                                                        ReasonCanceling.added_date,
+                                                                                        ReasonCanceling.telegram_id),
+                                     active_users_statistic=users_activity_statistic(date_begin, Statistics.added_date,
                                                                                      Statistics.telegram_id),
                                      tasks=dict(last_update=health_check.get_last_update(),
                                                 active_tasks=health_check.get_count_active_tasks())), 200)
-
-
-TODAY = datetime.now().date()
-DATE_BEGIN = TODAY - timedelta(days=30)
 
 
 def get_number_users_statistic():
@@ -65,58 +83,59 @@ def get_statistics(column_name: Column) -> list:
     return result
 
 
-def get_monthly_statistics(column_name: Column, second_column_name: Column):
+def get_monthly_statistics(date_begin, column_name: Column, second_column_name: Column):
     result = db_session.query(
         func.count(distinct(second_column_name))
-    ).filter(column_name > DATE_BEGIN).all()
+    ).filter(column_name > date_begin).all()
     return result[0][0]
 
 
-def get_statistics_by_days(column_name: Column, second_column_name: Column = None) -> dict:
+def get_statistics_by_days(date_begin, column_name: Column, second_column_name: Column = None) -> dict:
     column_to_count = column_name if second_column_name is None else distinct(second_column_name)
     result = dict(
         db_session.query(
             func.to_char(column_name, 'YYYY-MM-DD'),
             func.count(column_to_count))
-            .filter(column_name > DATE_BEGIN)
+            .filter(column_name > date_begin)
             .group_by(func.to_char(column_name, 'YYYY-MM-DD'))
             .all())
-    return get_dict_by_days(result)
+    return get_dict_by_days(date_begin, result)
 
 
-def get_dict_by_days(result):
+def get_dict_by_days(date_begin, result):
     return {
-        (DATE_BEGIN + timedelta(days=n)).strftime('%Y-%m-%d'):
-            result.get((DATE_BEGIN + timedelta(days=n))
+        (date_begin + timedelta(days=n)).strftime('%Y-%m-%d'):
+            result.get((date_begin + timedelta(days=n))
                        .strftime('%Y-%m-%d'), 0)
-        for n in range(1, 31)
+        for n in range(1, DAYS_NUMBER+1)
     }
 
 
-def get_statistic_by_days_with_filtration(column_name: Column, second_column_name: Column, filter_list: list):
+def get_statistic_by_days_with_filtration(date_begin, column_name: Column, second_column_name: Column,
+                                          filter_list: list):
     column_to_count = distinct(second_column_name)
     result = dict(
         db_session.query(
             func.to_char(column_name, 'YYYY-MM-DD'),
             func.count(column_to_count))
-            .filter(column_name > DATE_BEGIN)
+            .filter(column_name > date_begin)
             .filter(second_column_name.in_(filter_list))
             .group_by(func.to_char(column_name, 'YYYY-MM-DD'))
             .all())
-    return get_dict_by_days(result)
+    return get_dict_by_days(date_begin, result)
 
 
-def users_activity_statistic(column_name: Column, second_column_name: Column = None):
+def users_activity_statistic(date_begin, column_name: Column, second_column_name: Column = None):
     users = db_session.query(User.telegram_id, User.has_mailing).all()
     subscribed_users_ids = [user[0] for user in users if user[1] is True]
     unsubscribed_users_ids = [user[0] for user in users if user[1] is False]
 
-    all_active_users = get_statistics_by_days(column_name, second_column_name)
-    subscribed_active_users = get_statistic_by_days_with_filtration(column_name, second_column_name,
+    all_active_users = get_statistics_by_days(date_begin, column_name, second_column_name)
+    subscribed_active_users = get_statistic_by_days_with_filtration(date_begin, column_name, second_column_name,
                                                                     subscribed_users_ids)
-    unsubscribed_active_users = get_statistic_by_days_with_filtration(column_name, second_column_name,
+    unsubscribed_active_users = get_statistic_by_days_with_filtration(date_begin, column_name, second_column_name,
                                                                       unsubscribed_users_ids)
-    active_users_per_month = get_monthly_statistics(column_name, second_column_name)
+    active_users_per_month = get_monthly_statistics(date_begin, column_name, second_column_name)
     result = {
         'all': all_active_users,
         'subscribed': subscribed_active_users,

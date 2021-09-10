@@ -136,6 +136,7 @@ class ReasonCanceling(Base):
     telegram_id = Column(Integer)
     reason_canceling = Column(String(48), nullable=False)
     added_date = Column(DateTime, server_default=text('now()'), nullable=False)
+    archive = Column(Boolean, server_default=expression.false(), nullable=False)
 
 
 class ExternalSiteUser(Base):

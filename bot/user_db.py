@@ -81,7 +81,6 @@ class UserDB:
             return False
         return True
 
-
     def get_categories(self, telegram_id):
         """
         Returns a collection of categories. If the user has selected one of them, it returns True in dictionary.
@@ -117,7 +116,6 @@ class UserDB:
                 join(Category, Category.id == Task.category_id)
         result = db_session.execute(db_query)
         return [[task, category_name] for task, category_name in result]
-
 
     def change_subscription(self, telegram_id):
         """
@@ -178,7 +176,7 @@ class UserDB:
         except EmailNotValidError as ex:
             logger.error(f"User DB - 'set_user_email' method: {str(ex)}")
             return False
-    
+
     def set_user_unsubscribed(self, telegram_id):
         user = User.query.options(load_only('has_mailing')).filter_by(telegram_id=telegram_id).first()
         try:
@@ -196,3 +194,16 @@ class UserDB:
         except SQLAlchemyError as ex:
             logger.error(f"User DB - 'set_user_subscribed' method: {str(ex)}")
         return user.has_mailing
+
+    def get_users_reasons_cancelling(self, telegram_id):
+        reasons = ReasonCanceling.query.options(load_only('archive')).filter_by(telegram_id=telegram_id).filter_by(
+            archive=False).all()
+        return reasons
+
+    def archive_reason_cancelling(self, reasons:list):
+        try:
+            for reason in reasons:
+                reason.archive = True
+            return db_session.commit()
+        except SQLAlchemyError as ex:
+            logger.error(f"User DB - 'cancel_feedback_stat' method: {str(ex)}")

@@ -39,8 +39,6 @@ class Analytics(MethodResource, Resource):
     @jwt_required()
     def get(self):
         date_limit = self.reqparse.parse_args().date_limit
-        if date_limit > TODAY:
-            date_limit = TODAY
         date_begin = date_limit - timedelta(days=30)
         reasons_canceling_from_db = get_statistics(ReasonCanceling.reason_canceling)
         reasons_canceling = {

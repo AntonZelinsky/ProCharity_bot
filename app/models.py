@@ -138,11 +138,10 @@ class ReasonCanceling(Base):
     telegram_id = Column(Integer)
     reason_canceling = Column(String(48), nullable=False)
     added_date = Column(TIMESTAMP, server_default=func.current_timestamp(), nullable=False)
-    updated_date = Column(TIMESTAMP, server_default=func.current_timestamp(), nullable=False)
+    updated_date = Column(TIMESTAMP, server_default=func.current_timestamp(),
+                          nullable=False, onupdate=func.current_timestamp())
     archive = Column(Boolean, server_default=expression.false(), nullable=False)
 
-    def update_updated_date(self):
-        self.updated_date = datetime.datetime.now()
 
 
 class ExternalSiteUser(Base):

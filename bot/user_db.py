@@ -201,10 +201,10 @@ class UserDB:
         return reasons
 
     def archive_reason_cancelling(self, reasons:list):
+        for reason in reasons:
+            reason.archive = True
         try:
-            for reason in reasons:
-                reason.archive = True
-                reason.update_updated_date()
-            return db_session.commit()
+            db_session.commit()
         except SQLAlchemyError as ex:
             logger.error(f"User DB - 'archive_reason_cancelling' method: {str(ex)}")
+            db_session.rollback()

@@ -20,9 +20,7 @@ user_db = UserDB()
 @log_command(command=constants.LOG_COMMANDS_NAME['start_task_subscription'])
 def start_task_subscription(update: Update, context: CallbackContext):
     context.user_data[states.SUBSCRIPTION_FLAG] = user_db.change_subscription(update.effective_user.id)
-    user_reasons_cancelling = user_db.get_users_reasons_cancelling(update.effective_user.id)
-    if user_reasons_cancelling != []:
-        user_db.archive_reason_cancelling(user_reasons_cancelling)
+    user_db.archive_reason_cancelling(update.effective_user.id)
     user_categories = [
         category['name'] for category in user_db.get_categories(update.effective_user.id)
         if category['user_selected']

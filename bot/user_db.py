@@ -195,12 +195,9 @@ class UserDB:
             logger.error(f"User DB - 'set_user_subscribed' method: {str(ex)}")
         return user.has_mailing
 
-    def get_users_reasons_cancelling(self, telegram_id):
+    def archive_reason_cancelling(self, telegram_id):
         reasons = ReasonCanceling.query.options(load_only('archive')).filter_by(telegram_id=telegram_id).filter_by(
             archive=False).all()
-        return reasons
-
-    def archive_reason_cancelling(self, reasons:list):
         for reason in reasons:
             reason.archive = True
         try:

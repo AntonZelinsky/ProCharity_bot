@@ -141,11 +141,8 @@ class ReasonCanceling(Base):
     updated_date = Column(TIMESTAMP, server_default=func.current_timestamp(), nullable=False)
     archive = Column(Boolean, server_default=expression.false(), nullable=False)
 
-    def get_todays_date(self):
-        return datetime.datetime.now()
-
     def update_updated_date(self):
-        self.updated_date = self.get_todays_date()
+        self.updated_date = datetime.datetime.now()
 
 
 class ExternalSiteUser(Base):

@@ -17,14 +17,14 @@ from app.database import db_session
 
 from bot.constants import constants
 
-
 DAYS_NUMBER = 30
+
 
 class Analytics(MethodResource, Resource):
     def __init__(self):
         self.reqparse = reqparse.RequestParser()
         self.reqparse.add_argument('date_limit', required=False,
-                                   type=lambda x:datetime.strptime(x, '%Y-%m-%d').date(),
+                                   type=lambda x: datetime.strptime(x, '%Y-%m-%d').date(),
                                    default=datetime.now().date())
 
     @doc(description='Analytics statistics',
@@ -36,7 +36,6 @@ class Analytics(MethodResource, Resource):
                  'type': 'date',
                  'required': True},
              'Authorization': config.PARAM_HEADER_AUTH})
-
     @jwt_required()
     def get(self):
         date_limit = self.reqparse.parse_args().date_limit
@@ -46,15 +45,15 @@ class Analytics(MethodResource, Resource):
             constants.REASONS.get(key, 'Другое'):
                 value for key, value in reasons_canceling_from_db
         }
-        return make_response(jsonify(added_users=get_statistics_by_days(date_begin, User.date_registration),
-                                     added_external_users=get_statistics_by_days(date_begin, User.external_signup_date),
-                                     number_users=get_number_users_statistic(),
-                                     command_stats=dict(get_statistics(Statistics.command)),
+        return make_response(jsonify(command_stats=dict(get_statistics(Statistics.command)),
                                      reasons_canceling=reasons_canceling,
-                                     users_unsubscribed=get_statistics_by_days(date_begin, ReasonCanceling.added_date),
-                                     distinct_users_unsubscribed=get_statistics_by_days(date_begin,
-                                                                                        ReasonCanceling.added_date,
-                                                                                        ReasonCanceling.telegram_id),
+                                     number_users=get_number_users_statistic(),
+                                     all_users_statistic=dict(
+                                         added_users=get_statistics_by_days(date_begin, User.date_registration),
+                                         added_external_users=get_statistics_by_days(date_begin,
+                                                                                     User.external_signup_date),
+                                         users_unsubscribed=get_statistics_by_days(date_begin,
+                                                                                   ReasonCanceling.added_date)),
                                      active_users_statistic=users_activity_statistic(date_begin, Statistics.added_date,
                                                                                      Statistics.telegram_id),
                                      tasks=dict(last_update=health_check.get_last_update(),
@@ -107,7 +106,7 @@ def get_dict_by_days(date_begin, result):
         (date_begin + timedelta(days=n)).strftime('%Y-%m-%d'):
             result.get((date_begin + timedelta(days=n))
                        .strftime('%Y-%m-%d'), 0)
-        for n in range(1, DAYS_NUMBER+1)
+        for n in range(1, DAYS_NUMBER + 1)
     }
 
 

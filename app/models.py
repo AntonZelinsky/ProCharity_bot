@@ -1,3 +1,4 @@
+import datetime
 from sqlalchemy import (Column,
                         ForeignKey,
                         Integer,
@@ -7,9 +8,10 @@ from sqlalchemy import (Column,
                         Date,
                         text,
                         )
-from sqlalchemy.sql import expression
+from sqlalchemy.sql import expression, func
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.sql.sqltypes import TIMESTAMP
 from werkzeug.security import generate_password_hash, check_password_hash
 
 Base = declarative_base()
@@ -135,7 +137,11 @@ class ReasonCanceling(Base):
     id = Column(Integer, primary_key=True)
     telegram_id = Column(Integer)
     reason_canceling = Column(String(48), nullable=False)
-    added_date = Column(DateTime, server_default=text('now()'), nullable=False)
+    added_date = Column(TIMESTAMP, server_default=func.current_timestamp(), nullable=False)
+    updated_date = Column(TIMESTAMP, server_default=func.current_timestamp(),
+                          nullable=False, onupdate=func.current_timestamp())
+    archive = Column(Boolean, server_default=expression.false(), nullable=False)
+
 
 
 class ExternalSiteUser(Base):

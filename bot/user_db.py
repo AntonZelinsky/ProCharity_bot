@@ -196,10 +196,8 @@ class UserDB:
         return user.has_mailing
 
     def archive_reason_cancelling(self, telegram_id):
-        reasons = ReasonCanceling.query.options(load_only('archive')).filter_by(telegram_id=telegram_id).filter_by(
-            archive=False).all()
-        for reason in reasons:
-            reason.archive = True
+        ReasonCanceling.query.filter_by(telegram_id=telegram_id).filter_by(
+            archive=False).update({'archive': True})
         try:
             db_session.commit()
         except SQLAlchemyError as ex:

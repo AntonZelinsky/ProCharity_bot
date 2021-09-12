@@ -98,4 +98,10 @@ def init() -> None:
     dispatcher.add_handler(conv_handler)
     dispatcher.add_handler(update_users_category)
     dispatcher.add_error_handler(error_handler)
-    updater.start_polling()
+    updater.start_webhook(
+        listen='127.0.0.1',
+        port=5000,
+        url_path=os.getenv('TOKEN'),
+        webhook_url=f"https://178.154.202.217/{os.getenv('TOKEN')}",
+        cert='cert.pem'
+    )

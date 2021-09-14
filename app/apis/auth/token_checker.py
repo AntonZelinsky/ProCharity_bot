@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from app.models import AdminRegistrationRequest
+from app.models import AdminTokenRequest
 from flask import jsonify, make_response
 from flask_apispec import doc, use_kwargs
 from flask_apispec.views import MethodResource
@@ -30,7 +30,7 @@ class TokenChecker(MethodResource, Resource):
     @use_kwargs({'token': fields.Str()})
     def post(self, **kwargs):
         token = kwargs.get('token')
-        record = AdminRegistrationRequest.query.filter_by(token=token).first()
+        record = AdminTokenRequest.query.filter_by(token=token).first()
 
         if not record or record.token_expiration_date < datetime.now():
             logger.error(f"Token Checker: Token '{token}' not confirmed.")

@@ -7,7 +7,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from app import config
 from app.database import db_session
 from app.messages import send_email
-from app.models import AdminRegistrationRequest, AdminUser
+from app.models import AdminTokenRequest, AdminUser
 from email_validator import EmailNotValidError, validate_email
 from flask import jsonify, make_response, render_template, request
 from flask_apispec import doc, use_kwargs
@@ -16,6 +16,7 @@ from flask_jwt_extended import jwt_required
 from flask_restful import Resource
 from marshmallow import fields
 from app.logger import app_logger as logger
+from app.apis.auth.send_token import send_token
 
 
 class SendRegistrationInvite(MethodResource, Resource):
@@ -33,12 +34,9 @@ class SendRegistrationInvite(MethodResource, Resource):
                  'type': 'string',
                  'required': True
              },
-             # TODO Authorization is temporarily disabled.
-             # 'Authorization': config.PARAM_HEADER_AUTH,  # Only if request requires authorization
-         },
-
-         )
-    # TODO Token verification is temporarily disabled.
+             'Authorization': config.PARAM_HEADER_AUTH,
+         }
+        )
     @use_kwargs({'email': fields.Str()})
     @jwt_required()
     def post(self, **kwargs):
@@ -57,48 +55,22 @@ class SendRegistrationInvite(MethodResource, Resource):
                         f" The user with the specified mailing address {email} is already registered.")
             return make_response(jsonify(
                 message="Пользователь с указанным почтовым адресом уже зарегистрирован."), 400)
-
-        token_expiration = config.INV_TOKEN_EXPIRATION
-        invitation_token_expiration_date = datetime.now() + timedelta(hours=token_expiration)
-        invitation_token = str(uuid.uuid4())
-
-        register_record = AdminRegistrationRequest.query.filter_by(email=email).first()
+        subject = config.REGISTRATION_SUBJECT
+        template = config.INVITATION_TEMPLATE
+        path='register'
         try:
-            if register_record:
-                register_record.token = invitation_token
-                register_record.token_expiration_date = invitation_token_expiration_date
-                db_session.commit()
-            else:
-                user = AdminRegistrationRequest(
-                    email=email,
-                    token=invitation_token,
-                    token_expiration_date=invitation_token_expiration_date
-                )
-                db_session.add(user)
-                db_session.commit()
-
-            invitation_link = f'{request.scheme}://{config.HOST_NAME}/#/register/{invitation_token}'
-
-            email_template = render_template(
-                config.INVITATION_TEMPLATE,
-                inv_link=invitation_link,
-                expiration=token_expiration
-            )
-            send_email(
-                recipients=[email],
-                subject=config.REGISTRATION_SUBJECT,
-                template=email_template
-            )
-
+            send_token(email, path, subject, template)
+            db_session.commit()
         except SQLAlchemyError as ex:
             logger.error(f'Send registration invite: Database commit error "{str(ex)}"')
             db_session.rollback()
             return make_response(jsonify(message=f'Bad request: {str(ex)}'), 400)
 
-        except SMTPException as ex: # base smtplib exception
+        except SMTPException as ex:
             logger.error(f"Send registration invite: {str(ex)}")
             return make_response(jsonify(message=f"The invitation message cannot be sent."), 400)
 
         logger.info(f"Send registration invite: "
                     f"The mail of invitation was sent to the specified address: {email}.")
         return make_response(jsonify(message="Письмо с приглашением было отправлено на указанный адрес."), 200)
+

@@ -4,7 +4,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app import password_policy
 from app.database import db_session
-from app.models import AdminRegistrationRequest, AdminUser
+from app.models import AdminTokenRequest, AdminUser
 from flask import jsonify, make_response
 from flask_apispec import doc, use_kwargs
 from flask_apispec.views import MethodResource
@@ -44,7 +44,7 @@ class PasswordResetConfirm(MethodResource, Resource):
     def post(self, **kwargs):
         token = kwargs.get('token')
         password = kwargs.get('password')
-        reset_record = AdminRegistrationRequest.query.filter_by(token=token).first()
+        reset_record = AdminTokenRequest.query.filter_by(token=token).first()
         email = reset_record.email
 
         if (not reset_record

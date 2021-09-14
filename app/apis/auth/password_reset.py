@@ -1,15 +1,12 @@
-import uuid
-from datetime import datetime, timedelta
-
 from smtplib import SMTPException
 
 from sqlalchemy.exc import SQLAlchemyError
 
 from app import config
 from app.database import db_session
-from app.messages import send_email
-from app.models import AdminUser, AdminRegistrationRequest
-from flask import jsonify, make_response, render_template, request
+from app.models import AdminUser
+from app.apis.auth.send_token import send_token
+from flask import jsonify, make_response
 from flask_apispec import doc, use_kwargs
 from flask_apispec.views import MethodResource
 from flask_restful import Resource
@@ -42,30 +39,12 @@ class PasswordReset(MethodResource, Resource):
             logger.info(f"Password reset: The specified user '{email}' does not exist.")
             return make_response(jsonify(message="Указанный пользователь не существует."), 400)
 
-        token_expiration = config.INV_TOKEN_EXPIRATION
-        reset_token_expiration_date = datetime.now() + timedelta(hours=token_expiration)
-        reset_token = str(uuid.uuid4())
-
-        register_record = AdminRegistrationRequest.query.filter_by(email=email).first()
-        if register_record:
-            register_record.token = reset_token
-            register_record.token_expiration_date = reset_token_expiration_date
-        else:
-            user = AdminRegistrationRequest(
-                email=email,
-                token=reset_token,
-                token_expiration_date=reset_token_expiration_date
-            )
-            db_session.add(user)
-
-        link = f'{request.scheme}://{config.HOST_NAME}/#/password_reset_confirm/{reset_token}'
         subject = config.PASSWORD_RESET_SUBJECT
-        template = render_template(config.PASSWORD_RESET_TEMPLATE, password_reset_link=link)
-
+        template = config.PASSWORD_RESET_TEMPLATE
+        path='password_resert_confirm'
         try:
+            send_token(email, path, subject, template)
             db_session.commit()
-            send_email(subject=subject, template=template, recipients=[user.email])
-
         except SQLAlchemyError as ex:
             logger.error(f'Password reset: Database commit error "{str(ex)}"')
             db_session.rollback()

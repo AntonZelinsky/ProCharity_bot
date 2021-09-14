@@ -33,7 +33,7 @@ class SendRegistrationInvite(MethodResource, Resource):
              },
              'Authorization': config.PARAM_HEADER_AUTH,
          }
-        )
+         )
     @use_kwargs({'email': fields.Str()})
     @jwt_required()
     def post(self, **kwargs):
@@ -54,7 +54,7 @@ class SendRegistrationInvite(MethodResource, Resource):
                 message="Пользователь с указанным почтовым адресом уже зарегистрирован."), 400)
         subject = config.REGISTRATION_SUBJECT
         template = config.INVITATION_TEMPLATE
-        path='register'
+        path = 'register'
         try:
             send_token(email, path, subject, template)
             db_session.commit()
@@ -70,4 +70,3 @@ class SendRegistrationInvite(MethodResource, Resource):
         logger.info(f"Send registration invite: "
                     f"The mail of invitation was sent to the specified address: {email}.")
         return make_response(jsonify(message="Письмо с приглашением было отправлено на указанный адрес."), 200)
-

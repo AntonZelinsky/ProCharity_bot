@@ -36,5 +36,5 @@ class TokenChecker(MethodResource, Resource):
             logger.error(f"Token Checker: Token '{token}' not confirmed.")
             return make_response(jsonify(message="Токен не был найден или просрочен. "
                                                  "Пожалуйста свяжитесь со своим системным администратором."), 403)
-        logger.info(f"Token Checker: Token '{token}' confirmed.")
+        logger.info(f"Token Checker: Token for user '{record.email}' confirmed.")
         return make_response(jsonify(message='Токен подтвержден.'), 200)

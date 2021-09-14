@@ -73,13 +73,13 @@ class UserRegister(MethodResource, Resource):
         del kwargs['token']
         email = registration_record.email
         admin_user = AdminUser.query.filter_by(email=email).first()
-        
+
         if admin_user:
             logger.info("Registration:"
                         f" The user with the specified mailing address {email} is already registered.")
             return make_response(jsonify(
                 message="Пользователь с указанным почтовым адресом уже зарегистрирован."), 400)
-        
+
         if not password:
             logger.info(f'Registration: The password for registration not passed. User: {email}')
             return make_response(jsonify("Для регистрации необходимо указать пароль."), 401)

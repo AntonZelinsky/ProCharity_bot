@@ -19,6 +19,7 @@ class PasswordReset(MethodResource, Resource):
     Provides password reset for admin users accounts.
     The password reset link is sent to the registered email address.
     """
+
     @doc(description="Reset user's password",
          tags=['Password Reset'],
          params={
@@ -27,9 +28,9 @@ class PasswordReset(MethodResource, Resource):
                  'in': 'query',
                  'type': 'string',
                  'required': True
-                }
-            }
-        )
+             }
+         }
+         )
     @use_kwargs({'email': fields.Email()})
     def post(self, **kwargs):
         email = kwargs.get('email')
@@ -41,7 +42,7 @@ class PasswordReset(MethodResource, Resource):
 
         subject = config.PASSWORD_RESET_SUBJECT
         template = config.PASSWORD_RESET_TEMPLATE
-        path='password_resert_confirm'
+        path = 'password_reset_confirm'
         try:
             send_token(email, path, subject, template)
             db_session.commit()

@@ -9,7 +9,6 @@ from flask import render_template, request
 
 
 def send_token(email, path, subject, template):
-
     token_expiration = config.TOKEN_EXPIRATION
     token_expiration_date = datetime.now() + timedelta(hours=token_expiration)
     token = str(uuid.uuid4())
@@ -21,23 +20,22 @@ def send_token(email, path, subject, template):
         db_session.commit()
     else:
         user = AdminTokenRequest(
-                email=email,
-                token=token,
-                token_expiration_date=token_expiration_date
-                )
+            email=email,
+            token=token,
+            token_expiration_date=token_expiration_date
+        )
         db_session.add(user)
         db_session.commit()
 
     link = f'{request.scheme}://{config.HOST_NAME}/#/{path}/{token}'
 
     email_template = render_template(
-            template,
-            link=link,
-            expiration=token_expiration
-            )
+        template,
+        link=link,
+        expiration=token_expiration
+    )
     send_email(
-                recipients=[email],
-                subject=subject,
-                template=email_template
-            )
-
+        recipients=[email],
+        subject=subject,
+        template=email_template
+    )

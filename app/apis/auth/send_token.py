@@ -1,22 +1,11 @@
 import uuid
 from datetime import datetime, timedelta
-from smtplib import SMTPException
-
-from sqlalchemy.exc import SQLAlchemyError
 
 from app import config
 from app.database import db_session
 from app.messages import send_email
-from app.models import AdminTokenRequest, AdminUser
-from email_validator import EmailNotValidError, validate_email
-from flask import jsonify, make_response, render_template, request
-from flask_apispec import doc, use_kwargs
-from flask_apispec.views import MethodResource
-from flask_jwt_extended import jwt_required
-from flask_restful import Resource
-from marshmallow import fields
-from app.logger import app_logger as logger
-
+from app.models import AdminTokenRequest
+from flask import render_template, request
 
 
 def send_token(email, path, subject, template):

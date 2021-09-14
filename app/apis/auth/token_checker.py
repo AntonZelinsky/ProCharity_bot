@@ -9,8 +9,8 @@ from marshmallow import fields
 from app.logger import app_logger as logger
 
 
-class InvitationChecker(MethodResource, Resource):
-    """Checker of invitation token"""
+class TokenChecker(MethodResource, Resource):
+    """Checker of invitation or password reset token"""
 
     @doc(description='Checking invitation token.', tags=['User Registration'],
          params={
@@ -22,8 +22,8 @@ class InvitationChecker(MethodResource, Resource):
              },
          },
          responses={200: {'description': "Токен подтвержден."},
-                    403: {'description': "Приглашение не было найдено или просрочено. "
-                                         "Пожалуйста свяжитесь с своим системным администратором."},
+                    403: {'description': "Токен не был найден или просрочен. "
+                                         "Пожалуйста свяжитесь со своим системным администратором."},
 
                     }
          )
@@ -33,8 +33,8 @@ class InvitationChecker(MethodResource, Resource):
         record = AdminRegistrationRequest.query.filter_by(token=token).first()
 
         if not record or record.token_expiration_date < datetime.now():
-            logger.error(f"Invitation Checker: Token '{token}' not confirmed.")
-            return make_response(jsonify(message="Приглашение не было найдено или просрочено. "
-                                                 "Пожалуйста свяжитесь с своим системным администратором."), 403)
-        logger.info(f"Invitation Checker: Token '{token}' confirmed.")
+            logger.error(f"Token Checker: Token '{token}' not confirmed.")
+            return make_response(jsonify(message="Токен не был найден или просрочен. "
+                                                 "Пожалуйста свяжитесь со своим системным администратором."), 403)
+        logger.info(f"Token Checker: Token '{token}' confirmed.")
         return make_response(jsonify(message='Токен подтвержден.'), 200)

@@ -30,7 +30,7 @@ INVITATION_TEMPLATE = 'email_templates/invitation_email.html'
 PASSWORD_RESET_SUBJECT = 'Password Reset'
 PASSWORD_RESET_TEMPLATE = 'email_templates/password_reset.html'
 # Token expiration for registering a new user in the admin panel
-INV_TOKEN_EXPIRATION = 24  # hours
+TOKEN_EXPIRATION = 24  # hours
 # ------------------------------
 # swagger api documentation url
 SWAGGER_JSON = '/api/doc/swagger/'

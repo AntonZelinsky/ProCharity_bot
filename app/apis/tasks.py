@@ -42,8 +42,9 @@ class CreateTasks(MethodResource, Resource):
 
         task_id_db_archive = list(set(task_id_db) - set(task_id_db_not_archive))
         task_for_unarchive = list(set(task_id_db_archive) & set(task_id_json))
+        task_for_unarchive_json = [task for task in tasks if int(task['id']) in task_for_unarchive]       
         unarchive_records = [task for task in tasks_db if task.id in task_for_unarchive]
-        self.__unarchive_tasks(unarchive_records, task_to_send)
+        self.__unarchive_tasks(unarchive_records, task_to_send, task_for_unarchive_json)
         
         task_for_adding_db = list(set(task_id_json) - set(task_id_db))
         tasks_to_add = [task for task in tasks if int(task['id']) in task_for_adding_db]
@@ -103,9 +104,11 @@ class CreateTasks(MethodResource, Resource):
         logger.info(f"Tasks: Archived task ids: {task_ids}")
 
 
-    def __unarchive_tasks(self, unarchive_records, task_to_send):
+    def __unarchive_tasks(self, unarchive_records, task_to_send, task_for_unarchive_json):
         task_ids = [task.id for task in unarchive_records]
+        ids_deadlines_dict = {int(task['id']) : task['deadline'] for task in task_for_unarchive_json}
         for task in unarchive_records:
+            task.deadline = datetime.strptime(ids_deadlines_dict.get(task.id), '%d.%m.%Y').date()
             task.archive = False
             task.updated_date = datetime.now()
             task_to_send.append(task)

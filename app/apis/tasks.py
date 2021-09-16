@@ -107,20 +107,21 @@ class CreateTasks(MethodResource, Resource):
     def __unarchive_tasks(self, unarchive_records, task_to_send, tasks_dict):
         task_ids = [task.id for task in unarchive_records]
         for task in unarchive_records:
-            self.__update_task_fields(task, tasks_dict)
+            task_from_dict = tasks_dict.get(task.id)
+            self.__update_task_fields(task, task_from_dict)
             task_to_send.append(task)
         logger.info(f"Tasks: Unarchived {len(unarchive_records)} tasks.")
         logger.info(f"Tasks: Unarchived task ids: {task_ids}")
 
 
-    def __update_task_fields(self, task, tasks_dict):       
-        task.title = tasks_dict.get(task.id)['title']
-        task.name_organization = tasks_dict.get(task.id)['name_organization']
-        task.category_id = tasks_dict.get(task.id)['category_id']
-        task.bonus = tasks_dict.get(task.id)['bonus']
-        task.location = tasks_dict.get(task.id)['location']
-        task.link = tasks_dict.get(task.id)['link']
-        task.description = tasks_dict.get(task.id)['description']
-        task.deadline = datetime.strptime(tasks_dict.get(task.id)['deadline'], '%d.%m.%Y').date()
+    def __update_task_fields(self, task, task_from_dict):       
+        task.title = task_from_dict['title']
+        task.name_organization = task_from_dict['name_organization']
+        task.category_id = task_from_dict['category_id']
+        task.bonus = task_from_dict['bonus']
+        task.location = task_from_dict['location']
+        task.link = task_from_dict['link']
+        task.description = task_from_dict['description']
+        task.deadline = datetime.strptime(task_from_dict['deadline'], '%d.%m.%Y').date()
         task.archive = False
         task.updated_date = datetime.now()

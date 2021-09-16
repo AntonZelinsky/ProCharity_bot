@@ -29,6 +29,7 @@ class CreateTasks(MethodResource, Resource):
             return make_response(jsonify(result='the request cannot be empty'), 400)
 
         tasks = request.json
+        tasks_dict = {int(task['id']): task  for task in tasks}
         tasks_db = Task.query.options(load_only('archive')).all()
         task_id_json = [int(task['id']) for task in tasks]
         task_id_db = [task.id for task in tasks_db]
@@ -43,7 +44,7 @@ class CreateTasks(MethodResource, Resource):
         task_id_db_archive = list(set(task_id_db) - set(task_id_db_not_archive))
         task_for_unarchive = list(set(task_id_db_archive) & set(task_id_json))
         unarchive_records = [task for task in tasks_db if task.id in task_for_unarchive]
-        self.__unarchive_tasks(unarchive_records, task_to_send)
+        self.__unarchive_tasks(unarchive_records, task_to_send, tasks_dict)
         
         task_for_adding_db = list(set(task_id_json) - set(task_id_db))
         tasks_to_add = [task for task in tasks if int(task['id']) in task_for_adding_db]
@@ -59,7 +60,7 @@ class CreateTasks(MethodResource, Resource):
         self.send_task(task_to_send)
 
         logger.info('Tasks: New tasks received')
-        logger.info('-----------------------------------------------------')
+        logger.info('—————————————————————————————————————————————————————')
         return make_response(jsonify(result='ok'), 200)
 
 
@@ -103,9 +104,17 @@ class CreateTasks(MethodResource, Resource):
         logger.info(f"Tasks: Archived task ids: {task_ids}")
 
 
-    def __unarchive_tasks(self, unarchive_records, task_to_send):
+    def __unarchive_tasks(self, unarchive_records, task_to_send, tasks_dict):
         task_ids = [task.id for task in unarchive_records]
         for task in unarchive_records:
+            task.title = tasks_dict.get(task.id)['title']
+            task.name_organization = tasks_dict.get(task.id)['name_organization']
+            task.category_id = tasks_dict.get(task.id)['category_id']
+            task.bonus = tasks_dict.get(task.id)['bonus']
+            task.location = tasks_dict.get(task.id)['location']
+            task.link = tasks_dict.get(task.id)['link']
+            task.description = tasks_dict.get(task.id)['description']
+            task.deadline = datetime.strptime(tasks_dict.get(task.id)['deadline'], '%d.%m.%Y').date()
             task.archive = False
             task.updated_date = datetime.now()
             task_to_send.append(task)

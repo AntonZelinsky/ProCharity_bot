@@ -27,7 +27,7 @@ alembic revision --autogenerate -m "<описание миграции>"
 ```
 ### Запустить проект:
 ```
-flask run
+python run.py
 ```
 ### Документация API:
 <http://127.0.0.1:5000/api/doc/swagger-ui/>

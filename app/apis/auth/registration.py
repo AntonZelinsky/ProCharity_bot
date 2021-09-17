@@ -4,7 +4,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app import password_policy
 from app.database import db_session
-from app.models import AdminRegistrationRequest, AdminUser
+from app.models import AdminTokenRequest, AdminUser
 from flask import jsonify, make_response
 from flask_apispec import doc, use_kwargs
 from flask_apispec.views import MethodResource
@@ -63,7 +63,7 @@ class UserRegister(MethodResource, Resource):
     def post(self, **kwargs):
         token = kwargs.get("token")
         password = kwargs.get("password")
-        registration_record = AdminRegistrationRequest.query.filter_by(token=token).first()
+        registration_record = AdminTokenRequest.query.filter_by(token=token).first()
 
         if (not registration_record
                 or registration_record.token_expiration_date < datetime.now()):
@@ -72,6 +72,13 @@ class UserRegister(MethodResource, Resource):
                                                  "Пожалуйста свяжитесь с своим системным администратором."), 403)
         del kwargs['token']
         email = registration_record.email
+        admin_user = AdminUser.query.filter_by(email=email).first()
+
+        if admin_user:
+            logger.info("Registration:"
+                        f" The user with the specified mailing address {email} is already registered.")
+            return make_response(jsonify(
+                message="Пользователь с указанным почтовым адресом уже зарегистрирован."), 400)
 
         if not password:
             logger.info(f'Registration: The password for registration not passed. User: {email}')

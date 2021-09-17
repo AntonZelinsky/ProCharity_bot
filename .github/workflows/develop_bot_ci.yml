@@ -23,4 +23,5 @@ jobs:
             cd /code
             git checkout develop
             git pull
+            alembic upgrade head
             sudo systemctl restart procharitybot.service

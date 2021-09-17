@@ -60,7 +60,7 @@ class CreateTasks(MethodResource, Resource):
         self.send_task(task_to_send)
 
         logger.info('Tasks: New tasks received')
-        logger.info('—————————————————————————————————————————————————————')
+        logger.info('——————————————————————————————————————————————————————')
         return make_response(jsonify(result='ok'), 200)
 
 

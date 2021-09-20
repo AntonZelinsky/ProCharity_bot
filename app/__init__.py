@@ -26,7 +26,9 @@ def create_app():
     api.init_app(app)
     mail.init_app(app)
     docs.init_app(app)
-
     cors.init_app(app, resource={r"/*": {"origins": "*"}})
+
+    from bot import charity_bot
+    charity_bot.init()
 
     return app

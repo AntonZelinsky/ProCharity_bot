@@ -12,6 +12,7 @@ from app.apis.check_webhooks_token import check_webhooks_token
 
 
 class CreateCategories(MethodResource, Resource):
+    method_decorators = {'post': [check_webhooks_token]}
     @doc(description='Сreates Categories in the database',
          tags=['Create categories'],
          params={'token': {
@@ -20,7 +21,6 @@ class CreateCategories(MethodResource, Resource):
              'type': 'string',
              'required': True
          }})
-    @check_webhooks_token
     def post(self):
         if not request.json:
             logger.error('Categories: The request has no data in passed json.')

@@ -18,6 +18,7 @@ from app.apis.check_webhooks_token import check_webhooks_token
 
 
 class CreateTasks(MethodResource, Resource):
+    method_decorators = {'post': [check_webhooks_token]}
     @doc(description='Сreates tasks in the database',
          tags=['Create tasks'],
          responses={
@@ -32,7 +33,6 @@ class CreateTasks(MethodResource, Resource):
              'required': True
          }},
          )
-    @check_webhooks_token
     def post(self):
         if not request.json:
             logger.info('Tasks: The request has no data in passed json.')

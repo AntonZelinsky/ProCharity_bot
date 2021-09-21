@@ -16,7 +16,7 @@ from app.apis.check_webhooks_token import check_webhooks_token
 
 
 class ExternalUserRegistration(MethodResource, Resource):
-
+    method_decorators = {'post': [check_webhooks_token]}
     @doc(description='Receives user data from the portal for further registration.',
          tags=['User Registration'],
          params={'token': {
@@ -33,7 +33,6 @@ class ExternalUserRegistration(MethodResource, Resource):
          'email': fields.Str(required=True),
          'specializations': fields.Str(required=True)}
     )
-    @check_webhooks_token
     def post(self, **kwargs):
         external_id = kwargs.get('id')
 

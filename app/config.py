@@ -85,3 +85,5 @@ APPLICATION_CONFIGURATION = {
 # Logging settings
 LOG_DIR = 'logs'
 LOG_PATH = os.path.join(BASE_DIR, LOG_DIR)
+
+TOKEN_FOR_WEBHOOKS = os.getenv('TOKEN_FOR_WEBHOOKS')

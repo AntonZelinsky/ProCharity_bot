@@ -1,9 +1,10 @@
+import hashlib
 from datetime import datetime
 
 from flask import request, jsonify, make_response
 from flask_apispec import doc
 from flask_apispec.views import MethodResource
-from flask_restful import Resource
+from flask_restful import Resource, reqparse
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import load_only
 
@@ -13,21 +14,29 @@ from bot.formatter import display_task_notification
 from bot.messages import TelegramNotification
 
 from app.logger import webhooks_logger as logger
+from app.apis.check_webhooks_token import check_webhooks_token
 
 
 class CreateTasks(MethodResource, Resource):
+    method_decorators = {'post': [check_webhooks_token]}
     @doc(description='Сreates tasks in the database',
          tags=['Create tasks'],
          responses={
              200: {'description': 'ok'},
              400: {'description': 'error message'},
+             403: {'description': 'Access is denied'}
          },
+         params={'token': {
+             'description': 'webhooks token',
+             'in': 'header',
+             'type': 'string',
+             'required': True
+         }},
          )
     def post(self):
         if not request.json:
             logger.info('Tasks: The request has no data in passed json.')
             return make_response(jsonify(result='the request cannot be empty'), 400)
-
         tasks = request.json
         tasks_dict = {int(task['id']): task  for task in tasks}
         tasks_db = Task.query.options(load_only('archive')).all()

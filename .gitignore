@@ -144,3 +144,4 @@ requests.http
 .vscode
 data/
 bot_persistence_data
+logs/

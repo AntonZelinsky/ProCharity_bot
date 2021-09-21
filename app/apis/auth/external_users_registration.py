@@ -12,10 +12,19 @@ from flask_restful import Resource
 from marshmallow import fields
 
 from app.logger import webhooks_logger as logger
+from app.apis.check_webhooks_token import check_webhooks_token
+
 
 class ExternalUserRegistration(MethodResource, Resource):
 
-    @doc(description='Receives user data from the portal for further registration.', tags=['User Registration'])
+    @doc(description='Receives user data from the portal for further registration.',
+         tags=['User Registration'],
+         params={'token': {
+             'description': 'webhooks token',
+             'in': 'header',
+             'type': 'string',
+             'required': True
+         }})
     @use_kwargs(
         {'id': fields.Int(required=True),
          'id_hash': fields.Str(description='md5 hash of external_id', required=True),
@@ -24,6 +33,7 @@ class ExternalUserRegistration(MethodResource, Resource):
          'email': fields.Str(required=True),
          'specializations': fields.Str(required=True)}
     )
+    @check_webhooks_token
     def post(self, **kwargs):
         external_id = kwargs.get('id')
 

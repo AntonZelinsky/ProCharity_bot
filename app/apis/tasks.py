@@ -8,21 +8,16 @@ from flask_restful import Resource, reqparse
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import load_only
 
-from app import config
 from app.database import db_session
 from app.models import Task, User
 from bot.formatter import display_task_notification
 from bot.messages import TelegramNotification
 
 from app.logger import webhooks_logger as logger
-
-WEBHOOKS_PASSPHRASE = hashlib.sha1(config.PASSPHRASE_FOR_WEBHOOKS.encode('utf-8')).hexdigest()
+from app.apis.check_webhooks_token import check_webhooks_token
 
 
 class CreateTasks(MethodResource, Resource):
-    def __init__(self):
-        self.reqparse = reqparse.RequestParser()
-        self.reqparse.add_argument('passphrase', location='headers', required=True)
     @doc(description='Сreates tasks in the database',
          tags=['Create tasks'],
          responses={
@@ -30,21 +25,18 @@ class CreateTasks(MethodResource, Resource):
              400: {'description': 'error message'},
              403: {'description': 'Access is denied'}
          },
-         params={'page': {
-             'description': 'passphrase',
+         params={'token': {
+             'description': 'webhooks token',
              'in': 'header',
              'type': 'string',
              'required': True
          }},
          )
+    @check_webhooks_token
     def post(self):
-        passphrase = hashlib.sha1(self.reqparse.parse_args().passphrase.encode('utf-8')).hexdigest()
-        if not passphrase or passphrase != WEBHOOKS_PASSPHRASE:
-            return make_response(jsonify(result='Access is denied'), 403)
         if not request.json:
             logger.info('Tasks: The request has no data in passed json.')
             return make_response(jsonify(result='the request cannot be empty'), 400)
-
         tasks = request.json
         tasks_dict = {int(task['id']): task  for task in tasks}
         tasks_db = Task.query.options(load_only('archive')).all()

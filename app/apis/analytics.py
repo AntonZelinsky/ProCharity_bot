@@ -1,32 +1,24 @@
 from datetime import datetime, timedelta
 
-from flask import jsonify, make_response
+from flask import jsonify, make_response, request
 from flask_apispec import doc
 from flask_apispec.views import MethodResource
 from flask_jwt_extended import jwt_required
-from flask_restful import Resource, reqparse
-
+from flask_restful import Resource
 from sqlalchemy import distinct
 from sqlalchemy.sql import func
 from sqlalchemy.sql.schema import Column
 
 from app import config
 from app.apis import health_check
-from app.models import ReasonCanceling, Statistics, User
 from app.database import db_session
-
+from app.models import ReasonCanceling, Statistics, User
 from bot.constants import constants
 
 DAYS_NUMBER = 30
 
 
 class Analytics(MethodResource, Resource):
-    def __init__(self):
-        self.reqparse = reqparse.RequestParser()
-        self.reqparse.add_argument('date_limit', required=False,
-                                   type=lambda x: datetime.strptime(x, '%Y-%m-%d').date(),
-                                   default=datetime.now().date())
-
     @doc(description='Analytics statistics',
          tags=['Analytics'],
          params={
@@ -38,7 +30,8 @@ class Analytics(MethodResource, Resource):
              'Authorization': config.PARAM_HEADER_AUTH})
     @jwt_required()
     def get(self):
-        date_limit = self.reqparse.parse_args().date_limit
+        date = request.args.get('date_limit', datetime.now().date().__str__())
+        date_limit = datetime.strptime(date, '%Y-%m-%d').date()
         date_begin = date_limit - timedelta(days=DAYS_NUMBER)
         reasons_canceling_from_db = get_statistics(ReasonCanceling.reason_canceling)
         reasons_canceling = {

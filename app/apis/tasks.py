@@ -1,12 +1,12 @@
-import hashlib
 from datetime import datetime
 
 from flask import request, jsonify, make_response
 from flask_apispec import doc
 from flask_apispec.views import MethodResource
-from flask_restful import Resource, reqparse
+from flask_restful import Resource
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import load_only
+from marshmallow import fields, Schema, ValidationError, EXCLUDE
 
 from app.database import db_session
 from app.models import Task, User
@@ -15,6 +15,21 @@ from bot.messages import TelegramNotification
 
 from app.logger import webhooks_logger as logger
 from app.apis.check_webhooks_token import check_webhooks_token
+
+
+class TaskSchema(Schema):
+    id = fields.String(required=True)
+    title = fields.String(required=True)
+    name_organization = fields.String(required=True)
+    deadline = fields.Date(required=True, format='%d.%m.%Y')
+    category_id = fields.String(required=True)
+    bonus = fields.String(load_default="5")
+    location = fields.String(required=True)
+    link = fields.String(required=True)
+    description = fields.String()
+
+    class Meta:
+        unknown = EXCLUDE
 
 
 class CreateTasks(MethodResource, Resource):
@@ -37,7 +52,11 @@ class CreateTasks(MethodResource, Resource):
         if not request.json:
             logger.info('Tasks: The request has no data in passed json.')
             return make_response(jsonify(result='the request cannot be empty'), 400)
-        tasks = request.json
+        try:
+            tasks = TaskSchema(many=True).load(request.get_json())
+        except ValidationError as err:
+            return make_response(jsonify(err.messages))
+
         tasks_dict = {int(task['id']): task  for task in tasks}
         tasks_db = Task.query.options(load_only('archive')).all()
         task_id_json = [int(task['id']) for task in tasks]
@@ -92,9 +111,6 @@ class CreateTasks(MethodResource, Resource):
     def __add_tasks(self, tasks_to_add, task_to_send):
         task_ids = [task['id'] for task in tasks_to_add]
         for task in tasks_to_add:
-            del task['category']
-            task['deadline'] = datetime.strptime(task['deadline'], '%d.%m.%Y').date()
-
             new_task = Task(**task)
             new_task.archive = False
 

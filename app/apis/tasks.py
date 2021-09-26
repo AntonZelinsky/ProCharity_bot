@@ -56,7 +56,7 @@ class CreateTasks(MethodResource, Resource):
             tasks = TaskSchema(many=True).load(request.get_json())
         except ValidationError as err:
             logger.info(f'Tasks: The request is invalid. Error: {err.messages}')
-            return make_response(jsonify(err.messages))
+            return make_response(jsonify(err.messages), 400)
 
         tasks_dict = {task['id']: task  for task in tasks}
         print(tasks_dict)

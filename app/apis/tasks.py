@@ -49,9 +49,6 @@ class CreateTasks(MethodResource, Resource):
          }},
          )
     def post(self):
-        if not request.json:
-            logger.info('Tasks: The request has no data in passed json.')
-            return make_response(jsonify(result='the request cannot be empty'), 400)
         try:
             tasks = TaskSchema(many=True).load(request.get_json())
         except ValidationError as err:
@@ -59,7 +56,6 @@ class CreateTasks(MethodResource, Resource):
             return make_response(jsonify(err.messages), 400)
 
         tasks_dict = {task['id']: task  for task in tasks}
-        print(tasks_dict)
         tasks_db = Task.query.options(load_only('archive')).all()
         task_id_json = [task['id'] for task in tasks]
         task_id_db = [task.id for task in tasks_db]

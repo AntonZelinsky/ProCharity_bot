@@ -58,7 +58,7 @@ class User(Base):
     first_name = Column(String(32), nullable=True)
     last_name = Column(String(32), nullable=True)
     has_mailing = Column(Boolean, default=False)
-    date_registration = Column(DateTime, server_default=text('now()'), nullable=False)
+    date_registration = Column(TIMESTAMP, server_default=func.current_timestamp(), nullable=False)
     external_signup_date = Column(DateTime, nullable=True)
     banned = Column(Boolean, server_default=expression.false(), nullable=False)
 
@@ -79,8 +79,9 @@ class Task(Base):
     link = Column(String)
     description = Column(String)
     archive = Column(Boolean)
-    created_date = Column(DateTime, server_default=text('now()'), nullable=False)
-    updated_date = Column(DateTime, server_default=text('now()'), nullable=False)
+    created_date = Column(TIMESTAMP, server_default=func.current_timestamp(), nullable=False)
+    updated_date = Column(TIMESTAMP, server_default=func.current_timestamp(),
+                          nullable=False, onupdate=func.current_timestamp())
 
     def __repr__(self):
         return f'<Task {self.title}>'
@@ -97,7 +98,7 @@ class Category(Base):
 
     def __repr__(self):
         return f'<Category {self.name}>'
-
+ 
 
 class Statistics(Base):
     __tablename__ = 'statistics'
@@ -152,8 +153,9 @@ class ExternalSiteUser(Base):
     first_name = Column(String(32), nullable=True)
     last_name = Column(String(32), nullable=True)
     specializations = Column(String(), nullable=True)
-    created_date = Column(DateTime, server_default=text('now()'), nullable=False)
-    updated_date = Column(DateTime, server_default=text('now()'), nullable=False)
+    created_date = Column(TIMESTAMP, server_default=func.current_timestamp(), nullable=False)
+    updated_date = Column(TIMESTAMP, server_default=func.current_timestamp(),
+                          nullable=False, onupdate=func.current_timestamp())
     source = Column(String())
 
     def __repr__(self):

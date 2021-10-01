@@ -21,8 +21,7 @@ def log_command(command, ignore_func: list = None):
                         return func(*args, **kwargs)
 
                 statistic = Statistics(telegram_id=update.effective_user.id,
-                                       command=command,
-                                       added_date=datetime.now())
+                                       command=command)
 
                 db_session.add(statistic)
                 db_session.commit()

@@ -121,7 +121,6 @@ class CreateTasks(MethodResource, Resource):
         task_ids = [task.id for task in archive_records]
         for task in archive_records:
             task.archive = True
-            task.updated_date = datetime.now()
         logger.info(f"Tasks: Archived {len(archive_records)} tasks.")
         logger.info(f"Tasks: Archived task ids: {task_ids}")
 
@@ -146,4 +145,3 @@ class CreateTasks(MethodResource, Resource):
         task.description = task_from_dict['description']
         task.deadline = task_from_dict['deadline']
         task.archive = False
-        task.updated_date = datetime.now()

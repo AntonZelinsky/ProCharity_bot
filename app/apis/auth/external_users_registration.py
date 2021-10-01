@@ -41,8 +41,6 @@ class ExternalUserRegistration(MethodResource, Resource):
             user.first_name = kwargs.get('first_name')
             user.last_name = kwargs.get('last_name')
             user.specializations = kwargs.get('specializations')
-            user.updated_date = datetime.now()
-
         else:
             user = ExternalSiteUser(
                 external_id=external_id,

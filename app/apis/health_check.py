@@ -1,3 +1,7 @@
+import os
+import datetime
+import git
+
 from flask import jsonify, make_response
 from flask_apispec import doc
 from flask_apispec.views import MethodResource
@@ -17,7 +21,8 @@ class HealthCheck(MethodResource, Resource):
          tags=['HealthCheck'])
     def get(self):
         return make_response(jsonify(db=check_db_connection(),
-                                     bot=check_bot()), 200)
+                                     bot=check_bot(),
+                                     git=get_last_commit()), 200)
 
 
 def check_db_connection():
@@ -53,3 +58,12 @@ def check_bot():
     except Exception as ex:
         logger.critical(f'Health check: Bot error "{str(ex)}"')
         return dict(status=False, error=f'{ex}')
+
+
+def get_last_commit():
+    repo = git.Repo(os.getcwd())
+    master = repo.head.reference
+    commit_date = datetime.datetime.fromtimestamp(master.commit.committed_date)
+    result = dict(last_commit=str(master.commit)[:7],
+                  commit_date=commit_date.strftime("%Y-%m-%d %H:%M:%S"))
+    return result

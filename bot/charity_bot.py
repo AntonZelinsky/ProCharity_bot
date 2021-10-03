@@ -1,4 +1,5 @@
 import os
+import re
 
 from dotenv import load_dotenv
 from telegram import (Update,
@@ -11,7 +12,7 @@ from telegram.ext import (Updater,
                           CallbackQueryHandler,
                           PicklePersistence)
 
-from app.config import BOT_PERSISTENCE_FILE
+from app.config import BOT_PERSISTENCE_FILE, HOST_NAME
 
 from bot import common_comands
 from bot.constants import states
@@ -98,4 +99,13 @@ def init() -> None:
     dispatcher.add_handler(conv_handler)
     dispatcher.add_handler(update_users_category)
     dispatcher.add_error_handler(error_handler)
-    updater.start_polling()
+    if re.search(r'localhost', HOST_NAME):
+        updater.start_polling()
+    else:
+        updater.start_webhook(
+        listen='127.0.0.1',
+        port=5000,
+        url_path=os.getenv('TOKEN'),
+        webhook_url=f"{HOST_NAME}/{os.getenv('TOKEN')}",
+        #cert='cert.pem'
+        )

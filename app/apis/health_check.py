@@ -65,5 +65,6 @@ def get_last_commit():
     master = repo.head.reference
     commit_date = datetime.datetime.fromtimestamp(master.commit.committed_date)
     result = dict(last_commit=str(master.commit)[:7],
-                  commit_date=commit_date.strftime("%Y-%m-%d %H:%M:%S"))
+                  commit_date=commit_date.strftime("%Y-%m-%d %H:%M:%S"),
+                  last_tag = str(repo.tags[-1]))
     return result

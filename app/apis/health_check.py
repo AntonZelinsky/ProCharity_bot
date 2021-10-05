@@ -64,7 +64,9 @@ def get_last_commit():
     repo = git.Repo(os.getcwd())
     master = repo.head.reference
     commit_date = datetime.datetime.fromtimestamp(master.commit.committed_date)
+    last_tag = repo.tags[-1]
+    tag = str(last_tag) if master.commit == last_tag.commit else None
     result = dict(last_commit=str(master.commit)[:7],
                   commit_date=commit_date.strftime("%Y-%m-%d %H:%M:%S"),
-                  last_tag = str(repo.tags[-1]))
+                  tag=tag)
     return result

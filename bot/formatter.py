@@ -11,7 +11,7 @@ def display_task(t):
            f'От {t[0].name_organization}, {t[0].location}\n\n' \
            f'Бонусы {"💎" * t[0].bonus}\n' \
            f'Категория: {t[1]}\n' \
-           f'Срок: {t[0].deadline.strftime("%d %B %Y")}г.\n\n' \
+           f'Срок: {t[0].deadline.strftime("%d %B %Y").lstrip("0")}г.\n\n' \
            f'<u><a href="{t[0].link}{UTM_STAMP}">Посмотреть задание</a></u>'
 
 
@@ -20,5 +20,5 @@ def display_task_notification(task):
             f'От {task.name_organization}, {task.location}\n\n'
             f'Бонусы {"💎" * task.bonus}\n'
             f'Категория: {task.categories.name}\n'
-            f'Срок: {task.deadline.strftime("%d %B %Y")}г.\n\n'
+            f'Срок: {task.deadline.strftime("%d %B %Y").lstrip("0")}г.\n\n'
             f'<u><a href="{task.link}{UTM_STAMP}">Посмотреть задание</a></u>')

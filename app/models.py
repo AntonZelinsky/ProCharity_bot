@@ -3,13 +3,12 @@ from sqlalchemy import (Column,
                         Integer,
                         String,
                         Boolean,
-                        DateTime,
-                        Date,
-                        text,
+                        Date
                         )
-from sqlalchemy.sql import expression
+from sqlalchemy.sql import expression, func
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.sql.sqltypes import TIMESTAMP
 from werkzeug.security import generate_password_hash, check_password_hash
 
 Base = declarative_base()
@@ -22,7 +21,7 @@ class AdminUser(Base):
     first_name = Column(String(32), nullable=True)
     last_name = Column(String(32), nullable=True)
     password = Column(String(128), nullable=False)
-    last_logon = Column(DateTime)
+    last_logon = Column(TIMESTAMP)
 
     def __repr__(self):
         return f'<Admin User {self.first_name} {self.last_name}>'
@@ -34,13 +33,13 @@ class AdminUser(Base):
         return check_password_hash(self.password, password)
 
 
-class AdminRegistrationRequest(Base):
-    __tablename__ = 'admin_registration_requests'
+class AdminTokenRequest(Base):
+    __tablename__ = 'admin_token_requests'
 
     id = Column(Integer, primary_key=True)
     email = Column(String(48), unique=True, nullable=False)
     token = Column(String(128), nullable=False)
-    token_expiration_date = Column(DateTime, nullable=False)
+    token_expiration_date = Column(TIMESTAMP, nullable=False)
 
     def __repr__(self):
         return f'<Register {self.email}>'
@@ -56,8 +55,8 @@ class User(Base):
     first_name = Column(String(32), nullable=True)
     last_name = Column(String(32), nullable=True)
     has_mailing = Column(Boolean, default=False)
-    date_registration = Column(DateTime, server_default=text('now()'), nullable=False)
-    external_signup_date = Column(DateTime, nullable=True)
+    date_registration = Column(TIMESTAMP, server_default=func.current_timestamp(), nullable=False)
+    external_signup_date = Column(TIMESTAMP, nullable=True)
     banned = Column(Boolean, server_default=expression.false(), nullable=False)
 
     def __repr__(self):
@@ -77,8 +76,9 @@ class Task(Base):
     link = Column(String)
     description = Column(String)
     archive = Column(Boolean)
-    created_date = Column(DateTime, server_default=text('now()'), nullable=False)
-    updated_date = Column(DateTime, server_default=text('now()'), nullable=False)
+    created_date = Column(TIMESTAMP, server_default=func.current_timestamp(), nullable=False)
+    updated_date = Column(TIMESTAMP, server_default=func.current_timestamp(),
+                          nullable=False, onupdate=func.current_timestamp())
 
     def __repr__(self):
         return f'<Task {self.title}>'
@@ -95,14 +95,14 @@ class Category(Base):
 
     def __repr__(self):
         return f'<Category {self.name}>'
-
+ 
 
 class Statistics(Base):
     __tablename__ = 'statistics'
     id = Column(Integer, primary_key=True)
     telegram_id = Column(Integer)
     command = Column(String(100))
-    added_date = Column(DateTime)
+    added_date = Column(TIMESTAMP, server_default=func.current_timestamp(), nullable=False)
 
     def __repr__(self):
         return f'<Command {self.command}>'
@@ -113,7 +113,7 @@ class Notification(Base):
     id = Column(Integer, primary_key=True)
     message = Column(String(4096), nullable=False)
     was_sent = Column(Boolean, default=False)
-    sent_date = Column(DateTime)
+    sent_date = Column(TIMESTAMP)
     sent_by = Column(String(48), nullable=False)
 
     def __repr__(self):
@@ -135,7 +135,11 @@ class ReasonCanceling(Base):
     id = Column(Integer, primary_key=True)
     telegram_id = Column(Integer)
     reason_canceling = Column(String(48), nullable=False)
-    added_date = Column(DateTime, server_default=text('now()'), nullable=False)
+    added_date = Column(TIMESTAMP, server_default=func.current_timestamp(), nullable=False)
+    updated_date = Column(TIMESTAMP, server_default=func.current_timestamp(),
+                          nullable=False, onupdate=func.current_timestamp())
+    archive = Column(Boolean, server_default=expression.false(), nullable=False)
+
 
 
 class ExternalSiteUser(Base):
@@ -146,8 +150,9 @@ class ExternalSiteUser(Base):
     first_name = Column(String(32), nullable=True)
     last_name = Column(String(32), nullable=True)
     specializations = Column(String(), nullable=True)
-    created_date = Column(DateTime, server_default=text('now()'), nullable=False)
-    updated_date = Column(DateTime, server_default=text('now()'), nullable=False)
+    created_date = Column(TIMESTAMP, server_default=func.current_timestamp(), nullable=False)
+    updated_date = Column(TIMESTAMP, server_default=func.current_timestamp(),
+                          nullable=False, onupdate=func.current_timestamp())
     source = Column(String())
 
     def __repr__(self):

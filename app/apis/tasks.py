@@ -6,6 +6,7 @@ from flask_apispec.views import MethodResource
 from flask_restful import Resource
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import load_only
+from marshmallow import fields, Schema, ValidationError, EXCLUDE
 
 from app.database import db_session
 from app.models import Task, User
@@ -13,25 +14,50 @@ from bot.formatter import display_task_notification
 from bot.messages import TelegramNotification
 
 from app.logger import webhooks_logger as logger
+from app.apis.check_webhooks_token import check_webhooks_token
+
+
+class TaskSchema(Schema):
+    id = fields.Integer(required=True)
+    title = fields.String(required=True)
+    name_organization = fields.String(required=True)
+    deadline = fields.Date(required=True, format='%d.%m.%Y')
+    category_id = fields.Integer(required=True)
+    bonus = fields.Integer(load_default=5)
+    location = fields.String(required=True)
+    link = fields.String(required=True)
+    description = fields.String()
+
+    class Meta:
+        unknown = EXCLUDE
 
 
 class CreateTasks(MethodResource, Resource):
+    method_decorators = {'post': [check_webhooks_token]}
     @doc(description='Сreates tasks in the database',
          tags=['Create tasks'],
          responses={
              200: {'description': 'ok'},
              400: {'description': 'error message'},
+             403: {'description': 'Access is denied'}
          },
+         params={'token': {
+             'description': 'webhooks token',
+             'in': 'header',
+             'type': 'string',
+             'required': True
+         }},
          )
     def post(self):
-        if not request.json:
-            logger.info('Tasks: The request has no data in passed json.')
-            return make_response(jsonify(result='the request cannot be empty'), 400)
+        try:
+            tasks = TaskSchema(many=True).load(request.get_json())
+        except ValidationError as err:
+            logger.info(f'Tasks: The request is invalid. Error: {err.messages}')
+            return make_response(jsonify(err.messages), 400)
 
-        tasks = request.json
-        tasks_dict = {int(task['id']): task  for task in tasks}
+        tasks_dict = {task['id']: task  for task in tasks}
         tasks_db = Task.query.options(load_only('archive')).all()
-        task_id_json = [int(task['id']) for task in tasks]
+        task_id_json = [task['id'] for task in tasks]
         task_id_db = [task.id for task in tasks_db]
         
         task_to_send = []
@@ -47,7 +73,7 @@ class CreateTasks(MethodResource, Resource):
         self.__unarchive_tasks(unarchive_records, task_to_send, tasks_dict)
         
         task_for_adding_db = list(set(task_id_json) - set(task_id_db))
-        tasks_to_add = [task for task in tasks if int(task['id']) in task_for_adding_db]
+        tasks_to_add = [task for task in tasks if task['id'] in task_for_adding_db]
         self.__add_tasks(tasks_to_add, task_to_send)
   
         try:
@@ -60,7 +86,7 @@ class CreateTasks(MethodResource, Resource):
         self.send_task(task_to_send)
 
         logger.info('Tasks: New tasks received')
-        logger.info('—————————————————————————————————————————————————————')
+        logger.info('——————————————————————————————————————————————————————')
         return make_response(jsonify(result='ok'), 200)
 
 
@@ -83,12 +109,8 @@ class CreateTasks(MethodResource, Resource):
     def __add_tasks(self, tasks_to_add, task_to_send):
         task_ids = [task['id'] for task in tasks_to_add]
         for task in tasks_to_add:
-            del task['category']
-            task['deadline'] = datetime.strptime(task['deadline'], '%d.%m.%Y').date()
-
             new_task = Task(**task)
             new_task.archive = False
-
             db_session.add(new_task)
             task_to_send.append(new_task)
         logger.info(f"Tasks: Added {len(tasks_to_add)} new tasks.")
@@ -99,7 +121,6 @@ class CreateTasks(MethodResource, Resource):
         task_ids = [task.id for task in archive_records]
         for task in archive_records:
             task.archive = True
-            task.updated_date = datetime.now()
         logger.info(f"Tasks: Archived {len(archive_records)} tasks.")
         logger.info(f"Tasks: Archived task ids: {task_ids}")
 
@@ -122,6 +143,5 @@ class CreateTasks(MethodResource, Resource):
         task.location = task_from_dict['location']
         task.link = task_from_dict['link']
         task.description = task_from_dict['description']
-        task.deadline = datetime.strptime(task_from_dict['deadline'], '%d.%m.%Y').date()
+        task.deadline = task_from_dict['deadline']
         task.archive = False
-        task.updated_date = datetime.now()

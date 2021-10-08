@@ -1,0 +1,17 @@
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+
+fieldset {
+  padding: 0;
+  margin: 0;
+  border: none;
+}
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

@@ -4,14 +4,20 @@ services:
     back:
         build:
             context: .
-            dockerfile: .
-
-        restart: always
+            dockerfile: Dockerfile
         network_mode: "host"
+        restart: always
+#        expose:
+#            - "8000:8000"
 
-    front:
+    nginx_front:
         build:
-            context: ./front
+            context: front
             dockerfile: Dockerfile
         expose:
-            -   "80"
+            - "80"
+        ports:
+            - "80:80"
+            - "443:443"
+        depends_on:
+            -   back

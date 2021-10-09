@@ -5,6 +5,8 @@ RUN apt-get update && \
     sed -i -e 's/# ru_RU.UTF-8 UTF-8/ru_RU.UTF-8 UTF-8/' /etc/locale.gen && \
     dpkg-reconfigure --frontend=noninteractive locales
 
+RUN apt-get install -y git
+
 ENV LANG ru_RU.UTF-8
 ENV LC_ALL ru_RU.UTF-8
 

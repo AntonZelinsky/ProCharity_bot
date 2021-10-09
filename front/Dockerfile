@@ -1,13 +1,13 @@
 FROM node:12.13.0-alpine as build
 
-WORKDIR /app/frontend
 COPY package.json ./
 COPY yarn.lock ./
+COPY . ./code/frontend
+WORKDIR /code/frontend
 RUN yarn install
-COPY ./ ./
-RUN npm run build
+RUN yarn build
 
 FROM nginx:stable-alpine
 COPY nginx/default.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /app/frontend/build /usr/share/nginx/html
+COPY --from=build /code/frontend/build /usr/share/nginx/html
 CMD ["nginx", "-g", "daemon off;"]

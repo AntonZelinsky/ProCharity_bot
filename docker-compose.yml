@@ -1,23 +1,31 @@
-version: '3.3'
+version: '3.8'
 
 services:
     back:
-        build:
-            context: .
-            dockerfile: Dockerfile
-        network_mode: "host"
-        restart: always
-#        expose:
-#            - "8000:8000"
-
-    nginx_front:
-        build:
-            context: front
-            dockerfile: Dockerfile
+        build: .
+        command: gunicorn --bind 0.0.0.0:8000 run:app
         expose:
-            - "80"
+            -   8000
         ports:
-            - "80:80"
-            - "443:443"
-        depends_on:
-            -   back
+            -   "8000:8000"
+            -   "587:587"
+        env_file:
+            -   .env.dev
+
+    front:
+        build: front/
+        env_file:
+            -   front/.env
+        ports:
+            -   "80:80"
+#    db:
+#        image: postgres:12-alpine
+#        volumes:
+#            -   postgres_data:/var/lib/postgresql/data
+#        environment:
+#            - POSTGRES_USER=procharity
+#            - POSTGRES_PASSWORD=procharity
+#            - POSTGRES_DB=procharity_test_db
+#
+#volumes:
+#    postgres_data:

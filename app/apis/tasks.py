@@ -86,7 +86,11 @@ class CreateTasks(MethodResource, Resource):
         task_for_adding_db = list(set(task_id_json) - set(task_id_db))
         tasks_to_add = [task for task in tasks if task['id'] in task_for_adding_db]
         self.__add_tasks(tasks_to_add, task_to_send)
-  
+
+        task_id_db_active = list(set(task_id_json) - set(task_for_archive) - set(task_for_unarchive) - set(task_for_adding_db))
+        active_tasks = [task for task in tasks_db if task.id in task_id_db_active]       
+        self.__update_active_tasks(active_tasks, task_to_send, tasks_dict)
+
         try:
             db_session.commit()
         except SQLAlchemyError as ex:
@@ -145,6 +149,18 @@ class CreateTasks(MethodResource, Resource):
         logger.info(f"Tasks: Unarchived {len(unarchive_records)} tasks.")
         logger.info(f"Tasks: Unarchived task ids: {task_ids}")
 
+    def __update_active_tasks(self, active_tasks, task_to_send, tasks_dict):
+        updated_task_ids = []
+        for task in active_tasks:
+            task_from_dict = tasks_dict.get(task.id)
+            for key in task_from_dict:
+                if task_from_dict[key] != task.__getattribute__(key):
+                    self.__update_task_fields(task, task_from_dict)
+                    task_to_send.append(task)
+                    updated_task_ids.append(task.id)
+                    break
+        logger.info(f"Tasks: Updated {len(updated_task_ids)} active tasks.")
+        logger.info(f"Tasks: Updated active task ids: {updated_task_ids}")
 
     def __update_task_fields(self, task, task_from_dict):    
         task.title = task_from_dict['title']
@@ -156,3 +172,4 @@ class CreateTasks(MethodResource, Resource):
         task.description = task_from_dict['description']
         task.deadline = task_from_dict['deadline']
         task.archive = False
+      

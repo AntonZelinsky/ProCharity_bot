@@ -6,7 +6,7 @@ from flask_apispec.views import MethodResource
 from flask_restful import Resource
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import load_only
-from marshmallow import fields, Schema, ValidationError, EXCLUDE
+from marshmallow import fields, Schema, ValidationError, EXCLUDE, validates
 
 from app.database import db_session
 from app.models import Task, User
@@ -17,13 +17,27 @@ from app.logger import webhooks_logger as logger
 from app.apis.check_webhooks_token import check_webhooks_token
 
 
+# class TaskBonusField(fields.Field):
+#     def _serialize(self, value, attr, obj, **kwargs):
+#         return value
+
+#     def _deserialize(self, value, attr, data, **kwargs):
+#         try:
+#             if int(value) <=0:
+#                 value = 5
+#         except ValueError:
+#             value = 5
+#         return int(value)
+       
+
 class TaskSchema(Schema):
     id = fields.Integer(required=True)
     title = fields.String(required=True)
     name_organization = fields.String(required=True)
     deadline = fields.Date(required=True, format='%d.%m.%Y')
     category_id = fields.Integer(required=True)
-    bonus = fields.Integer(load_default=5)
+    #bonus = TaskBonusField(load_default=5)
+    bonus = fields.Method('get_bonus', deserialize='load_bonus', load_default=5)
     location = fields.String(required=True)
     link = fields.String(required=True)
     description = fields.String()
@@ -31,6 +45,16 @@ class TaskSchema(Schema):
     class Meta:
         unknown = EXCLUDE
 
+    def get_bonus(self, obj):
+        return obj
+
+    def load_bonus(self, value):
+        try:
+            if int(value) <=0:
+                value = 5
+        except ValueError:
+            value = 5
+        return int(value)
 
 class CreateTasks(MethodResource, Resource):
     method_decorators = {'post': [check_webhooks_token]}

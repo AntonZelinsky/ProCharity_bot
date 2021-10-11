@@ -22,11 +22,11 @@ class TaskBonusField(fields.Field):
     def _deserialize(self, value, attr, data, **kwargs):
         try:
             if int(value) <=0:
-                value = 5
+                value = self.load_default
         except ValueError:
-            value = 5
+            value = self.load_default
         return int(value)
-       
+
 
 class TaskSchema(Schema):
     id = fields.Integer(required=True)
@@ -146,7 +146,7 @@ class CreateTasks(MethodResource, Resource):
         logger.info(f"Tasks: Unarchived task ids: {task_ids}")
 
 
-    def __update_task_fields(self, task, task_from_dict):       
+    def __update_task_fields(self, task, task_from_dict):    
         task.title = task_from_dict['title']
         task.name_organization = task_from_dict['name_organization']
         task.category_id = task_from_dict['category_id']

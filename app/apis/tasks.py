@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from flask import request, jsonify, make_response
 from flask_apispec import doc
 from flask_apispec.views import MethodResource
@@ -10,11 +8,24 @@ from marshmallow import fields, Schema, ValidationError, EXCLUDE
 
 from app.database import db_session
 from app.models import Task, User
+from app.logger import webhooks_logger as logger
+from app.apis.check_webhooks_token import check_webhooks_token
+
 from bot.formatter import display_task_notification
 from bot.messages import TelegramNotification
 
-from app.logger import webhooks_logger as logger
-from app.apis.check_webhooks_token import check_webhooks_token
+
+class TaskBonusField(fields.Field):
+    def _serialize(self, value, attr, obj, **kwargs):
+        return value
+
+    def _deserialize(self, value, attr, data, **kwargs):
+        try:
+            if int(value) <=0:
+                value = self.load_default
+        except ValueError:
+            value = self.load_default
+        return int(value)
 
 
 class TaskSchema(Schema):
@@ -23,7 +34,7 @@ class TaskSchema(Schema):
     name_organization = fields.String(required=True)
     deadline = fields.Date(required=True, format='%d.%m.%Y')
     category_id = fields.Integer(required=True)
-    bonus = fields.Integer(load_default=5)
+    bonus = TaskBonusField(load_default=5)
     location = fields.String(required=True)
     link = fields.String(required=True)
     description = fields.String()
@@ -135,7 +146,7 @@ class CreateTasks(MethodResource, Resource):
         logger.info(f"Tasks: Unarchived task ids: {task_ids}")
 
 
-    def __update_task_fields(self, task, task_from_dict):       
+    def __update_task_fields(self, task, task_from_dict):    
         task.title = task_from_dict['title']
         task.name_organization = task_from_dict['name_organization']
         task.category_id = task_from_dict['category_id']

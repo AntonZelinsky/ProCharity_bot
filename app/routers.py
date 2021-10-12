@@ -1,7 +1,7 @@
 from app import api
 from app.apis.users import UsersList, UserItem
-from app.apis.categories import CreateCategories
-from app.apis.tasks import CreateTasks
+#from app.apis.categories import CreateCategories
+#from app.apis.tasks import CreateTasks
 from app.apis.auth.refresh import Refresh
 from app.apis.auth.login import Login
 from app.apis.auth.password_reset import PasswordReset
@@ -10,8 +10,8 @@ from app.apis.auth.external_users_registration import ExternalUserRegistration
 from app.apis.auth.token_checker import TokenChecker
 from app.apis.auth.send_registration_invite import SendRegistrationInvite
 from app.apis.messages import SendTelegramNotification
-from app.apis.analytics import Analytics
-from app.apis.health_check import HealthCheck
+#from app.apis.analytics import Analytics
+#from app.apis.webhooks.health_check import HealthCheck
 from app.apis.auth.password_reset_confirm import PasswordResetConfirm
 
 # users endpoints
@@ -29,7 +29,7 @@ api.add_resource(ExternalUserRegistration, '/api/v1/auth/external_user_registrat
 # Notification
 api.add_resource(SendTelegramNotification, '/api/v1/send_telegram_notification/')
 # Webhooks
-api.add_resource(CreateTasks, '/api/v1/tasks/')
-api.add_resource(CreateCategories, '/api/v1/categories/')
-api.add_resource(Analytics, '/api/v1/analytics/')
-api.add_resource(HealthCheck, '/api/v1/health_check/')
+#api.add_resource(CreateTasks, '/api/v1/tasks/')
+#api.add_resource(CreateCategories, '/api/v1/categories/')
+#api.add_resource(Analytics, '/api/v1/analytics/')
+#api.add_resource(HealthCheck, '/api/v1/health_check/')

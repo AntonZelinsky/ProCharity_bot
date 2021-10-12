@@ -10,7 +10,7 @@ from sqlalchemy.sql import func
 from sqlalchemy.sql.schema import Column
 
 from app import config
-from app.apis import health_check
+from app.apis.webhooks import health_check
 from app.database import db_session
 from app.models import ReasonCanceling, Statistics, User
 from bot.constants import constants

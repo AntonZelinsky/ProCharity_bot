@@ -18,14 +18,16 @@ services:
             -   front/.env
         ports:
             -   "80:80"
-#    db:
-#        image: postgres:12-alpine
-#        volumes:
-#            -   postgres_data:/var/lib/postgresql/data
-#        environment:
-#            - POSTGRES_USER=procharity
-#            - POSTGRES_PASSWORD=procharity
-#            - POSTGRES_DB=procharity_test_db
-#
-#volumes:
-#    postgres_data:
+    db:
+        image: postgres:12-alpine
+        volumes:
+            -   postgres_data:/var/lib/postgresql/data
+        environment:
+            - POSTGRES_USER=procharity
+            - POSTGRES_PASSWORD=procharity
+            - POSTGRES_DB=procharity_local_test_db
+        ports:
+            -   "5432"
+
+volumes:
+    postgres_data:

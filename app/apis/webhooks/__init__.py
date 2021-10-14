@@ -6,8 +6,8 @@ from . import categories
 from . import analytics
 from . import health_check
 
-webhooks = Blueprint('webhooks', __name__)
-wh_api = Api(webhooks)
+webhooks_bp = Blueprint('webhooks_bp', __name__)
+wh_api = Api(webhooks_bp)
 
 wh_api.add_resource(tasks.CreateTasks, '/api/v1/tasks/')
 wh_api.add_resource(categories.CreateCategories, '/api/v1/categories/')

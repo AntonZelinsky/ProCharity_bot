@@ -8,7 +8,6 @@ from flask_mail import Mail
 from flask_cors import CORS
 
 jwt = JWTManager()
-api = Api()
 mail = Mail()
 cors = CORS()
 docs = FlaskApiSpec()
@@ -19,14 +18,21 @@ def create_app():
     app = Flask(__name__)
     app.config.update(config.APPLICATION_CONFIGURATION)
     app.config.update(**config.APISPEC_SPEC)
-    from . import api, routers, swagger
+    from . import swagger
+
+    from app.apis.auth import auth_bp
+    from app.apis.notifications import notifications_bp
+    from app.apis.users import users_bp
+    from app.apis.webhooks import webhooks_bp
+
+    app.register_blueprint(webhooks_bp)  
+    app.register_blueprint(auth_bp)   
+    app.register_blueprint(users_bp)   
+    app.register_blueprint(notifications_bp)
 
     jwt.init_app(app)
-    api.init_app(app)
     mail.init_app(app)
     docs.init_app(app)
     cors.init_app(app, resource={r"/*": {"origins": "*"}})
     
-    from app.apis.webhooks import webhooks
-    app.register_blueprint(webhooks)
     return app

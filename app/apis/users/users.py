@@ -1,19 +1,21 @@
+from email_validator import validate_email, EmailNotValidError
 from flask import jsonify, make_response, request
+from flask_apispec import doc, use_kwargs
+from flask_apispec.views import MethodResource
 from flask_jwt_extended import jwt_required
+from flask_restful import Resource
+from marshmallow import fields
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy_pagination import paginate
 
+from app import config
+from app import formatter
+from app.database import db_session
 from app.logger import app_logger as logger
 from app.swagger_schemas import USERS_SCHEMA
 from app.models import User
-from app import config, api
-from app.database import db_session
-from flask_restful import Resource
-from flask_apispec.views import MethodResource
-from flask_apispec import doc, use_kwargs
-from email_validator import validate_email, EmailNotValidError
-from marshmallow import fields
-from sqlalchemy_pagination import paginate
-from app import formatter
+from . import users_api as api
+
 
 USER_SCHEMA = {
     'username': fields.Str(),

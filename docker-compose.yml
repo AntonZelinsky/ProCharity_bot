@@ -2,22 +2,33 @@ version: '3.8'
 
 services:
     back:
-        build: .
+        image: ${DOCKER_USERNAME}/procharity_bot_back:latest
         command: gunicorn --bind 0.0.0.0:8000 run:app
         expose:
-            -   8000
+            -   "8000"
         ports:
-            -   "8000:8000"
             -   "587:587"
-        env_file:
-            -   .env.dev
+        environment:
+            - TOKEN = ${TOKEN}
+            - DATABASE_URL = ${DATABASE_URL}
+            - MAIL_PASSWORD = ${MAIL_PASSWORD}
+            - MAIL_SERVER = ${MAIL_SERVER}
+            - MAIL_PORT = ${MAIL_PORT}
+            - MAIL_USE_TLS = ${MAIL_USE_TLS}
+            - MAIL_USERNAME = ${MAIL_USERNAME}
+            - MAIL_DEFAULT_SENDER = ${MAIL_DEFAULT_SENDER}
+            - EMAIL_PROCHARRITY = ${EMAIL_PROCHARRITY}
+            - HOST_NAME = ${HOST_NAME}
+            - TOKEN_FOR_WEBHOOKS = ${TOKEN_FOR_WEBHOOKS}
 
     front:
-        build: front/
-        env_file:
-            -   front/.env
+        image: ${DOCKER_USERNAME}/procharity_bot_front:latest
         ports:
             -   "80:80"
+        environment:
+            - REACT_APP_API_ADDRESS = ${REACT_APP_API_ADDRESS}
+            - REACT_APP_API_DEV_ADDRESS = ${REACT_APP_API_DEV_ADDRESS}
+            - SKIP_PREFLIGHT_CHECK = ${SKIP_PREFLIGHT_CHECK}
     db:
         image: postgres:12-alpine
         volumes:

@@ -1,19 +1,20 @@
-from flask_restful import Resource
-from flask_apispec.views import MethodResource
-from flask import jsonify, make_response
+import datetime
 
+from flask import jsonify, make_response
 from flask_apispec import doc, use_kwargs
+from flask_apispec.views import MethodResource
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_restful import Resource
 from marshmallow import fields, Schema
 from sqlalchemy.exc import SQLAlchemyError
 
+from app import config
 from app.database import db_session
+from app.logger import app_logger as logger
 from app.models import Notification
 
-from flask_jwt_extended import jwt_required, get_jwt_identity
-from app import config
 from bot.messages import TelegramNotification
-import datetime
-from app.logger import app_logger as logger
+
 
 
 class TelegramNotificationSchema(Schema):

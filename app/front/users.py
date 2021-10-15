@@ -12,14 +12,14 @@ from app import config
 from app import formatter
 from app.database import db_session
 from app.logger import app_logger as logger
-from app.swagger_schemas import USERS_SCHEMA
+from .swagger_schemas import USERS_SCHEMA
 from app.models import User
 from . import front_api as api
 
 
 USER_SCHEMA = {
     'username': fields.Str(),
-    "email": fields.Email(),
+    'email': fields.Email(),
     'first_name': fields.Str(),
     'last_name': fields.Str(),
     'telegram_id': fields.Int(),

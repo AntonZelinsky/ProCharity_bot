@@ -24,4 +24,3 @@ USERS_SCHEMA = {
             }
             }
 }
-

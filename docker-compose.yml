@@ -1,13 +1,14 @@
-version: '3.3'
+version: '3.8'
 
 services:
     back:
         image: ghcr.io/kr0t/procharity_bot_back:latest
-        command: gunicorn --bind 0.0.0.0:8000 run:app
-        expose:
-            -   "8000"
-        ports:
-            -   "587:587"
+        command: gunicorn --bind back:8000 run:app
+        network_mode: host
+#        expose:
+#            -   "8000"
+#        ports:
+#            -   "587:587"
         environment:
             - TOKEN=${TOKEN}
             - DATABASE_URL=${DATABASE_URL}

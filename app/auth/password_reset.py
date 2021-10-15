@@ -5,7 +5,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from app import config
 from app.database import db_session
 from app.models import AdminUser
-from app.apis.auth.send_token import send_token
+from app.auth.send_token import send_token
 from flask import jsonify, make_response
 from flask_apispec import doc, use_kwargs
 from flask_apispec.views import MethodResource

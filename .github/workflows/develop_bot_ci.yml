@@ -49,9 +49,7 @@ jobs:
           username: ${{ secrets.USER_DEV }}
           key: ${{ secrets.SSH_KEY_DEV }}
           script: |
+            cd /code
             sudo docker stop $(sudo docker ps -a -q)
             sudo docker rmi $(sudo docker images -a -q)
-#            sudo docker pull ${DOCKER_USERNAME}/procharity_bot_front:latest
-#            sudo docker pull ${DOCKER_USERNAME}/procharity_bot_back:latest
             sudo docker-compose up --rm -d -f /code/docker-compose.yml
-#            sudo docker exec -d bot_container alembic upgrade head

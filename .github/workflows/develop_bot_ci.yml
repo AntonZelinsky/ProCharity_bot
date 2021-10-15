@@ -52,4 +52,4 @@ jobs:
             cd /code
             sudo docker stop $(sudo docker ps -a -q)
             sudo docker rmi $(sudo docker images -a -q)
-            sudo docker-compose up --rm -d -f /code/docker-compose.yml
+            sudo docker-compose up --rm -d

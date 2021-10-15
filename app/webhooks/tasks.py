@@ -9,7 +9,7 @@ from marshmallow import fields, Schema, ValidationError, EXCLUDE
 from app.database import db_session
 from app.models import Task, User
 from app.logger import webhooks_logger as logger
-from app.apis.check_webhooks_token import check_webhooks_token
+from app.webhooks.check_webhooks_token import check_webhooks_token
 
 from bot.formatter import display_task_notification
 from bot.messages import TelegramNotification
@@ -41,7 +41,6 @@ class TaskSchema(Schema):
 
     class Meta:
         unknown = EXCLUDE
-
 
 class CreateTasks(MethodResource, Resource):
     method_decorators = {'post': [check_webhooks_token]}

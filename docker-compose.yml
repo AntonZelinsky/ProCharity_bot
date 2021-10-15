@@ -3,7 +3,7 @@ version: '3.3'
 services:
     back:
         image: ghcr.io/kr0t/procharity_bot_back:latest
-        command: gunicorn --bind localhost:8000 run:app
+        command: gunicorn --bind 0.0.0.0:8000 run:app
         expose:
             -   "8000"
         ports:

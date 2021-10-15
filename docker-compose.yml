@@ -5,8 +5,8 @@ services:
         image: ghcr.io/kr0t/procharity_bot_back:latest
         command: gunicorn --bind back:8000 run:app
         network_mode: host
-#        expose:
-#            -   "8000"
+        expose:
+            -   "8000"
 #        ports:
 #            -   "587:587"
         environment:

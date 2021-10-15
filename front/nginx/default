@@ -1,4 +1,6 @@
-server_tokens off;
+upstream bot {
+    server back:8000;
+}
 
 server {
     server_name _;

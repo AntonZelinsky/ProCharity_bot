@@ -13,7 +13,7 @@ from flask_jwt_extended import jwt_required
 from flask_restful import Resource
 from marshmallow import fields
 from app.logger import app_logger as logger
-from app.apis.auth.send_token import send_token
+from app.auth.send_token import send_token
 
 
 class SendRegistrationInvite(MethodResource, Resource):

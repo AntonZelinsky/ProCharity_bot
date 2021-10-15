@@ -20,15 +20,13 @@ def create_app():
     app.config.update(**config.APISPEC_SPEC)
     from . import swagger
 
-    from app.apis.auth import auth_bp
-    from app.apis.notifications import notifications_bp
-    from app.apis.users import users_bp
-    from app.apis.webhooks import webhooks_bp
+    from app.auth import auth_bp
+    from app.front import front_bp
+    from app.webhooks import webhooks_bp
 
     app.register_blueprint(webhooks_bp)  
     app.register_blueprint(auth_bp)   
-    app.register_blueprint(users_bp)   
-    app.register_blueprint(notifications_bp)
+    app.register_blueprint(front_bp)
 
     jwt.init_app(app)
     mail.init_app(app)

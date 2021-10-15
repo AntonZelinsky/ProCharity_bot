@@ -8,7 +8,7 @@ from flask_apispec.views import MethodResource
 from flask_apispec import doc
 
 from app.logger import webhooks_logger as logger
-from app.apis.webhooks.check_webhooks_token import check_webhooks_token
+from app.webhooks.check_webhooks_token import check_webhooks_token
 
 
 class CreateCategories(MethodResource, Resource):

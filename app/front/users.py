@@ -14,7 +14,7 @@ from app.database import db_session
 from app.logger import app_logger as logger
 from app.swagger_schemas import USERS_SCHEMA
 from app.models import User
-from . import users_api as api
+from . import front_api as api
 
 
 USER_SCHEMA = {

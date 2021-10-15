@@ -12,7 +12,7 @@ from bot.formatter import display_task_notification
 from bot.messages import TelegramNotification
 
 from app.logger import webhooks_logger as logger
-from app.apis.webhooks.check_webhooks_token import check_webhooks_token
+from app.webhooks.check_webhooks_token import check_webhooks_token
 
 
 class TaskSchema(Schema):

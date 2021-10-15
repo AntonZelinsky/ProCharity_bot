@@ -12,7 +12,7 @@ from flask_restful import Resource
 from marshmallow import fields
 
 from app.logger import webhooks_logger as logger
-from app.apis.webhooks.check_webhooks_token import check_webhooks_token
+from app.webhooks.check_webhooks_token import check_webhooks_token
 
 
 class ExternalUserRegistration(MethodResource, Resource):

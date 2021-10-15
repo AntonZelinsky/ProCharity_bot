@@ -1,4 +1,3 @@
-import hashlib
 from flask import request, jsonify, make_response
 from functools import wraps
 

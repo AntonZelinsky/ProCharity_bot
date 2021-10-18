@@ -27,9 +27,9 @@ services:
         ports:
             -   "80:80"
         environment:
-            - REACT_APP_API_ADDRESS = ${REACT_APP_API_ADDRESS}
-            - REACT_APP_API_DEV_ADDRESS = ${REACT_APP_API_DEV_ADDRESS}
-            - SKIP_PREFLIGHT_CHECK = ${SKIP_PREFLIGHT_CHECK}
+            - REACT_APP_API_ADDRESS=${REACT_APP_API_ADDRESS}
+            - REACT_APP_API_DEV_ADDRESS=${REACT_APP_API_DEV_ADDRESS}
+            - SKIP_PREFLIGHT_CHECK=${SKIP_PREFLIGHT_CHECK}
     db:
         image: postgres:12-alpine
         volumes:

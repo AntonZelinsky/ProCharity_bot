@@ -57,6 +57,8 @@ const devLocation = process.env.NODE_ENV === 'development' || window.location.or
 
 export const apiUrl = devLocation ? process.env.REACT_APP_API_DEV_ADDRESS : process.env.REACT_APP_API_ADDRESS;
 
+console.log(process.env)
+
 function App() {
   const history = useHistory();
   const [themeColor, setThemeColor] = useLocalStorage<boolean>('theme', true);

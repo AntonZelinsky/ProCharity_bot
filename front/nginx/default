@@ -1,9 +1,5 @@
-upstream bot {
-    server back:8000;
-}
-
 server {
-    server_name _;
+    server_name back;
     listen 80;
 
     location / {

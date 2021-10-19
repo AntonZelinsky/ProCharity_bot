@@ -8,6 +8,6 @@ RUN yarn install
 RUN yarn build
 
 FROM nginx:stable-alpine
-COPY nginx/default /etc/nginx/conf.d/default.conf
+COPY nginx/default.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /frontend/build /usr/share/nginx/html
 CMD ["nginx", "-g", "daemon off;"]

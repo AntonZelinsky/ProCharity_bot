@@ -3,20 +3,14 @@ version: '3.8'
 services:
     back:
         build: .
-        command: gunicorn --bind back:8000 run:app
         expose:
             - "8000"
             - "5000"
-        ports:
-            -   "8000:8000"
-            -   "587:587"
         env_file:
             -   .env.dev
 
     front:
         build: front/
-        env_file:
-            -   front/.env
         ports:
             -    "80:80"
     db:

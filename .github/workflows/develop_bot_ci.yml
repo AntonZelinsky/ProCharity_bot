@@ -50,7 +50,25 @@ jobs:
           key: ${{ secrets.SSH_KEY_DEV }}
           script: |
             cd /code
-            sudo docker-compose -f docker-compose.local.yml down
-            sudo docker rmi $(sudo docker images -a -q)
+            touch .env
+
+            echo POSTGRES_HOST=${{ secrets.POSTGRES_HOST }} >> .env
+            echo POSTGRES_PORT=${{ secrets.POSTGRES_PORT }} >> .env
+            echo POSTGRES_DB=${{ secrets.POSTGRES_DB }} >> .env
+            echo POSTGRES_USER=${{ secrets.POSTGRES_USER }} >> .env
+            echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
+            echo TOKEN=${{ secrets.TOKEN }} >> .env
+            echo MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }} >> .env
+            echo MAIL_SERVER=${{ secrets.MAIL_SERVER }} >> .env
+            echo MAIL_PORT=${{ secrets.MAIL_PORT }} >> .env
+            echo MAIL_USE_TLS=${{ secrets.MAIL_USE_TLS }} >> .env
+            echo MAIL_USERNAME=${{ secrets.MAIL_USERNAME }} >> .env
+            echo MAIL_DEFAULT_SENDER=${{ secrets.MAIL_DEFAULT_SENDER }} >> .env
+            echo EMAIL_PROCHARRITY=${{ secrets.EMAIL_PROCHARRITY }} >> .env
+            echo HOST_NAME=${{ secrets.HOST_NAME }} >> .env
+            echo TOKEN_FOR_WEBHOOKS=${{ secrets.TOKEN_FOR_WEBHOOKS }} >> .env
+
+            sudo docker-compose -f docker-compose.local.yml stop
+            sudo docker-compose -f docker-compose.local.yml rm
             sudo docker-compose -f docker-compose.local.yml up -d
             sudo docker-compose -f docker-compose.local.yml exec back alembic upgrade head

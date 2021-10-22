@@ -148,16 +148,25 @@ class CreateTasks(MethodResource, Resource):
         logger.info(f"Tasks: Unarchived {len(unarchive_records)} tasks.")
         logger.info(f"Tasks: Unarchived task ids: {task_ids}")
 
+    def __hash__(self, task):
+        if type(task) == dict:
+            title = task.get('title')
+            bonus = task.get('bonus')
+            link = task.get('link')
+            description = task.get('description')
+            deadline = task.get('deadline')
+            return hash(f'{title}{bonus}{link}{description}{deadline}')
+        return hash(f'{task.title}{task.bonus}{task.link}{task.description}{task.deadline}')
+
+
     def __update_active_tasks(self, active_tasks, task_to_send, tasks_dict):
         updated_task_ids = []
         for task in active_tasks:
             task_from_dict = tasks_dict.get(task.id)
-            for key in task_from_dict:
-                if task_from_dict[key] != task.__getattribute__(key):
-                    self.__update_task_fields(task, task_from_dict)
-                    task_to_send.append(task)
-                    updated_task_ids.append(task.id)
-                    break
+            if self.__hash__(task) != self.__hash__(task_from_dict):
+                self.__update_task_fields(task, task_from_dict)
+                task_to_send.append(task)
+                updated_task_ids.append(task.id)
         logger.info(f"Tasks: Updated {len(updated_task_ids)} active tasks.")
         logger.info(f"Tasks: Updated active task ids: {updated_task_ids}")
 
@@ -171,4 +180,4 @@ class CreateTasks(MethodResource, Resource):
         task.description = task_from_dict['description']
         task.deadline = task_from_dict['deadline']
         task.archive = False
-      
+ 

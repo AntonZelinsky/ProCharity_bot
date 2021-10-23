@@ -10,18 +10,18 @@ services:
         ports:
             -   "8000:8000"
             -   "587:587"
-        environment:
-            - TOKEN=${TOKEN}
-            - DATABASE_URL=${DATABASE_URL}
-            - MAIL_PASSWORD=${MAIL_PASSWORD}
-            - MAIL_SERVER=${MAIL_SERVER}
-            - MAIL_PORT=${MAIL_PORT}
-            - MAIL_USE_TLS=${MAIL_USE_TLS}
-            - MAIL_USERNAME=${MAIL_USERNAME}
-            - MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER}
-            - EMAIL_PROCHARRITY=${EMAIL_PROCHARRITY}
-            - HOST_NAME=${HOST_NAME}
-            - TOKEN_FOR_WEBHOOKS=${TOKEN_FOR_WEBHOOKS}
+#        environment:
+#            - TOKEN=${TOKEN}
+#            - DATABASE_URL=${DATABASE_URL}
+#            - MAIL_PASSWORD=${MAIL_PASSWORD}
+#            - MAIL_SERVER=${MAIL_SERVER}
+#            - MAIL_PORT=${MAIL_PORT}
+#            - MAIL_USE_TLS=${MAIL_USE_TLS}
+#            - MAIL_USERNAME=${MAIL_USERNAME}
+#            - MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER}
+#            - EMAIL_PROCHARRITY=${EMAIL_PROCHARRITY}
+#            - HOST_NAME=${HOST_NAME}
+#            - TOKEN_FOR_WEBHOOKS=${TOKEN_FOR_WEBHOOKS}
         env_file:
             -   .env
 

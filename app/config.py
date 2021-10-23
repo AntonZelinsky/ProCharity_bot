@@ -10,12 +10,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # -----------------------
 # Basic project settings
 PROJECT_NAME = "ProCharity bot"
-DB_USER = os.getenv('POSTGRES_USER')
-DB_PASSWORD = os.getenv('POSTGRES_PASSWORD')
-DB_NAME = os.getenv('POSTGRES_DB')
-DB_PORT = os.getenv('POSTGRES_PORT')
-DB_HOST = os.getenv('POSTGRES_HOST')
-SQL_ALCHEMY_DATABASE_URL = f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}'
+SQL_ALCHEMY_DATABASE_URL = os.getenv('DATABASE_URL')
 HOST_NAME = os.getenv('HOST_NAME')
 
 PASSWORD_POLICY = {

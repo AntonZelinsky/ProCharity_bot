@@ -52,11 +52,12 @@ jobs:
             cd /code
             touch .env
 
-            echo POSTGRES_HOST=${{ secrets.POSTGRES_HOST }} >> .env
+            echo POSTGRES_HOST=${{ secrets.POSTGRES_HOST }} > .env
             echo POSTGRES_PORT=${{ secrets.POSTGRES_PORT }} >> .env
             echo POSTGRES_DB=${{ secrets.POSTGRES_DB }} >> .env
             echo POSTGRES_USER=${{ secrets.POSTGRES_USER }} >> .env
             echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
+            echo DATABASE_URL=${{ secrets.DATABASE_URL }}
             echo TOKEN=${{ secrets.TOKEN }} >> .env
             echo MAIL_PASSWORD=${{ secrets.MAIL_PASSWORD }} >> .env
             echo MAIL_SERVER=${{ secrets.MAIL_SERVER }} >> .env
@@ -67,8 +68,11 @@ jobs:
             echo EMAIL_PROCHARRITY=${{ secrets.EMAIL_PROCHARRITY }} >> .env
             echo HOST_NAME=${{ secrets.HOST_NAME }} >> .env
             echo TOKEN_FOR_WEBHOOKS=${{ secrets.TOKEN_FOR_WEBHOOKS }} >> .env
+            echo REACT_APP_API_ADDRESS=${{ secrets.REACT_APP_API_ADDRESS }}
+            echo REACT_APP_API_DEV_ADDRESS=${{ secrets.REACT_APP_API_DEV_ADDRESS }}
+            echo SKIP_PREFLIGHT_CHECK=${{ secrets.SKIP_PREFLIGHT_CHECK }}
 
             sudo docker-compose -f docker-compose.local.yml stop
-            sudo docker-compose -f docker-compose.local.yml rm
+            sudo docker-compose -f docker-compose.local.yml -f rm
             sudo docker-compose -f docker-compose.local.yml up -d
             sudo docker-compose -f docker-compose.local.yml exec back alembic upgrade head

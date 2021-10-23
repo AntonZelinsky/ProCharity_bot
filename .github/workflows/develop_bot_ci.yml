@@ -75,4 +75,4 @@ jobs:
             sudo docker-compose -f docker-compose.local.yml stop
             sudo docker-compose -f docker-compose.local.yml rm -f
             sudo docker-compose -f docker-compose.local.yml up -d
-            sudo docker-compose -f docker-compose.local.yml exec back alembic upgrade head
+            sudo docker-compose -f docker-compose.local.yml exec -d back alembic upgrade head

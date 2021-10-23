@@ -68,9 +68,9 @@ jobs:
             echo EMAIL_PROCHARRITY=${{ secrets.EMAIL_PROCHARRITY }} >> .env
             echo HOST_NAME=${{ secrets.HOST_NAME }} >> .env
             echo TOKEN_FOR_WEBHOOKS=${{ secrets.TOKEN_FOR_WEBHOOKS }} >> .env
-            echo REACT_APP_API_ADDRESS=${{ secrets.REACT_APP_API_ADDRESS }}
-            echo REACT_APP_API_DEV_ADDRESS=${{ secrets.REACT_APP_API_DEV_ADDRESS }}
-            echo SKIP_PREFLIGHT_CHECK=${{ secrets.SKIP_PREFLIGHT_CHECK }}
+            echo REACT_APP_API_ADDRESS=${{ secrets.REACT_APP_API_ADDRESS }} >> .env
+            echo REACT_APP_API_DEV_ADDRESS=${{ secrets.REACT_APP_API_DEV_ADDRESS }} >> .env
+            echo SKIP_PREFLIGHT_CHECK=${{ secrets.SKIP_PREFLIGHT_CHECK }} >> .env
 
             sudo docker-compose -f docker-compose.local.yml stop
             sudo docker-compose -f docker-compose.local.yml rm -f

@@ -49,7 +49,8 @@ PAGE_LIMIT = 10
 # Telegram bot settings
 TELEGRAM_TOKEN = os.getenv('TOKEN')
 NUMBER_USERS_TO_SEND = 30
-BOT_PERSISTENCE_FILE = os.path.join(BASE_DIR, 'bot_persistence_data')
+# BOT_PERSISTENCE_FILE = os.path.join(BASE_DIR, 'bot_persistence_data')
+BOT_PERSISTENCE_FILE = '/code/bot_persistence_data'
 
 APISPEC_SPEC = {'APISPEC_SPEC':
                     APISpec(title=PROJECT_NAME,

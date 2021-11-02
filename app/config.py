@@ -1,7 +1,8 @@
 import os
-from dotenv import load_dotenv
+
 from apispec import APISpec
 from apispec.ext.marshmallow import MarshmallowPlugin
+from dotenv import load_dotenv
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -48,6 +49,8 @@ PAGE_LIMIT = 10
 # ------------------------------
 # Telegram bot settings
 TELEGRAM_TOKEN = os.getenv('TOKEN')
+WEBHOOK_URL = f'{HOST_NAME}/{TELEGRAM_TOKEN}/telegramWebhook'
+USE_WEBHOOK = os.getenv('USE_WEBHOOK')
 NUMBER_USERS_TO_SEND = 30
 BOT_PERSISTENCE_FILE = os.path.join(BASE_DIR, 'bot_persistence_data')
 
@@ -86,4 +89,4 @@ APPLICATION_CONFIGURATION = {
 LOG_DIR = 'logs'
 LOG_PATH = os.path.join(BASE_DIR, LOG_DIR)
 
-TOKEN_FOR_WEBHOOKS = os.getenv('TOKEN_FOR_WEBHOOKS')
+ACCESS_TOKEN_FOR_PROCHARITY = os.getenv('ACCESS_TOKEN_FOR_PROCHARITY')

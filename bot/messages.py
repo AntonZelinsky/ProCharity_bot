@@ -3,9 +3,9 @@ from telegram.error import Unauthorized
 
 from app import config
 from app.database import db_session
-from app.models import User
-from bot.charity_bot import updater
 from app.logger import bot_logger as logger
+from app.models import User
+from bot.charity_bot import dispatcher
 
 bot = Bot(config.TELEGRAM_TOKEN)
 
@@ -47,8 +47,8 @@ class TelegramNotification:
         for i, part in enumerate(self.__split_chats(chats, config.NUMBER_USERS_TO_SEND)):
             context = {'message': message, 'chats': part}
 
-            updater.job_queue.run_once(self.__send_message, i, context=context,
-                                       name=f'Notification: {message[0:10]}_{i}')
+            dispatcher.job_queue.run_once(self.__send_message, i * 2, context=context,
+                                          name=f'Notification: {message[0:10]}_{i}')
 
         return True
 
@@ -57,8 +57,8 @@ class TelegramNotification:
         for i, part in enumerate(self.__split_chats(send_to, config.NUMBER_USERS_TO_SEND)):
             context = {'message': message, 'chats': part}
 
-            updater.job_queue.run_once(self.__send_message, i, context=context,
-                                       name=f'Task: {0:10}_{i}')
+            dispatcher.job_queue.run_once(self.__send_message, i, context=context,
+                                          name=f'Task: {0:10}_{i}')
 
     def __send_message(self, context):
         """

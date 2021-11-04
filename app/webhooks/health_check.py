@@ -42,7 +42,9 @@ def get_last_update():
     result = db_session.query(
         func.to_char(Task.updated_date, 'YYYY-MM-DD HH24:MI:SS')
     ).order_by(Task.updated_date.desc()).first()
-    return result[0]
+    if result:
+        return result[0]
+    return 0
 
 
 def get_count_active_tasks():

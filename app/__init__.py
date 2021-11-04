@@ -1,11 +1,13 @@
-from flask import Flask
-from app import config
-from flask_jwt_extended import JWTManager
-from flask_restful import Api
+from flask import Flask, request, jsonify
 from flask_apispec.extension import FlaskApiSpec
-from password_validation import PasswordPolicy
-from flask_mail import Mail
 from flask_cors import CORS
+from flask_jwt_extended import JWTManager
+from flask_mail import Mail
+from password_validation import PasswordPolicy
+from telegram import Update
+
+from app import config
+from app.config import TELEGRAM_TOKEN
 
 jwt = JWTManager()
 mail = Mail()
@@ -21,13 +23,13 @@ def create_app():
     from app.auth import swagger_auth
     from app.front import swagger_front
     from app.webhooks import swagger_webhooks
-    
+
     from app.auth import auth_bp
     from app.front import front_bp
     from app.webhooks import webhooks_bp
 
-    app.register_blueprint(webhooks_bp)  
-    app.register_blueprint(auth_bp)   
+    app.register_blueprint(webhooks_bp)
+    app.register_blueprint(auth_bp)
     app.register_blueprint(front_bp)
 
     jwt.init_app(app)
@@ -35,7 +37,23 @@ def create_app():
     docs.init_app(app)
     cors.init_app(app, resource={r"/*": {"origins": "*"}})
 
+<<<<<<< HEAD
     from bot import charity_bot
     charity_bot.init()
     
+=======
+    init_bot(app)
+
+>>>>>>> 78507dcb9faedccf881afb33421461c3b7343abb
     return app
+
+
+def init_bot(app):
+    from bot import charity_bot
+    dispatcher = charity_bot.init()
+
+    @app.post(f'/{TELEGRAM_TOKEN}/telegramWebhook')
+    def webhook():
+        update = Update.de_json(request.json, dispatcher.bot)
+        dispatcher.process_update(update)
+        return jsonify({})

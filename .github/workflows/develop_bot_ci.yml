@@ -39,11 +39,14 @@ jobs:
           file: ./front/Dockerfile
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/procharity_bot_front:latest
-      - name: Copy docker-compose file to remote host
-        uses: canastro/copy-file-action@master
+      - name: Copy single file to remote
+        uses: garygrossgarten/github-action-scp@release
         with:
-          source: "tests/a.txt"
-          target: "test-a.txt"
+          local: docker-compose.test.yml
+          remote: /code/docker-compose.test.yml
+          host: ${{ secrets.HOST_DEV }}
+          username: ${{ secrets.USER_DEV }}
+          privateKey: ${{ secrets.SSH_KEY_DEV }}
 
   deploy:
     runs-on: ubuntu-latest

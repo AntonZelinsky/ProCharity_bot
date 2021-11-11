@@ -25,20 +25,25 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ github.token }}
+      - name: set lower case owner name
+        run: |
+          echo "OWNER_LC=${OWNER,,}" >>${GITHUB_ENV}
+        env:
+          OWNER: '${{ github.repository_owner }}'
       - name: Push Back to ghcr.io
         uses: docker/build-push-action@v2
         with:
           context: ./
           file: ./Dockerfile
           push: true
-          tags: ghcr.io/${{ github.actor }}/procharity_bot_back:latest
+          tags: ghcr.io/${{ env.OWNER_LC }}/procharity_bot_back:latest
       - name: Push Front to ghcr.io
         uses: docker/build-push-action@v2
         with:
           context: ./front
           file: ./front/Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/procharity_bot_front:latest
+          tags: ghcr.io/${{ env.OWNER_LC }}/procharity_bot_front:latest
       - name: Copy single file to remote
         uses: garygrossgarten/github-action-scp@release
         with:

@@ -44,14 +44,6 @@ jobs:
           file: ./front/Dockerfile
           push: true
           tags: ghcr.io/${{ env.OWNER_LC }}/procharity_bot_front:latest
-      - name: Copy single file to remote
-        uses: garygrossgarten/github-action-scp@release
-        with:
-          local: docker-compose.test.yml
-          remote: /code/docker-compose.test.yml
-          host: ${{ secrets.HOST_DEV }}
-          username: ${{ secrets.USER_DEV }}
-          privateKey: ${{ secrets.SSH_KEY_DEV }}
 
   deploy:
     runs-on: ubuntu-latest

@@ -1,16 +1,23 @@
-version: '3.8'
+version: '3.3'
 
 services:
     back:
-        build: .
+        image: ghcr.io/kr0t/procharity_bot_back:latest
         expose:
             - "8000"
             - "5000"
+        ports:
+            -   "8000:8000"
+            -   "587:587"
         env_file:
-            -   .env.dev
+            -   .env
+        volumes:
+            - .:.
 
     front:
-        build: front/
+        image: ghcr.io/kr0t/procharity_bot_front:latest
+        env_file:
+            -   .env
         ports:
             -    "80:80"
     db:
@@ -25,6 +32,8 @@ services:
             - "5432"
         ports:
             - "9999:5432"
+        env_file:
+            -   .env
 
 volumes:
     postgres_data:

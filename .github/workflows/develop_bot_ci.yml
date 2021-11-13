@@ -18,7 +18,6 @@ jobs:
           host: ${{ secrets.HOST_DEV }}
           username: ${{ secrets.USER_DEV }}
           key: ${{ secrets.SSH_KEY }}
-          passphrase: ${{ secrets.SSH_PASS}}
           script: |
             whoami
 #  build_and_push_to_ghcr:

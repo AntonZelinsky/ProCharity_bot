@@ -79,5 +79,6 @@ jobs:
 
             sudo docker-compose -f docker-compose.test.yml stop
             sudo docker-compose -f docker-compose.test.yml rm -f
+            sudo docker rmi $(sudo docker images -qa)
             sudo docker-compose -f docker-compose.test.yml up -d --quiet-pull
             sudo docker-compose -f docker-compose.test.yml exec -d back alembic upgrade head

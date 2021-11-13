@@ -55,6 +55,7 @@ jobs:
           host: ${{ secrets.HOST_DEV }}
           username: ${{ secrets.USER_DEV }}
           key: ${{ secrets.SSH_KEY }}
+          passphrase: ${{ secrets.PASSPHRASE }}
           script: |
             cd /code
             touch .env

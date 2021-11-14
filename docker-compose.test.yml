@@ -2,7 +2,7 @@ version: '3.3'
 
 services:
     back:
-        image: ghcr.io/procharity/procharity_bot_back:latest
+        image: "ghcr.io/procharity/procharity_bot_back"
         expose:
             - "8000"
         ports:
@@ -13,7 +13,7 @@ services:
             - /code/data:/code
 
     front:
-        image: ghcr.io/procharity/procharity_bot_front:latest
+        image: "ghcr.io/procharity/procharity_bot_front"
         env_file:
             -   .env
         ports:

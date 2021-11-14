@@ -36,14 +36,14 @@ jobs:
           context: ./
           file: ./Dockerfile
           push: true
-          tags: ghcr.io/${{ env.OWNER_LC }}/procharity_bot_back:latest
+          tags: ghcr.io/${{ env.OWNER_LC }}/procharity_bot_back
       - name: Push Front to ghcr.io
         uses: docker/build-push-action@v2
         with:
           context: ./front
           file: ./front/Dockerfile
           push: true
-          tags: ghcr.io/${{ env.OWNER_LC }}/procharity_bot_front:latest
+          tags: ghcr.io/${{ env.OWNER_LC }}/procharity_bot_front
 
   deploy:
     runs-on: ubuntu-latest

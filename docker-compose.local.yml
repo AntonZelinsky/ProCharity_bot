@@ -2,7 +2,7 @@ version: '3.3'
 
 services:
     back:
-        image: ghcr.io/kr0t/procharity_bot_back:latest
+        image: ghcr.io/procharity/procharity_bot_back:latest
         expose:
             - "8000"
             - "5000"
@@ -15,7 +15,7 @@ services:
             - .:.
 
     front:
-        image: ghcr.io/kr0t/procharity_bot_front:latest
+        image: ghcr.io/procharity/procharity_bot_front:latest
         env_file:
             -   .env
         ports:

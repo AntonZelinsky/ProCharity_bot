@@ -1,9 +1,4 @@
 import os
-<<<<<<< HEAD
-# from dotenv import load_dotenv
-=======
-
->>>>>>> 78507dcb9faedccf881afb33421461c3b7343abb
 from apispec import APISpec
 from apispec.ext.marshmallow import MarshmallowPlugin
 from dotenv import load_dotenv

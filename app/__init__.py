@@ -37,14 +37,8 @@ def create_app():
     docs.init_app(app)
     cors.init_app(app, resource={r"/*": {"origins": "*"}})
 
-<<<<<<< HEAD
-    from bot import charity_bot
-    charity_bot.init()
-    
-=======
     init_bot(app)
 
->>>>>>> 78507dcb9faedccf881afb33421461c3b7343abb
     return app
 
 

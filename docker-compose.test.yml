@@ -5,6 +5,7 @@ services:
         image: "ghcr.io/procharity/procharity_bot_back"
         expose:
             - "8000"
+            - "5000"
         ports:
             -   "8000:8000"
         env_file:

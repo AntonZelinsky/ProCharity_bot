@@ -18,4 +18,4 @@ RUN pip3 install -r requirements.txt
 
 COPY . /back
 
-CMD ["gunicorn", "-b", ":8000", "run:app"]
+CMD ["gunicorn", "app:create_app"]

@@ -10,14 +10,12 @@ services:
             -   "8000:8000"
             -   "587:587"
         env_file:
-            -   .env
-        volumes:
-            - .:.
+            -   .env.dev
 
     front:
         image: ghcr.io/procharity/procharity_bot_front:latest
         env_file:
-            -   .env
+            -   .env.dev
         ports:
             -    "80:80"
     db:
@@ -33,7 +31,7 @@ services:
         ports:
             - "9999:5432"
         env_file:
-            -   .env
+            -   .env.dev
 
 volumes:
     postgres_data:

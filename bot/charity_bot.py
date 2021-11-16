@@ -1,5 +1,5 @@
 import os
-from functools import cache
+from functools import lru_cache
 from queue import Queue
 from threading import Thread
 
@@ -84,7 +84,7 @@ def init_webhook(bot, persistence, webhook_url):
     return dispatcher
 
 
-@cache
+@lru_cache(maxsize=None)
 def init() -> Dispatcher:
     token = os.getenv('TOKEN')
     bot = ExtBot(token)

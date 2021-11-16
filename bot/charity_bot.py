@@ -62,7 +62,7 @@ def error_handler(update: Update, context: CallbackContext) -> None:
 
 
 def init_pooling(bot, persistence):
-    updater = Updater(bot, persistence=persistence)
+    updater = Updater(bot=bot, persistence=persistence)
     updater.start_polling()
 
     logger.info('Bot started through pulling')

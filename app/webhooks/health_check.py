@@ -54,7 +54,7 @@ def get_count_active_tasks():
 
 def check_bot():
     try:
-        charity_bot.updater.bot.get_webhook_info()
+        charity_bot.dispatcher.bot.get_webhook_info()
         logger.info(f'Health check: Bot connection succeeded')
         return dict(status=True, method='pulling')
     except Exception as ex:

@@ -1,5 +1,4 @@
 import os
-
 from apispec import APISpec
 from apispec.ext.marshmallow import MarshmallowPlugin
 from dotenv import load_dotenv

@@ -1,5 +1,5 @@
 import os
-from functools import cache
+from functools import lru_cache
 from queue import Queue
 from threading import Thread
 
@@ -62,7 +62,7 @@ def error_handler(update: Update, context: CallbackContext) -> None:
 
 
 def init_pooling(bot, persistence):
-    updater = Updater(bot, persistence=persistence)
+    updater = Updater(bot=bot, persistence=persistence)
     updater.start_polling()
 
     logger.info('Bot started through pulling')
@@ -84,7 +84,7 @@ def init_webhook(bot, persistence, webhook_url):
     return dispatcher
 
 
-@cache
+@lru_cache(maxsize=None)
 def init() -> Dispatcher:
     token = os.getenv('TOKEN')
     bot = ExtBot(token)

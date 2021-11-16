@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# load_dotenv(os.path.join(BASE_DIR, '.env.dev'))
+load_dotenv(os.path.join(BASE_DIR, '.env.dev'))
 
 # -----------------------
 # Basic project settings
@@ -51,8 +51,7 @@ TELEGRAM_TOKEN = os.getenv('TOKEN')
 WEBHOOK_URL = f'{HOST_NAME}/{TELEGRAM_TOKEN}/telegramWebhook'
 USE_WEBHOOK = os.getenv('USE_WEBHOOK')
 NUMBER_USERS_TO_SEND = 30
-# BOT_PERSISTENCE_FILE = os.path.join(BASE_DIR, 'bot_persistence_data')
-BOT_PERSISTENCE_FILE = '/code/bot_persistence_data'
+BOT_PERSISTENCE_FILE = os.path.join(BASE_DIR, 'bot_persistence_data')
 
 APISPEC_SPEC = {'APISPEC_SPEC':
                     APISpec(title=PROJECT_NAME,

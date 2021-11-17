@@ -87,6 +87,7 @@ jobs:
             echo EMAIL_PROCHARRITY=${{ secrets.EMAIL_PROCHARRITY }} >> .env
             echo HOST_NAME=${{ secrets.HOST_NAME }} >> .env
             echo TOKEN_FOR_WEBHOOKS=${{ secrets.TOKEN_FOR_WEBHOOKS }} >> .env
+            echo DEBUG=${{ secrets.DEBUG }} >> .env
 
             sudo docker-compose -f docker-compose.test.yml stop
             sudo docker-compose -f docker-compose.test.yml rm -f

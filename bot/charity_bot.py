@@ -57,13 +57,13 @@ def about(update: Update, context: CallbackContext):
 def error_handler(update: Update, context: CallbackContext) -> None:
     if update is not None and update.effective_user is not None:
         text = f"Error '{context.error}', user id: {update.effective_user.id}"
+        message = context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text="Что-то пошло не так, сообщите пожалуйста об этом администрации."
+        )
     else:
         text = f"Error '{context.error}'"
     logger.error(msg=text, exc_info=context.error)
-    message = context.bot.send_message(
-        chat_id=update.effective_chat.id,
-        text="Что-то пошло не так, сообщите пожалуйста об этом администрации."
-    )
 
 
 def init_pooling(bot, persistence):

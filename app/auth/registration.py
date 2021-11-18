@@ -55,7 +55,7 @@ class UserRegister(MethodResource, Resource):
                     400: {'description': "Введенный пароль не соответствует политике паролей."},
                     401: {'description': "Для регистрации необходимо указать пароль."},
                     403: {'description': "Приглашение не было найдено или просрочено. "
-                                         "Пожалуйста свяжитесь с своим системным администратором."},
+                                         "Пожалуйста свяжитесь с администратором сайта."},
 
                     }
          )
@@ -69,7 +69,7 @@ class UserRegister(MethodResource, Resource):
                 or registration_record.token_expiration_date < datetime.now()):
             logger.info(f'Registration: The invitation "{token}" not found or expired.')
             return make_response(jsonify(message="Приглашение не было найдено или просрочено. "
-                                                 "Пожалуйста свяжитесь с своим системным администратором."), 403)
+                                                 "Пожалуйста свяжитесь с администратором сайта."), 403)
         del kwargs['token']
         email = registration_record.email
         admin_user = AdminUser.query.filter_by(email=email).first()

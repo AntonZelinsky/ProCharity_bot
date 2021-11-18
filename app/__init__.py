@@ -20,6 +20,7 @@ def create_app():
     app = Flask(__name__)
     app.config.update(config.APPLICATION_CONFIGURATION)
     app.config.update(**config.APISPEC_SPEC)
+
     from app.auth import swagger_auth
     from app.front import swagger_front
     from app.webhooks import swagger_webhooks

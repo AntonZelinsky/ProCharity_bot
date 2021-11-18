@@ -1,17 +1,17 @@
 from datetime import datetime
 
-from sqlalchemy.exc import SQLAlchemyError
-
-from app import password_policy
-from app.database import db_session
-from app.models import AdminTokenRequest, AdminUser
 from flask import jsonify, make_response
 from flask_apispec import doc, use_kwargs
 from flask_apispec.views import MethodResource
 from flask_restful import Resource
 from marshmallow import fields
+from sqlalchemy.exc import SQLAlchemyError
 from werkzeug.security import generate_password_hash
+
+from app import password_policy
+from app.database import db_session
 from app.logger import app_logger as logger
+from app.models import AdminTokenRequest, AdminUser
 
 
 class PasswordResetConfirm(MethodResource, Resource):
@@ -36,7 +36,7 @@ class PasswordResetConfirm(MethodResource, Resource):
                     400: {'description': 'Введенный пароль не соответствует политике паролей.'},
                     401: {'description': 'Необходимо указать пароль.'},
                     403: {'description': 'Токен не был найден или просрочен. '
-                                         'Пожалуйста свяжитесь со своим системным администратором.'},
+                                         'Пожалуйста свяжитесь с администратором сайта.'},
 
                     }
          )
@@ -51,7 +51,7 @@ class PasswordResetConfirm(MethodResource, Resource):
                 or reset_record.token_expiration_date < datetime.now()):
             logger.info(f'Password reset confirm: Token "{token}" not found or expired.')
             return make_response(jsonify(message='Токен не был найден или просрочен. '
-                                                 'Пожалуйста свяжитесь со своим системным администратором.'), 403)
+                                                 'Пожалуйста свяжитесь с администратором сайта.'), 403)
 
         if not password:
             logger.info(f'Password reset confirm: The password for reset not passed. User: {email}')

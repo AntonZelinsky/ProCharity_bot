@@ -23,7 +23,7 @@ class TokenChecker(MethodResource, Resource):
          },
          responses={200: {'description': "Токен подтвержден."},
                     403: {'description': "Токен не был найден или просрочен. "
-                                         "Пожалуйста свяжитесь со своим системным администратором."},
+                                         "Пожалуйста свяжитесь с администратором сайта."},
 
                     }
          )
@@ -35,6 +35,6 @@ class TokenChecker(MethodResource, Resource):
         if not record or record.token_expiration_date < datetime.now():
             logger.error(f"Token Checker: Token '{token}' not confirmed.")
             return make_response(jsonify(message="Токен не был найден или просрочен. "
-                                                 "Пожалуйста свяжитесь со своим системным администратором."), 403)
+                                                 "Пожалуйста свяжитесь с администратором сайта."), 403)
         logger.info(f"Token Checker: Token for user '{record.email}' confirmed.")
         return make_response(jsonify(message='Токен подтвержден.'), 200)

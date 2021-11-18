@@ -83,7 +83,6 @@ APPLICATION_CONFIGURATION = {
     'MAIL_USERNAME': os.getenv('MAIL_USERNAME'),
     'MAIL_DEFAULT_SENDER': os.getenv('MAIL_DEFAULT_SENDER'),
     'MAIL_PASSWORD': os.getenv('MAIL_PASSWORD'),
-    'DEBUG': os.getenv('DEBUG'),
 }
 
 # -----------------------

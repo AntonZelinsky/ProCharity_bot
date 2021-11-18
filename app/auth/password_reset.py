@@ -1,17 +1,17 @@
 from smtplib import SMTPException
 
-from sqlalchemy.exc import SQLAlchemyError
-
-from app import config
-from app.database import db_session
-from app.models import AdminUser
-from app.auth.send_token import send_token
 from flask import jsonify, make_response
 from flask_apispec import doc, use_kwargs
 from flask_apispec.views import MethodResource
 from flask_restful import Resource
 from marshmallow import fields
+from sqlalchemy.exc import SQLAlchemyError
+
+from app import config
+from app.auth.send_token import send_token
+from app.database import db_session
 from app.logger import app_logger as logger
+from app.models import AdminUser
 
 
 class PasswordReset(MethodResource, Resource):
@@ -53,7 +53,8 @@ class PasswordReset(MethodResource, Resource):
 
         except SMTPException as ex:
             logger.error(f"Password reset:{str(ex)}")
-            return make_response(jsonify(message=f"The message cannot be sent."), 400)
+            return make_response(
+                jsonify(message=f"Сообщение не может быть отправлено. Свяжитесь с администраторам сайта."), 400)
 
         logger.info(
             f"Password reset: The password reset link for the user {email} has been sent to the specified email.")

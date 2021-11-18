@@ -31,7 +31,7 @@ class TelegramNotification:
             return False
 
         chats_list = []
-        query = db_session.query(User.telegram_id)
+        query = db_session.query(User.telegram_id).filter(User.banned.is_(False))
 
         if self.has_mailing == 'subscribed':
             chats_list = query.filter(User.has_mailing.is_(True))

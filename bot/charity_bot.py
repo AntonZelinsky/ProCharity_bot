@@ -13,6 +13,7 @@ from telegram.ext import (Updater,
                           CallbackContext,
                           CallbackQueryHandler,
                           PicklePersistence, Dispatcher, JobQueue, ExtBot)
+from telegram.utils.request import Request
 
 from app.config import BOT_PERSISTENCE_FILE, HOST_NAME, WEBHOOK_URL, USE_WEBHOOK
 from app.logger import bot_logger
@@ -59,6 +60,10 @@ def error_handler(update: Update, context: CallbackContext) -> None:
     else:
         text = f"Error '{context.error}'"
     logger.error(msg=text, exc_info=context.error)
+    message = context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text="Что-то пошло не так, сообщите пожалуйста об этом администрации."
+    )
 
 
 def init_pooling(bot, persistence):
@@ -87,7 +92,8 @@ def init_webhook(bot, persistence, webhook_url):
 @lru_cache(maxsize=None)
 def init() -> Dispatcher:
     token = os.getenv('TOKEN')
-    bot = ExtBot(token)
+    request = Request(con_pool_size=8)
+    bot = ExtBot(token, request=request)
     bot_persistence = PicklePersistence(filename=BOT_PERSISTENCE_FILE,
                                         store_bot_data=True,
                                         store_user_data=True,

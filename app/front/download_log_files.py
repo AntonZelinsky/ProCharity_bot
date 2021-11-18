@@ -1,4 +1,6 @@
-from flask import send_file, request
+import os
+
+from flask import send_file, request, jsonify, make_response
 from flask_apispec import doc
 from flask_apispec.views import MethodResource
 from flask_jwt_extended import jwt_required
@@ -26,4 +28,15 @@ class DownloadLogs(MethodResource, Resource):
             return send_file(directory, as_attachment=True)
         except FileNotFoundError:
             logger.info(f'Download log files: incorrect file_name "{log_file}"')
-            return 'Make sure you pass in the correct log_file: app_logs, bot_logs or webhooks_logs'           
+            return 'Make sure you pass in the correct log_file'
+
+
+class GetListLogFiles(MethodResource, Resource):        # TODO: название, описание
+    @doc(description='.............', 
+         tags=['.............'],
+         params={
+             'Authorization': config.PARAM_HEADER_AUTH})     
+    @jwt_required()
+    def get(self):
+        all_log_files = os.listdir(path='./logs')
+        return make_response(jsonify(all_log_files=all_log_files), 200)

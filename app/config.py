@@ -53,7 +53,7 @@ WEBHOOK_URL = f'{HOST_NAME}/{TELEGRAM_TOKEN}/telegramWebhook'
 USE_WEBHOOK = os.getenv('USE_WEBHOOK')
 NUMBER_USERS_TO_SEND = 5
 
-BOT_FILE_DIR = '/back/bot_persistence_file/'
+BOT_FILE_DIR = BASE_DIR + '/bot_persistence_file/'
 BOT_PERSISTENCE_FILE = os.path.join(BOT_FILE_DIR, 'bot_persistence_data')
 
 APISPEC_SPEC = {

@@ -82,7 +82,6 @@ def get_statistics_with_boolean_filtration(column_name: Column, second_column_na
     result = db_session.query(
         column_name, func.count(column_name)
     ).group_by(column_name).filter(second_column_name == boolean).all()
-    print(result)
     return result
 
 

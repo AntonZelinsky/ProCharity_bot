@@ -4,7 +4,6 @@ import re
 from flask import send_file, request, jsonify, make_response
 from flask_apispec import doc
 from flask_apispec.views import MethodResource
-from flask_jwt_extended import jwt_required
 from flask_restful import Resource
 
 from app import config

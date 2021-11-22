@@ -97,6 +97,7 @@ jobs:
             echo HOST_NAME=${{ secrets.HOST_NAME }} >> .env
             echo ACCESS_TOKEN_FOR_PROCHARITY=${{ secrets.ACCESS_TOKEN_FOR_PROCHARITY }} >> .env
             echo DEBUG=${{ secrets.DEBUG }} >> .env
+            echo USE_WEBHOOK=${{ secrets.USE_WEBHOOK }} >> .env
 
             sudo docker-compose -f docker-compose.test.yml stop
             sudo docker-compose -f docker-compose.test.yml rm -f

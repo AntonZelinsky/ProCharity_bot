@@ -4,7 +4,6 @@ import re
 from flask import send_file, request, jsonify, make_response
 from flask_apispec import doc
 from flask_apispec.views import MethodResource
-from flask_jwt_extended import jwt_required
 from flask_restful import Resource
 
 from app import config
@@ -20,8 +19,7 @@ class DownloadLogs(MethodResource, Resource):
                  'in': 'query',
                  'type': 'string',
                  'required': True},
-             'Authorization': config.PARAM_HEADER_AUTH})     
-    @jwt_required()
+                })
     def get(self):
         log_file = self.__check_file_name(request.args.get('log_file'))
         directory = f"../logs/{log_file}"
@@ -40,9 +38,7 @@ class DownloadLogs(MethodResource, Resource):
 class GetListLogFiles(MethodResource, Resource):
     @doc(description='Get list of log files', 
          tags=['Logs'],
-         params={
-             'Authorization': config.PARAM_HEADER_AUTH})     
-    @jwt_required()
+         )     
     def get(self):
         log_files = os.listdir(path='./logs')
         return make_response(jsonify(log_files=log_files), 200)

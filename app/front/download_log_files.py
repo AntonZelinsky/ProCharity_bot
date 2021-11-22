@@ -38,8 +38,7 @@ class DownloadLogs(MethodResource, Resource):
 class GetListLogFiles(MethodResource, Resource):
     @doc(description='Get list of log files', 
          tags=['Logs'],
-         params={
-             'Authorization': config.PARAM_HEADER_AUTH})     
+         )     
     def get(self):
         log_files = os.listdir(path='./logs')
         return make_response(jsonify(log_files=log_files), 200)

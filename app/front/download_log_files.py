@@ -20,8 +20,7 @@ class DownloadLogs(MethodResource, Resource):
                  'in': 'query',
                  'type': 'string',
                  'required': True},
-             'Authorization': config.PARAM_HEADER_AUTH})     
-    @jwt_required()
+                })
     def get(self):
         log_file = self.__check_file_name(request.args.get('log_file'))
         directory = f"../logs/{log_file}"
@@ -42,7 +41,6 @@ class GetListLogFiles(MethodResource, Resource):
          tags=['Logs'],
          params={
              'Authorization': config.PARAM_HEADER_AUTH})     
-    @jwt_required()
     def get(self):
         log_files = os.listdir(path='./logs')
         return make_response(jsonify(log_files=log_files), 200)

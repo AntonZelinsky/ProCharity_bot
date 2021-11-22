@@ -11,7 +11,7 @@ services:
         env_file:
             -   .env
         volumes:
-            - logs_data:/back/logs
+            - /code:/back/logs
             - /code/data:/back/bot_persistence_file/
 
     front:
@@ -33,4 +33,3 @@ services:
 
 volumes:
     postgres_data:
-    logs_data:

@@ -8,6 +8,7 @@ from flask_restful import Resource
 from sqlalchemy import distinct
 from sqlalchemy.sql import func
 from sqlalchemy.sql.schema import Column
+from sqlalchemy.sql.sqltypes import Boolean
 
 from app import config
 from app.webhooks import health_check
@@ -33,7 +34,7 @@ class Analytics(MethodResource, Resource):
         date = request.args.get('date_limit', datetime.now().date().__str__())
         date_limit = datetime.strptime(date, '%Y-%m-%d').date()
         date_begin = date_limit - timedelta(days=DAYS_NUMBER)
-        reasons_canceling_from_db = get_statistics(ReasonCanceling.reason_canceling)
+        reasons_canceling_from_db = get_reason_cancelling_statistics()
         reasons_canceling = {
             constants.REASONS.get(key, 'Другое'):
                 value for key, value in reasons_canceling_from_db
@@ -72,6 +73,13 @@ def get_statistics(column_name: Column) -> list:
     result = db_session.query(
         column_name, func.count(column_name)
     ).group_by(column_name).all()
+    return result
+
+
+def get_reason_cancelling_statistics():
+    result = db_session.query(
+        ReasonCanceling.reason_canceling, func.count(ReasonCanceling.reason_canceling)
+    ).group_by(ReasonCanceling.reason_canceling).filter(ReasonCanceling.archive == False).all()
     return result
 
 

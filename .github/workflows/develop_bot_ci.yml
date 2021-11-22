@@ -95,7 +95,7 @@ jobs:
             echo MAIL_DEFAULT_SENDER=${{ secrets.MAIL_DEFAULT_SENDER }} >> .env
             echo EMAIL_PROCHARRITY=${{ secrets.EMAIL_PROCHARRITY }} >> .env
             echo HOST_NAME=${{ secrets.HOST_NAME }} >> .env
-            echo TOKEN_FOR_WEBHOOKS=${{ secrets.TOKEN_FOR_WEBHOOKS }} >> .env
+            echo ACCESS_TOKEN_FOR_PROCHARITY=${{ secrets.ACCESS_TOKEN_FOR_PROCHARITY }} >> .env
             echo DEBUG=${{ secrets.DEBUG }} >> .env
 
             sudo docker-compose -f docker-compose.test.yml stop

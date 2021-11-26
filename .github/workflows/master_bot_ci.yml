@@ -5,6 +5,9 @@ on:
     branches:
       - master
     types: [closed]
+  push:
+    branches:
+      - master
 
   workflow_dispatch:
 
@@ -38,7 +41,7 @@ jobs:
         with:
           host: ${{ secrets.HOST_PROD }}
           username: ${{ secrets.USER_DEV }}
-          key: ${{ secrets.SSH_KEY }}
+          key: ${{ secrets.SSH_KEY_PROD }}
           passphrase: ${{ secrets.PASSPHRASE }}
           source: 'docker-compose.test.yml'
           target: '/code'
@@ -71,7 +74,7 @@ jobs:
         with:
           host: ${{ secrets.HOST_PROD }}
           username: ${{ secrets.USER_DEV }}
-          key: ${{ secrets.SSH_KEY }}
+          key: ${{ secrets.SSH_KEY_PROD }}
           passphrase: ${{ secrets.PASSPHRASE }}
           script: |
             cd /code

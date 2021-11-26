@@ -1,4 +1,7 @@
 import os
+from functools import lru_cache
+from queue import Queue
+from threading import Thread
 
 from dotenv import load_dotenv
 from telegram import (Update,
@@ -9,32 +12,24 @@ from telegram.ext import (Updater,
                           ConversationHandler,
                           CallbackContext,
                           CallbackQueryHandler,
-                          PicklePersistence)
+                          PicklePersistence, Dispatcher, JobQueue, ExtBot)
+from telegram.utils.request import Request
 
-from app.config import BOT_PERSISTENCE_FILE
-
+from app.config import BOT_PERSISTENCE_FILE, HOST_NAME, WEBHOOK_URL, USE_WEBHOOK
+from app.logger import bot_logger
 from bot import common_comands
-from bot.constants import states
-from bot.constants import constants
 from bot.constants import command_constants
+from bot.constants import constants
+from bot.constants import states
+from bot.decorators.logger import log_command
 from bot.handlers.categories_handler import categories_conv, change_user_categories
 from bot.handlers.feedback_handler import feedback_conv
 from bot.handlers.subscription_handler import subscription_conv
-from bot.decorators.logger import log_command
 from bot.user_db import UserDB
-from app.logger import bot_logger
 
 load_dotenv()
 
 logger = bot_logger
-
-bot_persistence = PicklePersistence(filename=BOT_PERSISTENCE_FILE,
-                                    store_bot_data=True,
-                                    store_user_data=True,
-                                    store_callback_data=True,
-                                    store_chat_data=True)
-
-updater = Updater(token=os.getenv('TOKEN'), persistence=bot_persistence, use_context=True)
 
 user_db = UserDB()
 
@@ -62,28 +57,69 @@ def about(update: Update, context: CallbackContext):
 def error_handler(update: Update, context: CallbackContext) -> None:
     if update is not None and update.effective_user is not None:
         text = f"Error '{context.error}', user id: {update.effective_user.id}"
+        message = context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text="Что-то пошло не так, сообщите пожалуйста об этом администрации."
+        )
     else:
         text = f"Error '{context.error}'"
     logger.error(msg=text, exc_info=context.error)
 
 
-def init() -> None:
-    dispatcher = updater.dispatcher
+def init_pooling(bot, persistence):
+    updater = Updater(bot=bot, persistence=persistence)
+    updater.start_polling()
+
+    logger.info('Bot started through pulling')
+    return updater.dispatcher
+
+
+def init_webhook(bot, persistence, webhook_url):
+    update_queue = Queue()
+    job_queue = JobQueue()
+    dispatcher = Dispatcher(bot, update_queue, persistence=persistence)
+    job_queue.set_dispatcher(dispatcher)
+    success_setup = bot.set_webhook(webhook_url)
+    if not success_setup:
+        raise AttributeError("Cannot set up telegram webhook")
+    thread = Thread(target=dispatcher.start, name='dispatcher')
+    thread.start()
+
+    logger.info('Bot started through webhooks')
+    return dispatcher
+
+
+@lru_cache(maxsize=None)
+def init() -> Dispatcher:
+    token = os.getenv('TOKEN')
+    request = Request(con_pool_size=8)
+    bot = ExtBot(token, request=request)
+    bot_persistence = PicklePersistence(filename=BOT_PERSISTENCE_FILE,
+                                        store_bot_data=True,
+                                        store_user_data=True,
+                                        store_callback_data=True,
+                                        store_chat_data=True)
+
+    if HOST_NAME and USE_WEBHOOK:
+        dispatcher = init_webhook(bot, bot_persistence, WEBHOOK_URL)
+    else:
+        dispatcher = init_pooling(bot, bot_persistence)
+
     conv_handler = ConversationHandler(
         entry_points=[
             common_comands.start_command_handler
         ],
         states={
             states.GREETING: [
-               categories_conv,
-            ],  
+                categories_conv,
+            ],
             states.MENU: [
                 feedback_conv,
                 categories_conv,
                 subscription_conv,
-                CallbackQueryHandler(about, pattern=command_constants.COMMAND__ABOUT),                
+                CallbackQueryHandler(about, pattern=command_constants.COMMAND__ABOUT),
                 common_comands.open_menu_handler
-            ],            
+            ],
         },
         fallbacks=[
             common_comands.start_command_handler,
@@ -98,4 +134,8 @@ def init() -> None:
     dispatcher.add_handler(conv_handler)
     dispatcher.add_handler(update_users_category)
     dispatcher.add_error_handler(error_handler)
-    updater.start_polling()
+
+    return dispatcher
+
+
+dispatcher = init()

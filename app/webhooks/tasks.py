@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from flask import request, jsonify, make_response
 from flask_apispec import doc
 from flask_apispec.views import MethodResource
@@ -10,11 +8,24 @@ from marshmallow import fields, Schema, ValidationError, EXCLUDE
 
 from app.database import db_session
 from app.models import Task, User
+from app.logger import webhooks_logger as logger
+from app.webhooks.check_webhooks_token import check_webhooks_token
+
 from bot.formatter import display_task_notification
 from bot.messages import TelegramNotification
 
-from app.logger import webhooks_logger as logger
-from app.apis.check_webhooks_token import check_webhooks_token
+
+class TaskBonusField(fields.Field):
+    def _serialize(self, value, attr, obj, **kwargs):
+        return value
+
+    def _deserialize(self, value, attr, data, **kwargs):
+        try:
+            if int(value) <=0:
+                value = self.load_default
+        except ValueError:
+            value = self.load_default
+        return int(value)
 
 
 class TaskSchema(Schema):
@@ -23,14 +34,13 @@ class TaskSchema(Schema):
     name_organization = fields.String(required=True)
     deadline = fields.Date(required=True, format='%d.%m.%Y')
     category_id = fields.Integer(required=True)
-    bonus = fields.Integer(load_default=5)
+    bonus = TaskBonusField(load_default=5)
     location = fields.String(required=True)
     link = fields.String(required=True)
     description = fields.String()
 
     class Meta:
         unknown = EXCLUDE
-
 
 class CreateTasks(MethodResource, Resource):
     method_decorators = {'post': [check_webhooks_token]}
@@ -75,7 +85,11 @@ class CreateTasks(MethodResource, Resource):
         task_for_adding_db = list(set(task_id_json) - set(task_id_db))
         tasks_to_add = [task for task in tasks if task['id'] in task_for_adding_db]
         self.__add_tasks(tasks_to_add, task_to_send)
-  
+
+        task_id_db_active = list(set(task_id_json) - set(task_for_archive) - set(task_for_unarchive) - set(task_for_adding_db))
+        active_tasks = [task for task in tasks_db if task.id in task_id_db_active]       
+        self.__update_active_tasks(active_tasks, task_to_send, tasks_dict)
+
         try:
             db_session.commit()
         except SQLAlchemyError as ex:
@@ -134,8 +148,29 @@ class CreateTasks(MethodResource, Resource):
         logger.info(f"Tasks: Unarchived {len(unarchive_records)} tasks.")
         logger.info(f"Tasks: Unarchived task ids: {task_ids}")
 
+    def __hash__(self, task):
+        if type(task) == dict:
+            title = task.get('title')
+            bonus = task.get('bonus')
+            link = task.get('link')
+            description = task.get('description')
+            deadline = task.get('deadline')
+            return hash(f'{title}{bonus}{link}{description}{deadline}')
+        return hash(f'{task.title}{task.bonus}{task.link}{task.description}{task.deadline}')
 
-    def __update_task_fields(self, task, task_from_dict):       
+
+    def __update_active_tasks(self, active_tasks, task_to_send, tasks_dict):
+        updated_task_ids = []
+        for task in active_tasks:
+            task_from_dict = tasks_dict.get(task.id)
+            if self.__hash__(task) != self.__hash__(task_from_dict):
+                self.__update_task_fields(task, task_from_dict)
+                task_to_send.append(task)
+                updated_task_ids.append(task.id)
+        logger.info(f"Tasks: Updated {len(updated_task_ids)} active tasks.")
+        logger.info(f"Tasks: Updated active task ids: {updated_task_ids}")
+
+    def __update_task_fields(self, task, task_from_dict):    
         task.title = task_from_dict['title']
         task.name_organization = task_from_dict['name_organization']
         task.category_id = task_from_dict['category_id']
@@ -145,3 +180,4 @@ class CreateTasks(MethodResource, Resource):
         task.description = task_from_dict['description']
         task.deadline = task_from_dict['deadline']
         task.archive = False
+ 

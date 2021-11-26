@@ -3,9 +3,9 @@ from telegram.error import Unauthorized
 
 from app import config
 from app.database import db_session
-from app.models import User
-from bot.charity_bot import updater
 from app.logger import bot_logger as logger
+from app.models import User
+from bot.charity_bot import dispatcher
 
 bot = Bot(config.TELEGRAM_TOKEN)
 
@@ -31,7 +31,7 @@ class TelegramNotification:
             return False
 
         chats_list = []
-        query = db_session.query(User.telegram_id)
+        query = db_session.query(User.telegram_id).filter(User.banned.is_(False))
 
         if self.has_mailing == 'subscribed':
             chats_list = query.filter(User.has_mailing.is_(True))
@@ -47,8 +47,8 @@ class TelegramNotification:
         for i, part in enumerate(self.__split_chats(chats, config.NUMBER_USERS_TO_SEND)):
             context = {'message': message, 'chats': part}
 
-            updater.job_queue.run_once(self.__send_message, i, context=context,
-                                       name=f'Notification: {message[0:10]}_{i}')
+            dispatcher.job_queue.run_once(self.__send_message, i * 2, context=context,
+                                          name=f'Notification: {message[0:10]}_{i}')
 
         return True
 
@@ -57,8 +57,8 @@ class TelegramNotification:
         for i, part in enumerate(self.__split_chats(send_to, config.NUMBER_USERS_TO_SEND)):
             context = {'message': message, 'chats': part}
 
-            updater.job_queue.run_once(self.__send_message, i, context=context,
-                                       name=f'Task: {0:10}_{i}')
+            dispatcher.job_queue.run_once(self.__send_message, i, context=context,
+                                          name=f'Task: {0:10}_{i}')
 
     def __send_message(self, context):
         """
@@ -79,8 +79,7 @@ class TelegramNotification:
                 logger.error(f'{str(ex.message)}, telegram_id: {user.telegram_id}')
             except Unauthorized as ex:
                 logger.error(f'{str(ex.message)}: {user.telegram_id}')
-                User.query.filter_by(telegram_id=user.telegram_id).update({'banned': True})
-                User.query.filter_by(telegram_id=user.telegram_id).update({'has_mailing': False})
+                User.query.filter_by(telegram_id=user.telegram_id).update({'banned': True, 'has_mailing': False})
                 db_session.commit()
 
     @staticmethod

@@ -1,7 +1,8 @@
 import os
-from dotenv import load_dotenv
+
 from apispec import APISpec
 from apispec.ext.marshmallow import MarshmallowPlugin
+from dotenv import load_dotenv
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -9,15 +10,15 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 # -----------------------
 # Basic project settings
-PROJECT_NAME = "ProCharity bot"
+PROJECT_NAME = 'ProCharity bot'
 SQL_ALCHEMY_DATABASE_URL = os.getenv('DATABASE_URL')
 HOST_NAME = os.getenv('HOST_NAME')
 
 PASSWORD_POLICY = {
-    "min_length": 8,
-    "uppercase": 1,
-    "lowercase": 1,
-    "max_length": 32,
+    'min_length': 8,
+    'uppercase': 1,
+    'lowercase': 1,
+    'max_length': 32,
 }
 # procharity send email settings
 PROCHARRITY_TEMPLATE = 'email_templates/send_question.html'
@@ -48,22 +49,27 @@ PAGE_LIMIT = 10
 # ------------------------------
 # Telegram bot settings
 TELEGRAM_TOKEN = os.getenv('TOKEN')
-NUMBER_USERS_TO_SEND = 30
-BOT_PERSISTENCE_FILE = os.path.join(BASE_DIR, 'bot_persistence_data')
+WEBHOOK_URL = f'{HOST_NAME}/{TELEGRAM_TOKEN}/telegramWebhook'
+USE_WEBHOOK = os.getenv('USE_WEBHOOK')
+NUMBER_USERS_TO_SEND = 5
 
-APISPEC_SPEC = {'APISPEC_SPEC':
-                    APISpec(title=PROJECT_NAME,
-                            version='v1',
-                            plugins=[MarshmallowPlugin()],
-                            openapi_version='2.0.0'
-                            ),
-                'APISPEC_SWAGGER_URL': SWAGGER_JSON,
-                'APISPEC_SWAGGER_UI_URL': SWAGGER_UI,
+BOT_FILE_DIR = BASE_DIR + '/bot_persistence_file/'
+BOT_PERSISTENCE_FILE = os.path.join(BOT_FILE_DIR, 'bot_persistence_data')
 
-                }
+APISPEC_SPEC = {
+    'APISPEC_SPEC':
+        APISpec(title=PROJECT_NAME,
+                version='v1',
+                plugins=[MarshmallowPlugin()],
+                openapi_version='2.0.0'
+                ),
+    'APISPEC_SWAGGER_URL': SWAGGER_JSON,
+    'APISPEC_SWAGGER_UI_URL': SWAGGER_UI,
+
+}
 
 APPLICATION_CONFIGURATION = {
-    "SECRET_KEY": "ASDfasdQW4)(83099498&$^%2ewf",
+    'SECRET_KEY': 'ASDfasdQW4)(83099498&$^%2ewf',
     # Token settings
     'JWT_ACCESS_TOKEN_EXPIRES': 86400,  # 1 day
     'JWT_REFRESH_TOKEN_EXPIRES': 172800,  # 2 days
@@ -86,4 +92,4 @@ APPLICATION_CONFIGURATION = {
 LOG_DIR = 'logs'
 LOG_PATH = os.path.join(BASE_DIR, LOG_DIR)
 
-TOKEN_FOR_WEBHOOKS = os.getenv('TOKEN_FOR_WEBHOOKS')
+ACCESS_TOKEN_FOR_PROCHARITY = os.getenv('ACCESS_TOKEN_FOR_PROCHARITY')

@@ -1,0 +1,37 @@
+version: '3.3'
+
+services:
+    back:
+        image: ghcr.io/procharity/procharity_bot_back:latest
+        expose:
+            - "8000"
+            - "5000"
+        ports:
+            -   "8000:8000"
+            -   "587:587"
+        env_file:
+            -   .env.dev
+
+    front:
+        image: ghcr.io/procharity/procharity_bot_front:latest
+        env_file:
+            -   .env.dev
+        ports:
+            -    "80:80"
+    db:
+        image: postgres:12-alpine
+        volumes:
+            -   postgres_data:/var/lib/postgresql/data
+        environment:
+            - POSTGRES_USER=procharity
+            - POSTGRES_PASSWORD=procharity
+            - POSTGRES_DB=procharity_local_test_db
+        expose:
+            - "5432"
+        ports:
+            - "9999:5432"
+        env_file:
+            -   .env.dev
+
+volumes:
+    postgres_data:

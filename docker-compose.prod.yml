@@ -22,6 +22,8 @@ services:
         ports:
             - "80:80"
             - "443:443"
+        volumes:
+            -   /etc/nginx/ssl:/etc/nginx/ssl
     db:
         image: postgres:12-alpine
         volumes:

@@ -49,7 +49,7 @@ PAGE_LIMIT = 10
 # ------------------------------
 # Telegram bot settings
 TELEGRAM_TOKEN = os.getenv('TOKEN')
-WEBHOOK_URL = f'{HOST_NAME}/{TELEGRAM_TOKEN}/telegramWebhook'
+WEBHOOK_URL = f'{HOST_NAME}/api/{TELEGRAM_TOKEN}/telegramWebhook'
 USE_WEBHOOK = os.getenv('USE_WEBHOOK')
 NUMBER_USERS_TO_SEND = 5
 

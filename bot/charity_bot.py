@@ -81,6 +81,7 @@ def init_webhook(bot, persistence, webhook_url):
     job_queue.set_dispatcher(dispatcher)
     success_setup = bot.set_webhook(webhook_url)
     if not success_setup:
+        print(webhook_url)
         raise AttributeError("Cannot set up telegram webhook")
     thread = Thread(target=dispatcher.start, name='dispatcher')
     thread.start()

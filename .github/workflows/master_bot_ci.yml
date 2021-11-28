@@ -95,7 +95,7 @@ jobs:
             echo HOST_NAME=${{ secrets.HOST_NAME_PROD }} >> .env
             echo ACCESS_TOKEN_FOR_PROCHARITY=${{ secrets.ACCESS_TOKEN_FOR_PROCHARITY_PROD }} >> .env
             echo DEBUG=${{ secrets.DEBUG }} >> .env
-            echo USE_WEBHOOK=${{ secrets.USE_WEBHOOK }} >> .env
+            echo USE_WEBHOOK=${{ secrets.USE_WEBHOOK_PROD }} >> .env
 
             sudo docker-compose -f docker-compose.prod.yml stop
             sudo docker-compose -f docker-compose.prod.yml rm -f

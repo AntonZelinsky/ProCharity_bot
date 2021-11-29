@@ -9,6 +9,7 @@ from flask_restful import Resource
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.sql import func
 
+from app.config import HOST_NAME, USE_WEBHOOK
 from app.models import User, Task
 from app.database import db_session
 from app.logger import app_logger as logger
@@ -54,9 +55,13 @@ def get_count_active_tasks():
 
 def check_bot():
     try:
+        if HOST_NAME and USE_WEBHOOK:
+            method = 'webhooks'
+        else:
+            method = 'pulling'
         charity_bot.dispatcher.bot.get_webhook_info()
         logger.info(f'Health check: Bot connection succeeded')
-        return dict(status=True, method='pulling')
+        return dict(status=True, method=method)
     except Exception as ex:
         logger.critical(f'Health check: Bot error "{str(ex)}"')
         return dict(status=False, error=f'{ex}')

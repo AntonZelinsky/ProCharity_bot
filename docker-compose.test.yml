@@ -11,7 +11,8 @@ services:
         env_file:
             -   .env
         volumes:
-            - /code/data:/code
+            - /code/logs:/back/logs
+            - /code/data:/back/bot_persistence_file/
 
     front:
         image: "ghcr.io/procharity/procharity_bot_front"

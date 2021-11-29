@@ -1,45 +1,39 @@
-version: '3.8'
+version: '3.3'
 
 services:
     back:
-        image: ghcr.io/kr0t/procharity_bot_back:latest
-        command: gunicorn --bind back:8000 run:app
-        network_mode: host
+        image: "ghcr.io/procharity/procharity_bot_back"
         expose:
-            -   "8000"
-#        ports:
-#            -   "587:587"
-        environment:
-            - TOKEN=${TOKEN}
-            - DATABASE_URL=${DATABASE_URL}
-            - MAIL_PASSWORD=${MAIL_PASSWORD}
-            - MAIL_SERVER=${MAIL_SERVER}
-            - MAIL_PORT=${MAIL_PORT}
-            - MAIL_USE_TLS=${MAIL_USE_TLS}
-            - MAIL_USERNAME=${MAIL_USERNAME}
-            - MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER}
-            - EMAIL_PROCHARRITY=${EMAIL_PROCHARRITY}
-            - HOST_NAME=${HOST_NAME}
-            - TOKEN_FOR_WEBHOOKS=${TOKEN_FOR_WEBHOOKS}
+            - "8000"
+            - "5000"
+        ports:
+            -   "8000:8000"
+        env_file:
+            -   .env
+        volumes:
+            - /code/logs:/back/logs
+            - /code/data:/back/bot_persistence_file/
+            - /etc/nginx/ssl:/back/ssl_cert
 
     front:
-        image: ghcr.io/kr0t/procharity_bot_front:latest
+        image: "ghcr.io/procharity/procharity_bot_front_prod"
+        env_file:
+            -   .env
         ports:
-            -   "80:80"
-        environment:
-            - REACT_APP_API_ADDRESS=${REACT_APP_API_ADDRESS}
-            - REACT_APP_API_DEV_ADDRESS=${REACT_APP_API_DEV_ADDRESS}
-            - SKIP_PREFLIGHT_CHECK=${SKIP_PREFLIGHT_CHECK}
+            - "80:80"
+            - "443:443"
+        volumes:
+            -   /etc/nginx/ssl:/etc/nginx/ssl
     db:
         image: postgres:12-alpine
         volumes:
             -   postgres_data:/var/lib/postgresql/data
-        environment:
-            - POSTGRES_USER=procharity
-            - POSTGRES_PASSWORD=procharity
-            - POSTGRES_DB=procharity_local_test_db
+        expose:
+            - "5432"
         ports:
-            -   "5432"
+            - "9999:5432"
+        env_file:
+            -   .env
 
 volumes:
     postgres_data:

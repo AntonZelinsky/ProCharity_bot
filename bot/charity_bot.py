@@ -77,10 +77,11 @@ def init_pooling(bot, persistence):
 def init_webhook(bot, persistence, webhook_url):
     update_queue = Queue()
     job_queue = JobQueue()
-    dispatcher = Dispatcher(bot, update_queue, persistence=persistence)
+    dispatcher = Dispatcher(bot, update_queue, job_queue=job_queue, persistence=persistence)
     job_queue.set_dispatcher(dispatcher)
     success_setup = bot.set_webhook(webhook_url)
     if not success_setup:
+        logger.error(f'Issue with telegram webhook: {webhook_url}')
         raise AttributeError("Cannot set up telegram webhook")
     thread = Thread(target=dispatcher.start, name='dispatcher')
     thread.start()

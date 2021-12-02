@@ -27,7 +27,7 @@ def send_token(email, path, subject, template):
         db_session.add(user)
         db_session.commit()
 
-    link = f'{request.scheme}://{config.HOST_NAME}/#/{path}/{token}'
+    link = f'{config.HOST_NAME}/#/{path}/{token}'
 
     email_template = render_template(
         template,

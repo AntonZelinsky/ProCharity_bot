@@ -75,20 +75,20 @@ class CreateTasks(MethodResource, Resource):
         task_id_db_not_archive = [task.id for task in tasks_db if task.archive == False]
         task_for_archive = list(set(task_id_db_not_archive) - set(task_id_json))
         archive_records = [task for task in tasks_db if task.id in task_for_archive]
-        self.__archive_tasks(archive_records)
+        archived_tasks = self.__archive_tasks(archive_records)
 
         task_id_db_archive = list(set(task_id_db) - set(task_id_db_not_archive))
         task_for_unarchive = list(set(task_id_db_archive) & set(task_id_json))
         unarchive_records = [task for task in tasks_db if task.id in task_for_unarchive]
-        self.__unarchive_tasks(unarchive_records, task_to_send, tasks_dict)
+        unarchived_tasks = self.__unarchive_tasks(unarchive_records, task_to_send, tasks_dict)
         
         task_for_adding_db = list(set(task_id_json) - set(task_id_db))
         tasks_to_add = [task for task in tasks if task['id'] in task_for_adding_db]
-        self.__add_tasks(tasks_to_add, task_to_send)
+        added_tasks = self.__add_tasks(tasks_to_add, task_to_send)
 
         task_id_db_active = list(set(task_id_json) - set(task_for_archive) - set(task_for_unarchive) - set(task_for_adding_db))
         active_tasks = [task for task in tasks_db if task.id in task_id_db_active]       
-        self.__update_active_tasks(active_tasks, task_to_send, tasks_dict)
+        updated_tasks = self.__update_active_tasks(active_tasks, task_to_send, tasks_dict)
 
         try:
             db_session.commit()
@@ -101,7 +101,9 @@ class CreateTasks(MethodResource, Resource):
 
         logger.info('Tasks: New tasks received')
         logger.info('——————————————————————————————————————————————————————')
-        return make_response(jsonify(result='ok'), 200)
+        return make_response(jsonify(added_tasks=added_tasks, archived_tasks=archived_tasks,
+                                     unarchived_tasks=unarchived_tasks, updated_tasks=updated_tasks)
+                                     , 200)
 
 
     def send_task(self, task_to_send):
@@ -129,7 +131,7 @@ class CreateTasks(MethodResource, Resource):
             task_to_send.append(new_task)
         logger.info(f"Tasks: Added {len(tasks_to_add)} new tasks.")
         logger.info(f"Tasks: Added task ids: {task_ids}")
-
+        return task_ids
 
     def __archive_tasks(self, archive_records):
         task_ids = [task.id for task in archive_records]
@@ -137,7 +139,7 @@ class CreateTasks(MethodResource, Resource):
             task.archive = True
         logger.info(f"Tasks: Archived {len(archive_records)} tasks.")
         logger.info(f"Tasks: Archived task ids: {task_ids}")
-
+        return task_ids
 
     def __unarchive_tasks(self, unarchive_records, task_to_send, tasks_dict):
         task_ids = [task.id for task in unarchive_records]
@@ -147,16 +149,15 @@ class CreateTasks(MethodResource, Resource):
             task_to_send.append(task)
         logger.info(f"Tasks: Unarchived {len(unarchive_records)} tasks.")
         logger.info(f"Tasks: Unarchived task ids: {task_ids}")
+        return task_ids
 
     def __hash__(self, task):
         if type(task) == dict:
             title = task.get('title')
-            bonus = task.get('bonus')
-            link = task.get('link')
             description = task.get('description')
             deadline = task.get('deadline')
-            return hash(f'{title}{bonus}{link}{description}{deadline}')
-        return hash(f'{task.title}{task.bonus}{task.link}{task.description}{task.deadline}')
+            return hash(f'{title}{description}{deadline}')
+        return hash(f'{task.title}{task.description}{task.deadline}')
 
 
     def __update_active_tasks(self, active_tasks, task_to_send, tasks_dict):
@@ -169,6 +170,7 @@ class CreateTasks(MethodResource, Resource):
                 updated_task_ids.append(task.id)
         logger.info(f"Tasks: Updated {len(updated_task_ids)} active tasks.")
         logger.info(f"Tasks: Updated active task ids: {updated_task_ids}")
+        return updated_task_ids
 
     def __update_task_fields(self, task, task_from_dict):    
         task.title = task_from_dict['title']

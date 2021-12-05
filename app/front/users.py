@@ -56,7 +56,7 @@ class UsersList(MethodResource, Resource):
         result = []
         page = int(request.args.get('page', 1))
         limit = int(request.args.get('limit', config.PAGE_LIMIT))
-        paginate_page = paginate(db_session.query(User), page, limit)
+        paginate_page = paginate(db_session.query(User).order_by(User.date_registration.desc()), page, limit)
 
         for item in paginate_page.items:
             result.append(formatter.user_formatter(item))

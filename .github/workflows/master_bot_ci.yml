@@ -53,9 +53,9 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: ./
-          file: ./Dockerfile
+          file: ./Dockerfile_prod
           push: true
-          tags: ghcr.io/${{ env.OWNER_LC }}/procharity_bot_back
+          tags: ghcr.io/${{ env.OWNER_LC }}/procharity_bot_back_prod
       - name: Push Front to ghcr.io
         uses: docker/build-push-action@v2
         with:

@@ -2,7 +2,7 @@ version: '3.3'
 
 services:
     back:
-        image: "ghcr.io/procharity/procharity_bot_back"
+        image: "ghcr.io/procharity/procharity_bot_back_prod"
         expose:
             - "8000"
             - "5000"
@@ -13,7 +13,6 @@ services:
         volumes:
             - /code/logs:/back/logs
             - /code/data:/back/bot_persistence_file/
-            - /etc/nginx/ssl:/back/ssl_cert
 
     front:
         image: "ghcr.io/procharity/procharity_bot_front_prod"
@@ -24,6 +23,7 @@ services:
             - "443:443"
         volumes:
             -   /etc/nginx/ssl:/etc/nginx/ssl
+            -   /code/nginx_logs:/var/log/nginx
     db:
         image: postgres:12-alpine
         volumes:

@@ -131,8 +131,7 @@ class CreateTasks(MethodResource, Resource):
             task_to_send.append(new_task)
         logger.info(f"Tasks: Added {len(tasks_to_add)} new tasks.")
         logger.info(f"Tasks: Added task ids: {task_ids}")
-        return f"{len(tasks_to_add)} tasks. Ids: {task_ids}"
-
+        return task_ids
 
     def __archive_tasks(self, archive_records):
         task_ids = [task.id for task in archive_records]
@@ -140,7 +139,7 @@ class CreateTasks(MethodResource, Resource):
             task.archive = True
         logger.info(f"Tasks: Archived {len(archive_records)} tasks.")
         logger.info(f"Tasks: Archived task ids: {task_ids}")
-        return f"{len(archive_records)} tasks. Ids: {task_ids}"
+        return task_ids
 
     def __unarchive_tasks(self, unarchive_records, task_to_send, tasks_dict):
         task_ids = [task.id for task in unarchive_records]
@@ -150,7 +149,7 @@ class CreateTasks(MethodResource, Resource):
             task_to_send.append(task)
         logger.info(f"Tasks: Unarchived {len(unarchive_records)} tasks.")
         logger.info(f"Tasks: Unarchived task ids: {task_ids}")
-        return f"{len(unarchive_records)} tasks. Ids: {task_ids}"
+        return task_ids
 
     def __hash__(self, task):
         if type(task) == dict:
@@ -171,7 +170,7 @@ class CreateTasks(MethodResource, Resource):
                 updated_task_ids.append(task.id)
         logger.info(f"Tasks: Updated {len(updated_task_ids)} active tasks.")
         logger.info(f"Tasks: Updated active task ids: {updated_task_ids}")
-        return f"{len(updated_task_ids)} tasks. Ids: {updated_task_ids}"
+        return updated_task_ids
 
     def __update_task_fields(self, task, task_from_dict):    
         task.title = task_from_dict['title']

@@ -55,7 +55,7 @@ class SendTelegramNotification(Resource, MethodResource):
     @use_kwargs(TelegramNotificationSchema)
     @jwt_required()
     def post(self, **kwargs):
-        message = kwargs.get('message')
+        message = kwargs.get('message').replace('&nbsp;', '')
         has_mailing = kwargs.get('has_mailing')
 
         if not message or not has_mailing:

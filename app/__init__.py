@@ -47,7 +47,7 @@ def init_bot(app):
     from bot import charity_bot
     dispatcher = charity_bot.init()
 
-    @app.post(f'/{TELEGRAM_TOKEN}/telegramWebhook')
+    @app.post(f'/api/{TELEGRAM_TOKEN}/telegramWebhook')
     def webhook():
         update = Update.de_json(request.json, dispatcher.bot)
         dispatcher.process_update(update)

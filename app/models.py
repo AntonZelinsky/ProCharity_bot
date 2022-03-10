@@ -18,8 +18,8 @@ class AdminUser(Base):
     __tablename__ = 'admin_users'
     id = Column(Integer, primary_key=True)
     email = Column(String(48), unique=True, nullable=False)
-    first_name = Column(String(32), nullable=True)
-    last_name = Column(String(32), nullable=True)
+    first_name = Column(String(64), nullable=True)
+    last_name = Column(String(64), nullable=True)
     password = Column(String(128), nullable=False)
     last_logon = Column(TIMESTAMP)
 
@@ -52,8 +52,8 @@ class User(Base):
     username = Column(String(32), unique=True, nullable=True)
     email = Column(String(48), unique=True, nullable=True)
     external_id = Column(Integer, unique=True, nullable=True)
-    first_name = Column(String(32), nullable=True)
-    last_name = Column(String(32), nullable=True)
+    first_name = Column(String(64), nullable=True)
+    last_name = Column(String(64), nullable=True)
     has_mailing = Column(Boolean, default=False)
     date_registration = Column(TIMESTAMP, server_default=func.current_timestamp(), nullable=False)
     external_signup_date = Column(TIMESTAMP, nullable=True)
@@ -147,8 +147,8 @@ class ExternalSiteUser(Base):
     external_id = Column(Integer, primary_key=True)
     external_id_hash = Column(String(256), nullable=False)
     email = Column(String(48), nullable=False)
-    first_name = Column(String(32), nullable=True)
-    last_name = Column(String(32), nullable=True)
+    first_name = Column(String(64), nullable=True)
+    last_name = Column(String(64), nullable=True)
     specializations = Column(String(), nullable=True)
     created_date = Column(TIMESTAMP, server_default=func.current_timestamp(), nullable=False)
     updated_date = Column(TIMESTAMP, server_default=func.current_timestamp(),

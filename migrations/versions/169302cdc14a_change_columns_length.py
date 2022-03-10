@@ -1,8 +1,8 @@
 """change columns length
 
-Revision ID: 8129397ca8cd
+Revision ID: 169302cdc14a
 Revises: b6771033a9a6
-Create Date: 2022-03-10 17:56:29.673730
+Create Date: 2022-03-10 18:00:53.446773
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '8129397ca8cd'
+revision = '169302cdc14a'
 down_revision = 'b6771033a9a6'
 branch_labels = None
 depends_on = None

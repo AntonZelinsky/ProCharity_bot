@@ -147,8 +147,8 @@ class ExternalSiteUser(Base):
     external_id = Column(Integer, primary_key=True)
     external_id_hash = Column(String(256), nullable=False)
     email = Column(String(48), nullable=False)
-    first_name = Column(String(32), nullable=True)
-    last_name = Column(String(32), nullable=True)
+    first_name = Column(String(64), nullable=True)
+    last_name = Column(String(64), nullable=True)
     specializations = Column(String(), nullable=True)
     created_date = Column(TIMESTAMP, server_default=func.current_timestamp(), nullable=False)
     updated_date = Column(TIMESTAMP, server_default=func.current_timestamp(),

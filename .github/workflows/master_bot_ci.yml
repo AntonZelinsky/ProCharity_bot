@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 env:
-  REGISTRY: ghcr.io
+#  REGISTRY: ghcr.io
   ORGANIZATION: procharity
   IMAGE_NAME_BACK: procharity_back
   IMAGE_NAME_FRONT: procharity_front_prod
@@ -62,7 +62,7 @@ jobs:
           file: ./Dockerfile_prod
           push: true
 #          tags: ghcr.io/${{ env.OWNER_LC }}/procharity_bot_back_prod
-          tags: ${{ env.OWNER_LC }}/procharity_bot_back_prod
+          tags: ${{ secrets.DOCKER_HUB_USERNAME_PROD }}/procharity_bot_back_prod
       - name: Push Front to Docker Hub
         uses: docker/build-push-action@v2
         with:
@@ -70,7 +70,7 @@ jobs:
           file: ./front/Dockerfile_prod
           push: true
 #          tags: ghcr.io/${{ env.OWNER_LC }}/procharity_bot_front_prod
-          tags: ${{ env.OWNER_LC }}/procharity_bot_front_prod
+          tags: ${{ secrets.DOCKER_HUB_USERNAME_PROD }}/procharity_bot_front_prod
 
   deploy:
     runs-on: ubuntu-latest

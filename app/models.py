@@ -3,7 +3,8 @@ from sqlalchemy import (Column,
                         Integer,
                         String,
                         Boolean,
-                        Date
+                        Date,
+                        BigInteger
                         )
 from sqlalchemy.sql import expression, func
 from sqlalchemy.orm import relationship, backref
@@ -48,7 +49,7 @@ class AdminTokenRequest(Base):
 class User(Base):
     __tablename__ = 'users'
 
-    telegram_id = Column(Integer, primary_key=True)
+    telegram_id = Column(BigInteger, primary_key=True)
     username = Column(String(32), unique=True, nullable=True)
     email = Column(String(48), unique=True, nullable=True)
     external_id = Column(Integer, unique=True, nullable=True)
@@ -95,12 +96,12 @@ class Category(Base):
 
     def __repr__(self):
         return f'<Category {self.name}>'
- 
+
 
 class Statistics(Base):
     __tablename__ = 'statistics'
     id = Column(Integer, primary_key=True)
-    telegram_id = Column(Integer)
+    telegram_id = Column(BigInteger)
     command = Column(String(100))
     added_date = Column(TIMESTAMP, server_default=func.current_timestamp(), nullable=False)
 
@@ -122,7 +123,7 @@ class Notification(Base):
 
 class Users_Categories(Base):
     __tablename__ = 'users_categories'
-    telegram_id = Column(Integer,
+    telegram_id = Column(BigInteger,
                          ForeignKey('users.telegram_id'),
                          primary_key=True)
     category_id = Column(Integer,
@@ -133,13 +134,12 @@ class Users_Categories(Base):
 class ReasonCanceling(Base):
     __tablename__ = 'reasons_canceling'
     id = Column(Integer, primary_key=True)
-    telegram_id = Column(Integer)
+    telegram_id = Column(BigInteger)
     reason_canceling = Column(String(48), nullable=False)
     added_date = Column(TIMESTAMP, server_default=func.current_timestamp(), nullable=False)
     updated_date = Column(TIMESTAMP, server_default=func.current_timestamp(),
                           nullable=False, onupdate=func.current_timestamp())
     archive = Column(Boolean, server_default=expression.false(), nullable=False)
-
 
 
 class ExternalSiteUser(Base):

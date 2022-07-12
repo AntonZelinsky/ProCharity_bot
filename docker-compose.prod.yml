@@ -2,7 +2,11 @@ version: '3.3'
 
 services:
     back:
-        image: "ghcr.io/procharity/procharity_bot_back_prod"
+        # image: "ghcr.io/procharity/procharity_bot_back_prod"
+        image: "anzeky/procharity_bot_back_prod"
+        restart: "always"
+        depends_on:
+            - db
         expose:
             - "8000"
             - "5000"
@@ -15,7 +19,11 @@ services:
             - /code/data:/back/bot_persistence_file/
 
     front:
-        image: "ghcr.io/procharity/procharity_bot_front_prod"
+        # image: "ghcr.io/procharity/procharity_bot_front_prod"
+        image: "anzeky/procharity_bot_front_prod"
+        restart: "always"
+        depends_on:
+            - back
         env_file:
             -   .env
         ports:
@@ -26,6 +34,7 @@ services:
             -   /code/nginx_logs:/var/log/nginx
     db:
         image: postgres:12-alpine
+        restart: "always"
         volumes:
             -   postgres_data:/var/lib/postgresql/data
         expose:

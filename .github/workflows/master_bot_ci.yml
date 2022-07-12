@@ -39,14 +39,14 @@ jobs:
 #          registry: ghcr.io
           username: ${{ secrets.DOCKER_HUB_USERNAME_PROD }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN_PROD }}
-     - name: Copy docker-compose to server
-       uses: appleboy/scp-action@master
-       with:
-         host: ${{ secrets.HOST_PROD }}
-         username: ${{ secrets.USER_DEV }}
-         key: ${{ secrets.SSH_KEY_PROD }}
-         source: 'docker-compose.prod.yml'
-         target: '/code'
+      - name: Copy docker-compose to server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOST_PROD }}
+          username: ${{ secrets.USER_DEV }}
+          key: ${{ secrets.SSH_KEY_PROD }}
+          source: 'docker-compose.prod.yml'
+          target: '/code'
       - name: set lower case owner name
         run: |
           echo "OWNER_LC=${OWNER,,}" >>${GITHUB_ENV}

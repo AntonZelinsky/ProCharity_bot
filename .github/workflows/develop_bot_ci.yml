@@ -39,7 +39,7 @@ jobs:
           host: ${{ secrets.HOST_DEV }}
           username: ${{ secrets.USER_DEV }}
           key: ${{ secrets.SSH_KEY }}
-          passphrase: ${{ secrets.PASSPHRASE }}
+          # passphrase: ${{ secrets.PASSPHRASE }}
           source: 'docker-compose.test.yml'
           target: '/code'
       - name: set lower case owner name

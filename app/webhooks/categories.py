@@ -44,7 +44,8 @@ class CreateCategories(MethodResource, Resource):
                 c = Category(
                     id=category['id'],
                     name=category['name'],
-                    archive=False
+                    archive=False,
+                    parent_id=category['parent_id']
                 )
                 db_session.add(c)
 

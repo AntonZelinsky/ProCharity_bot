@@ -127,9 +127,11 @@ def init() -> Dispatcher:
     )
 
     update_users_category = CallbackQueryHandler(change_user_categories, pattern='^up_cat[0-9]{1,2}$')
+    update_users_subcategory = CallbackQueryHandler(change_user_categories, pattern='^sub_cat[0-9]{1,2}$')
 
     dispatcher.add_handler(conv_handler)
     dispatcher.add_handler(update_users_category)
+    dispatcher.add_handler(update_users_subcategory)
     dispatcher.add_error_handler(error_handler)
 
     return dispatcher

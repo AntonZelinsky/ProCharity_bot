@@ -114,13 +114,11 @@ def choose_category(update: Update, context: CallbackContext, category_id=None, 
     buttons = []
     categories = user_db.get_categories(update.effective_user.id)
 
-    for category in categories:
-        if category['user_selected']:
-            category['name'] += " ✅"
-
     display_categories = list_subcategories(category_id)
 
     for category in categories:
+        if category['user_selected']:
+            category['name'] += " ✅"
         if not category_id:
             if not category['parent_id']:
                 buttons.append(

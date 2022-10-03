@@ -322,11 +322,7 @@ categories_conv = ConversationHandler(
             CallbackQueryHandler(choose_category, pattern=command_constants.COMMAND__RETURN_CHOSE_CATEGORY),
             CallbackQueryHandler(after_category_choose, pattern=command_constants.COMMAND__READY),
             CallbackQueryHandler(no_relevant_category, pattern=command_constants.COMMAND__NO_RELEVANT)
-            # CallbackQueryHandler(list_subcategories, pattern=command_constants.COMMAND__SUBCATEGORIES)
         ],
-        # states.LIST_SUBCATEGORIES: [
-        #     CallbackQueryHandler(list_subcategories, pattern='^sub_cat[0-9]{1,2}$')
-        # ],
         states.AFTER_CATEGORY_REPLY: [
             open_tasks_handler,
             common_comands.open_menu_handler

@@ -95,7 +95,7 @@ class UserDB:
             category_view_model['category_id'] = category.id
             category_view_model['name'] = category.name
             category_view_model['parent_id'] = category.parent_id
-            if category.id in user_categories:
+            if category.id in user_categories and category.parent_id:
                 category_view_model['user_selected'] = True
             else:
                 category_view_model['user_selected'] = False

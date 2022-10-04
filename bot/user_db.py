@@ -91,10 +91,8 @@ class UserDB:
         user_categories = [category.id for category in User.query.filter_by(telegram_id=telegram_id).first().categories]
         all_categories = Category.query.options(load_only('id')).filter_by(archive=False)
         for category in all_categories:
-            category_view_model = {}
-            category_view_model['category_id'] = category.id
-            category_view_model['name'] = category.name
-            if category.id in user_categories:
+            category_view_model = {'category_id': category.id, 'name': category.name, 'parent_id': category.parent_id}
+            if category.id in user_categories and category.parent_id:
                 category_view_model['user_selected'] = True
             else:
                 category_view_model['user_selected'] = False

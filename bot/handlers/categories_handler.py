@@ -34,7 +34,7 @@ def choose_category_after_start(update: Update, context: CallbackContext):
         text=update.callback_query.message.text_html,
         parse_mode=ParseMode.HTML, disable_web_page_preview=True
     )
-    return choose_category(update, context, False, True)
+    return choose_category(update, context, None, True)
 
 
 def before_confirm_specializations(update: Update, context: CallbackContext):
@@ -85,7 +85,7 @@ def change_user_categories(update: Update, context: CallbackContext):
     telegram_id = update.effective_user.id
 
     user_db.change_user_category(telegram_id=telegram_id, category_id=category_id)
-    choose_category(update, context, category_id=category_id)
+    choose_category(update, context, parent_category_id=category_id)
     update.callback_query.answer()
 
 
@@ -100,8 +100,13 @@ def list_subcategories(category_id):
     if not category_id:
         return
     if is_subcategory(category_id):
-        subcategory_parent_id = Category.query.options(load_only('id')).filter_by(archive=False).filter_by(id=category_id).first().parent_id
-        subcategories = Category.query.options(load_only('id')).filter_by(archive=False).filter_by(parent_id=subcategory_parent_id).all()
+        subcategory_parent_id = Category.query.options(load_only('id'))\
+            .filter_by(archive=False)\
+            .filter_by(id=category_id)\
+            .first().parent_id
+        subcategories = Category.query.options(load_only('id')).\
+            filter_by(archive=False)\
+            .filter_by(parent_id=subcategory_parent_id).all()
     else:
         subcategories = Category.query.options(load_only('id')).filter_by(archive=False).filter_by(parent_id=category_id).all()
     return subcategories
@@ -109,17 +114,17 @@ def list_subcategories(category_id):
 
 @log_command(command=constants.LOG_COMMANDS_NAME['choose_category'],
              ignore_func=['change_user_categories'])
-def choose_category(update: Update, context: CallbackContext, category_id=None, save_prev_msg: bool = False):
+def choose_category(update: Update, context: CallbackContext, parent_category_id=None, save_prev_msg: bool = False):
     """The main function is to select categories for subscribing to them."""
     buttons = []
     categories = user_db.get_categories(update.effective_user.id)
 
-    display_categories = list_subcategories(category_id)
+    display_categories = list_subcategories(parent_category_id)
 
     for category in categories:
         if category['user_selected']:
             category['name'] += " ✅"
-        if not category_id:
+        if not parent_category_id:
             if not category['parent_id']:
                 buttons.append(
                     [InlineKeyboardButton(text=category['name'], callback_data=f'up_cat{category["category_id"]}')]
@@ -133,7 +138,9 @@ def choose_category(update: Update, context: CallbackContext, category_id=None, 
 
     selected_categories_list = [category for category in categories if category['user_selected']]
 
-    if category_id:
+    if parent_category_id:
+        context.user_data[states.SUBSCRIPTION_FLAG] = user_db.set_user_unsubscribed(update.effective_user.id)
+        context.user_data[states.CATEGORIES_SELECTED] = user_db.check_user_category(update.effective_user.id)
         buttons += [
             [
                 InlineKeyboardButton(text='Назад ⬅️',

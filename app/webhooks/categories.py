@@ -28,19 +28,30 @@ class CreateCategories(MethodResource, Resource):
 
         categories = request.json
         categories_db = Category.query.options(load_only('archive')).all()
+        logger.info(f"categories_db = {categories_db}")
         category_id_json = [int(member['id']) for member in categories]
+        logger.info(f"category_id_json = {category_id_json}")
         category_id_db = [member.id for member in categories_db]
+        logger.info(f"category_id_db = {category_id_db}")
         category_id_db_not_archive = [member.id for member in categories_db if member.archive == False]
+        logger.info(f"category_id_db_not_archive = {category_id_db_not_archive}")
         category_id_db_archive = list(
             set(category_id_db) - set(category_id_db_not_archive)
         )
+        logger.info(f"category_id_db_archive = {category_id_db_archive}")
         category_for_unarchive = list(
             set(category_id_db_archive) & set(category_id_json)
         )
+        logger.info(f"category_for_unarchive = {category_for_unarchive}")
         category_for_adding_db = list(set(category_id_json) - set(category_id_db))
+        logger.info(f"category_for_adding_db = {category_for_adding_db}")
         category_for_archive = list(set(category_id_db_not_archive) - set(category_id_json))
+        logger.info(f"category_for_archive = {category_for_archive}")
+        logger.info(f"Categories {categories}")
         for category in categories:
             if int(category['id']) in category_for_adding_db:
+                print(f'Add category: {category["name"]} - {category["id"]}')
+                logger.info(f'Add category: {category["name"]} - {category["id"]}')
                 c = Category(
                     id=category['id'],
                     name=category['name'],
@@ -48,6 +59,7 @@ class CreateCategories(MethodResource, Resource):
                     parent_id=category['parent_id']
                 )
                 db_session.add(c)
+                logger.info(f'Category {category["name"]} added to session')
 
         archive_records = [category for category in categories_db if category.id in category_for_archive]
         for category in archive_records:
@@ -58,6 +70,7 @@ class CreateCategories(MethodResource, Resource):
 
         try:
             db_session.commit()
+            logger.info("Session committed")
         except SQLAlchemyError as ex:
             logger.error(f'Categories: Database commit error "{str(ex)}"')
             db_session.rollback()

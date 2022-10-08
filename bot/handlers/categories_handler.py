@@ -104,11 +104,13 @@ def list_subcategories(category_id):
             .filter_by(archive=False)\
             .filter_by(id=category_id)\
             .first().parent_id
-        subcategories = Category.query.options(load_only('id')).\
-            filter_by(archive=False)\
+        subcategories = Category.query.options(load_only('id'))\
+            .filter_by(archive=False)\
             .filter_by(parent_id=subcategory_parent_id).all()
     else:
-        subcategories = Category.query.options(load_only('id')).filter_by(archive=False).filter_by(parent_id=category_id).all()
+        subcategories = Category.query.options(load_only('id'))\
+            .filter_by(archive=False)\
+            .filter_by(parent_id=category_id).all()
     return subcategories
 
 

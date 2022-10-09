@@ -27,31 +27,21 @@ class CreateCategories(MethodResource, Resource):
             return make_response(jsonify(result='Json contains no data '), 400)
 
         categories = request.json
+        categories_dict = {int(category['id']): category for category in categories}
         categories_db = Category.query.options(load_only('archive')).all()
-        logger.info(f"categories_db = {categories_db}")
+
         category_id_json = [int(member['id']) for member in categories]
-        logger.info(f"category_id_json = {category_id_json}")
         category_id_db = [member.id for member in categories_db]
-        logger.info(f"category_id_db = {category_id_db}")
+
         category_id_db_not_archive = [member.id for member in categories_db if member.archive == False]
-        logger.info(f"category_id_db_not_archive = {category_id_db_not_archive}")
-        category_id_db_archive = list(
-            set(category_id_db) - set(category_id_db_not_archive)
-        )
-        logger.info(f"category_id_db_archive = {category_id_db_archive}")
-        category_for_unarchive = list(
-            set(category_id_db_archive) & set(category_id_json)
-        )
-        logger.info(f"category_for_unarchive = {category_for_unarchive}")
+        category_id_db_archive = list(set(category_id_db) - set(category_id_db_not_archive))
+
+        category_for_unarchive = list(set(category_id_db_archive) & set(category_id_json))
         category_for_adding_db = list(set(category_id_json) - set(category_id_db))
-        logger.info(f"category_for_adding_db = {category_for_adding_db}")
         category_for_archive = list(set(category_id_db_not_archive) - set(category_id_json))
-        logger.info(f"category_for_archive = {category_for_archive}")
-        logger.info(f"Categories {categories}")
+
         for category in categories:
             if int(category['id']) in category_for_adding_db:
-                print(f'Add category: {category["name"]} - {category["id"]}')
-                logger.info(f'Add category: {category["name"]} - {category["id"]}')
                 c = Category(
                     id=category['id'],
                     name=category['name'],
@@ -59,18 +49,26 @@ class CreateCategories(MethodResource, Resource):
                     parent_id=category['parent_id']
                 )
                 db_session.add(c)
-                logger.info(f'Category {category["name"]} added to session')
 
         archive_records = [category for category in categories_db if category.id in category_for_archive]
         for category in archive_records:
             category.archive = True
         unarchive_records = [category for category in categories_db if category.id in category_for_unarchive]
+
+        categories_for_update = list(
+            set(category_id_json) - set(category_for_archive) - set(category_for_adding_db) - set(
+                category_for_unarchive))
+
+        active_category = [category for category in categories_db if category.id in categories_for_update]
+
+        if active_category:
+            self.__update_active_category(active_category, categories_dict)
+
         for task in unarchive_records:
             task.archive = False
 
         try:
             db_session.commit()
-            logger.info("Session committed")
         except SQLAlchemyError as ex:
             logger.error(f'Categories: Database commit error "{str(ex)}"')
             db_session.rollback()
@@ -78,3 +76,22 @@ class CreateCategories(MethodResource, Resource):
 
         logger.info("Categories: New categories successfully added.")
         return make_response(jsonify(result='ok'), 200)
+
+    def __hash__(self, category):
+        if type(category) == dict:
+            id = category.get('id')
+            name = category.get('name')
+            parent_id = category.get('parent_id')
+            return hash(f'{id}{name}{parent_id}')
+        return hash(f'{category.id}{category.name}{category.parent_id}')
+
+    def __update_active_category(self, active_category, categories):
+        for category in active_category:
+            category_from_dict = categories.get(category.id)
+            if self.__hash__(category) != self.__hash__(category_from_dict):
+                self.__update_category_fields(category, category_from_dict)
+
+    def __update_category_fields(self, category, category_from_dict):
+        category.name = category_from_dict['name']
+        category.parent_id = category_from_dict['parent_id']
+        category.archive = False

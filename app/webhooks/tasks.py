@@ -42,8 +42,10 @@ class TaskSchema(Schema):
     class Meta:
         unknown = EXCLUDE
 
+
 class CreateTasks(MethodResource, Resource):
     method_decorators = {'post': [check_webhooks_token]}
+
     @doc(description='Сreates tasks in the database',
          tags=['Create tasks'],
          responses={
@@ -65,7 +67,7 @@ class CreateTasks(MethodResource, Resource):
             logger.info(f'Tasks: The request is invalid. Error: {err.messages}')
             return make_response(jsonify(err.messages), 400)
 
-        tasks_dict = {task['id']: task  for task in tasks}
+        tasks_dict = {task['id']: task for task in tasks}
         tasks_db = Task.query.options(load_only('archive')).all()
         task_id_json = [task['id'] for task in tasks]
         task_id_db = [task.id for task in tasks_db]
@@ -104,7 +106,6 @@ class CreateTasks(MethodResource, Resource):
         return make_response(jsonify(added_tasks=added_tasks, archived_tasks=archived_tasks,
                                      unarchived_tasks=unarchived_tasks, updated_tasks=updated_tasks)
                                      , 200)
-
 
     def send_task(self, task_to_send):
         task_ids = [task.id for task in task_to_send]
@@ -158,7 +159,6 @@ class CreateTasks(MethodResource, Resource):
             deadline = task.get('deadline')
             return hash(f'{title}{description}{deadline}')
         return hash(f'{task.title}{task.description}{task.deadline}')
-
 
     def __update_active_tasks(self, active_tasks, task_to_send, tasks_dict):
         updated_task_ids = []

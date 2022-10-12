@@ -113,6 +113,7 @@ class CreateTasks(MethodResource, Resource):
         task_ids = [task.id for task in task_to_send]
         if task_to_send:
             users = User.query.options(load_only('telegram_id')).filter_by(has_mailing=True).all()
+            logger.info(f"Users for sending tasks - {users}")
             notification = TelegramNotification()
 
             for task in task_to_send:

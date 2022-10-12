@@ -75,12 +75,14 @@ class TelegramNotification:
             try:
                 bot.send_message(chat_id=user.telegram_id, text=message,
                                  parse_mode=ParseMode.HTML, disable_web_page_preview=True)
+                logger.info(f"Send message to {user.telegram_id}, text: "{message}"")
             except error.BadRequest as ex:
                 logger.error(f'{str(ex.message)}, telegram_id: {user.telegram_id}')
             except Unauthorized as ex:
                 logger.error(f'{str(ex.message)}: {user.telegram_id}')
                 User.query.filter_by(telegram_id=user.telegram_id).update({'banned': True, 'has_mailing': False})
                 db_session.commit()
+        logger.info("MESSAGE SENT")
 
     @staticmethod
     def __split_chats(array, size):

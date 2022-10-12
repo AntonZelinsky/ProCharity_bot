@@ -98,6 +98,7 @@ class CreateTasks(MethodResource, Resource):
             logger.error(f'Tasks: database commit error "{str(ex)}"')
             db_session.rollback()
             return make_response(jsonify(message=f'Bad request'), 400)
+        logger.info(f"Tasks to send - {task_to_send}")
 
         self.send_task(task_to_send)
 
@@ -108,6 +109,7 @@ class CreateTasks(MethodResource, Resource):
                                      , 200)
 
     def send_task(self, task_to_send):
+        logger.info(f"Task to send - {task_to_send}")
         task_ids = [task.id for task in task_to_send]
         if task_to_send:
             users = User.query.options(load_only('telegram_id')).filter_by(has_mailing=True).all()

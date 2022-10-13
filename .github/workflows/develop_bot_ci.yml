@@ -1,7 +1,6 @@
 name: Develop Branch Procharity Bot
 
 on:
-  push:
   pull_request:
     branches:
       - develop

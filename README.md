@@ -17,6 +17,7 @@ pip install -r requirements.txt
 DATABASE_URL=postgres://{user}:{password}@{hostname}:{port}/{database-name}
 TOKEN=<ваш токен>
 ```
+В проекте нельзя использовать базу данных SQLite. Рекомендуется PostgreSQL.
 ### Создать базу и применить миграции:
 ```
 alembic upgrade head

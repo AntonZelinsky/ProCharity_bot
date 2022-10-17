@@ -124,7 +124,7 @@ class CreateTasks(MethodResource, Resource):
                 logger.info(f"chats_list - {chats_list}")
                 if chats_list:
                     notification.send_new_tasks(message=display_task_notification(task), send_to=chats_list)
-        logger.info(f"Tasks: Tasks to send ids: {task_ids}")
+                    logger.info(f"Tasks: Tasks to send ids: {task}")
     
     def __add_tasks(self, tasks_to_add, task_to_send):
         task_ids = [task['id'] for task in tasks_to_add]

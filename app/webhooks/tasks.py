@@ -98,6 +98,7 @@ class CreateTasks(MethodResource, Resource):
             logger.error(f'Tasks: database commit error "{str(ex)}"')
             db_session.rollback()
             return make_response(jsonify(message=f'Bad request'), 400)
+        logger.info(f"Tasks to send - {task_to_send}")
 
         self.send_task(task_to_send)
 
@@ -108,9 +109,11 @@ class CreateTasks(MethodResource, Resource):
                                      , 200)
 
     def send_task(self, task_to_send):
+        logger.info(f"Task to send into method - {task_to_send}")
         task_ids = [task.id for task in task_to_send]
         if task_to_send:
             users = User.query.options(load_only('telegram_id')).filter_by(has_mailing=True).all()
+            logger.info(f"Users for sending tasks - {users}")
             notification = TelegramNotification()
 
             for task in task_to_send:
@@ -118,10 +121,10 @@ class CreateTasks(MethodResource, Resource):
                 for user in users:
                     if task.category_id in [cat.id for cat in user.categories]:
                         chats_list.append(user)
-
+                logger.info(f"chats_list - {chats_list}")
                 if chats_list:
                     notification.send_new_tasks(message=display_task_notification(task), send_to=chats_list)
-        logger.info(f"Tasks: Tasks to send ids: {task_ids}")
+                    logger.info(f"Tasks: Tasks to send ids: {task}")
     
     def __add_tasks(self, tasks_to_add, task_to_send):
         task_ids = [task['id'] for task in tasks_to_add]

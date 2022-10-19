@@ -14,7 +14,7 @@ pip install -r requirements.txt
 ```
 ### Переименовать файл .env.dev в .env и указать в нем недостающую информацию (используемую базу данных и токен бота):
 ```
-DATABASE_URL=postgres://{user}:{password}@{hostname}:{port}/{database-name}
+DATABASE_URL=postgresql://{user}:{password}@{hostname}:{port}/{database-name}
 TOKEN=<ваш токен>
 ```
 В проекте нельзя использовать базу данных SQLite. Рекомендуется PostgreSQL.

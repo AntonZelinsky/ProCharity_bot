@@ -98,7 +98,7 @@ class CreateTasks(MethodResource, Resource):
             logger.error(f'Tasks: database commit error "{str(ex)}"')
             db_session.rollback()
             return make_response(jsonify(message=f'Bad request'), 400)
-        logger.info(f"Tasks to send - {task_to_send}")
+        logger.info(f"Tasks: Tasks to send - {task_to_send}")
 
         self.send_task(task_to_send)
 
@@ -109,11 +109,10 @@ class CreateTasks(MethodResource, Resource):
                                      , 200)
 
     def send_task(self, task_to_send):
-        logger.info(f"Task to send into method - {task_to_send}")
-        task_ids = [task.id for task in task_to_send]
+        logger.info(f"Tasks: Tasks passed to the send_task method - {[(task.id, task.title) for task in task_to_send]}")
         if task_to_send:
             users = User.query.options(load_only('telegram_id')).filter_by(has_mailing=True).all()
-            logger.info(f"Users for sending tasks - {users}")
+            logger.info(f"Tasks: Users with an enabled subscription in DB - {[user.id for user in users]}")
             notification = TelegramNotification()
 
             for task in task_to_send:
@@ -121,10 +120,10 @@ class CreateTasks(MethodResource, Resource):
                 for user in users:
                     if task.category_id in [cat.id for cat in user.categories]:
                         chats_list.append(user)
-                logger.info(f"chats_list - {chats_list}")
+                logger.info(f"Tasks: User's mailing list - {[user.id for user in chats_list]}")
                 if chats_list:
                     notification.send_new_tasks(message=display_task_notification(task), send_to=chats_list)
-                    logger.info(f"Tasks: Tasks to send ids: {task}")
+                    logger.info(f"Tasks: submitted task: {task.id} {task.title}")
     
     def __add_tasks(self, tasks_to_add, task_to_send):
         task_ids = [task['id'] for task in tasks_to_add]
@@ -134,7 +133,7 @@ class CreateTasks(MethodResource, Resource):
             db_session.add(new_task)
             task_to_send.append(new_task)
         logger.info(f"Tasks: Added {len(tasks_to_add)} new tasks.")
-        logger.info(f"Tasks: Added task ids: {task_ids}")
+        logger.info(f"Tasks: Added task IDs: {task_ids}")
         return task_ids
 
     def __archive_tasks(self, archive_records):
@@ -152,7 +151,7 @@ class CreateTasks(MethodResource, Resource):
             self.__update_task_fields(task, task_from_dict)
             task_to_send.append(task)
         logger.info(f"Tasks: Unarchived {len(unarchive_records)} tasks.")
-        logger.info(f"Tasks: Unarchived task ids: {task_ids}")
+        logger.info(f"Tasks: Unarchived task IDs: {task_ids}")
         return task_ids
 
     def __hash__(self, task):

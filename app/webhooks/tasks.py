@@ -112,7 +112,7 @@ class CreateTasks(MethodResource, Resource):
         logger.info(f"Tasks: Tasks passed to the send_task method - {[(task.id, task.title) for task in task_to_send]}")
         if task_to_send:
             users = User.query.options(load_only('telegram_id')).filter_by(has_mailing=True).all()
-            logger.info(f"Tasks: Users with an enabled subscription in DB - {[user.id for user in users]}")
+            logger.info(f"Tasks: Users with an enabled subscription in DB - {[user.telegram_id for user in users]}")
             notification = TelegramNotification()
 
             for task in task_to_send:
@@ -120,7 +120,7 @@ class CreateTasks(MethodResource, Resource):
                 for user in users:
                     if task.category_id in [cat.id for cat in user.categories]:
                         chats_list.append(user)
-                logger.info(f"Tasks: User's mailing list - {[user.id for user in chats_list]}")
+                logger.info(f"Tasks: User's mailing list - {[user.telegram_id for user in chats_list]}")
                 if chats_list:
                     notification.send_new_tasks(message=display_task_notification(task), send_to=chats_list)
                     logger.info(f"Tasks: submitted task: {task.id} {task.title}")

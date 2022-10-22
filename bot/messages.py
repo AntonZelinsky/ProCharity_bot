@@ -1,5 +1,6 @@
 from telegram import Bot, ParseMode, error
 from telegram.error import Unauthorized
+import datetime
 
 from app import config
 from app.database import db_session
@@ -44,7 +45,7 @@ class TelegramNotification:
 
         chats = [user for user in chats_list]
 
-        for i, part in enumerate(self.__split_chats(chats, config.NUMBER_USERS_TO_SEND)):
+        for i, part in enumerate(self.__split_chats(chats, config.MAILING_BATCH_SIZE)):
             context = {'message': message, 'chats': part}
 
             dispatcher.job_queue.run_once(self.__send_message, i * 2, context=context,
@@ -52,13 +53,17 @@ class TelegramNotification:
 
         return True
 
-    def send_new_tasks(self, message, send_to):
-
-        for i, part in enumerate(self.__split_chats(send_to, config.NUMBER_USERS_TO_SEND)):
+    def send_new_tasks(self, message, send_to, send_time):
+        
+        for i, part in enumerate(self.__split_chats(send_to, config.MAILING_BATCH_SIZE)):
             context = {'message': message, 'chats': part}
 
-            dispatcher.job_queue.run_once(self.__send_message, i, context=context,
-                                          name=f'Task: {0:10}_{i}')
+            send_time = send_time + datetime.timedelta(seconds=i)
+
+            dispatcher.job_queue.run_once(self.__send_message, send_time, context=context,
+                                          name=f'Task: {message[0:10]}_{i}')
+            
+        return send_time
 
     def __send_message(self, context):
         """

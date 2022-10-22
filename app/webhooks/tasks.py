@@ -5,6 +5,8 @@ from flask_restful import Resource
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import load_only
 from marshmallow import fields, Schema, ValidationError, EXCLUDE
+import datetime
+import pytz
 
 from app.database import db_session
 from app.models import Task, User
@@ -99,7 +101,7 @@ class CreateTasks(MethodResource, Resource):
             db_session.rollback()
             return make_response(jsonify(message=f'Bad request'), 400)
 
-        self.send_task(task_to_send)
+        self.preparing_tasks_for_send(task_to_send)
 
         logger.info('Tasks: New tasks received')
         logger.info('——————————————————————————————————————————————————————')
@@ -107,11 +109,13 @@ class CreateTasks(MethodResource, Resource):
                                      unarchived_tasks=unarchived_tasks, updated_tasks=updated_tasks)
                                      , 200)
 
-    def send_task(self, task_to_send):
+    def preparing_tasks_for_send(self, task_to_send):
         task_ids = [task.id for task in task_to_send]
         if task_to_send:
             users = User.query.options(load_only('telegram_id')).filter_by(has_mailing=True).all()
             notification = TelegramNotification()
+
+            send_time = datetime.datetime.now(pytz.utc)
 
             for task in task_to_send:
                 chats_list = []
@@ -120,7 +124,8 @@ class CreateTasks(MethodResource, Resource):
                         chats_list.append(user)
 
                 if chats_list:
-                    notification.send_new_tasks(message=display_task_notification(task), send_to=chats_list)
+                    send_time = send_time + datetime.timedelta(seconds=1)
+                    send_time = notification.send_new_tasks(message=display_task_notification(task), send_to=chats_list, send_time=send_time)
         logger.info(f"Tasks: Tasks to send ids: {task_ids}")
     
     def __add_tasks(self, tasks_to_add, task_to_send):

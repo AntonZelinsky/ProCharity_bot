@@ -100,6 +100,7 @@ class CreateTasks(MethodResource, Resource):
             logger.error(f'Tasks: database commit error "{str(ex)}"')
             db_session.rollback()
             return make_response(jsonify(message=f'Bad request'), 400)
+        logger.info(f"Tasks: Tasks to send - {task_to_send}")
 
         self.preparing_tasks_for_send(task_to_send)
 
@@ -137,7 +138,7 @@ class CreateTasks(MethodResource, Resource):
             db_session.add(new_task)
             task_to_send.append(new_task)
         logger.info(f"Tasks: Added {len(tasks_to_add)} new tasks.")
-        logger.info(f"Tasks: Added task ids: {task_ids}")
+        logger.info(f"Tasks: Added task IDs: {task_ids}")
         return task_ids
 
     def __archive_tasks(self, archive_records):
@@ -155,7 +156,7 @@ class CreateTasks(MethodResource, Resource):
             self.__update_task_fields(task, task_from_dict)
             task_to_send.append(task)
         logger.info(f"Tasks: Unarchived {len(unarchive_records)} tasks.")
-        logger.info(f"Tasks: Unarchived task ids: {task_ids}")
+        logger.info(f"Tasks: Unarchived task IDs: {task_ids}")
         return task_ids
 
     def __hash__(self, task):

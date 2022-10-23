@@ -56,8 +56,7 @@ class CreateCategories(MethodResource, Resource):
         unarchive_records = [category for category in categories_db if category.id in category_for_unarchive]
 
         categories_for_update = list(
-            set(category_id_json) - set(category_for_archive) - set(category_for_adding_db) - set(
-                category_for_unarchive))
+            set(category_id_json) - set(category_for_archive) - set(category_for_adding_db))
 
         active_category = [category for category in categories_db if category.id in categories_for_update]
 

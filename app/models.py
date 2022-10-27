@@ -95,6 +95,7 @@ class Category(Base):
     users = relationship('User', secondary='users_categories', backref=backref('categories'))
     tasks = relationship('Task', backref=backref('categories'))
     parent_id = Column(Integer, ForeignKey('categories.id'))
+    children = relationship('Category', uselist=True, backref=backref('parent', remote_side=[id]))
 
     def __repr__(self):
         return f'<Category {self.name}>'

@@ -54,14 +54,13 @@ class TelegramNotification:
         return True
 
     def send_new_tasks(self, message, send_to, send_time):
-        
-        for i, part in enumerate(self.__split_chats(send_to, config.MAILING_BATCH_SIZE)):
-            context = {'message': message, 'chats': part}
+        for chats_count, chats_set in enumerate(self.__split_chats(send_to, config.MAILING_BATCH_SIZE)):
+            context = {'message': message, 'chats': chats_set}
 
-            send_time = send_time + datetime.timedelta(seconds=i)
+            send_time = send_time + datetime.timedelta(seconds=chats_count)
 
             dispatcher.job_queue.run_once(self.__send_message, send_time, context=context,
-                                          name=f'Task: {message[0:10]}_{i}')
+                                          name=f'Task: {message[0:10]}_{chats_count}')
             
         return send_time
 

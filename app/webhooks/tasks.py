@@ -9,7 +9,7 @@ import datetime
 import pytz
 
 from app.database import db_session
-from app.models import Task, User
+from app.models import Task, User, Category
 from app.logger import webhooks_logger as logger
 from app.webhooks.check_webhooks_token import check_webhooks_token
 
@@ -110,24 +110,27 @@ class CreateTasks(MethodResource, Resource):
                                      , 200)
 
     def preparing_tasks_for_send(self, task_to_send):
-        logger.info(f"Tasks: Tasks passed to the send_task method - {[(task.id, task.title) for task in task_to_send]}")
-        if task_to_send:
-            users = User.query.options(load_only('telegram_id')).filter_by(has_mailing=True).all()
-            logger.info(f"Tasks: Users with an enabled subscription in DB - {[user.telegram_id for user in users]}")
-            notification = TelegramNotification()
+        logger.info(f"Tasks: Tasks passed to the preparing_tasks_for_send method - {[(task.id, task.title) for task in task_to_send]}")
+        if not task_to_send:
+            logger.info("Tasks: No tasks to send")
+            return
+        notification = TelegramNotification()
 
-            send_time = datetime.datetime.now(pytz.utc)
+        send_time = datetime.datetime.now(pytz.utc)
 
-            for task in task_to_send:
-                chats_list = []
-                for user in users:
-                    if task.category_id in [cat.id for cat in user.categories]:
-                        chats_list.append(user)
-                logger.info(f"Tasks: User's mailing list - {[user.telegram_id for user in chats_list]}")
-                if chats_list:
-                    send_time = send_time + datetime.timedelta(seconds=1)
-                    send_time = notification.send_new_tasks(message=display_task_notification(task), send_to=chats_list, send_time=send_time)
-                    logger.info(f"Tasks: submitted task: {task.id} {task.title}")
+        for task in task_to_send:
+            category_id = task.category_id
+            users = Category.query.filter_by(id = category_id).first().users
+            logger.info(f"Tasks: Users with a subscription to {category_id} category in DB - {[user.telegram_id for user in users]}")
+            users_list = []
+            for user in users:
+                if user.has_mailing == True:
+                    users_list.append(user)
+            logger.info(f"Tasks: User's mailing list - {[user.telegram_id for user in users_list]}")
+            if users_list:
+                send_time = send_time + datetime.timedelta(seconds=1)
+                send_time = notification.send_new_tasks(message=display_task_notification(task), send_to=users_list, send_time=send_time)
+                logger.info(f"Tasks: submitted task: {task.id} {task.title}")
     
     def __add_tasks(self, tasks_to_add, task_to_send):
         task_ids = [task['id'] for task in tasks_to_add]

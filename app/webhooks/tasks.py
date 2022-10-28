@@ -114,6 +114,7 @@ class CreateTasks(MethodResource, Resource):
         if not task_to_send:
             logger.info("Tasks: No tasks to send")
             return
+        
         logger.info(f"Tasks: Tasks passed to the preparing_tasks_for_send method - {[(task.id, task.title) for task in task_to_send]}")
         notification = TelegramNotification()
 

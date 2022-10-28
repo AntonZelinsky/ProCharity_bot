@@ -111,10 +111,10 @@ class CreateTasks(MethodResource, Resource):
                                      , 200)
 
     def preparing_tasks_for_send(self, task_to_send):
-        logger.info(f"Tasks: Tasks passed to the preparing_tasks_for_send method - {[(task.id, task.title) for task in task_to_send]}")
         if not task_to_send:
             logger.info("Tasks: No tasks to send")
             return
+        logger.info(f"Tasks: Tasks passed to the preparing_tasks_for_send method - {[(task.id, task.title) for task in task_to_send]}")
         notification = TelegramNotification()
 
         send_time = datetime.datetime.now(pytz.utc)
@@ -125,7 +125,7 @@ class CreateTasks(MethodResource, Resource):
             logger.info(f"Tasks: Users with a subscription to {category_id} category in DB - {[user.telegram_id for user in users]}")
             users_list = []
             for user in users:
-                if user.has_mailing == True:
+                if user.has_mailing:
                     users_list.append(user)
             logger.info(f"Tasks: User's mailing list - {[user.telegram_id for user in users_list]}")
             if users_list:

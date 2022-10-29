@@ -130,7 +130,6 @@ class CreateTasks(MethodResource, Resource):
                     users_list.append(user)
             logger.info(f"Tasks: User's mailing list - {[user.telegram_id for user in users_list]}")
             if users_list:
-                send_time = send_time + datetime.timedelta(seconds=1)
                 send_time = notification.send_new_tasks(message=display_task_notification(task), send_to=users_list, send_time=send_time)
                 logger.info(f"Tasks: submitted task: {task.id} {task.title}")
     

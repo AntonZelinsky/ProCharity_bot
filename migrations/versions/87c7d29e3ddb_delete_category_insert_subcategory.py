@@ -5,7 +5,7 @@ Revises: 35477a4b423e
 Create Date: 2022-10-22 13:27:10.144666
 
 """
-from sqlalchemy import select, insert, and_
+from sqlalchemy import select
 from sqlalchemy.exc import ProgrammingError, InternalError
 from app.database import db_session
 from app.models import Users_Categories, Category
@@ -18,59 +18,36 @@ branch_labels = None
 depends_on = None
 
 
-def get_user_categories():
+def delete_main_category():
+    users_categories = db_session.scalars(
+        select(Users_Categories).join(Category).where(
+            Category.parent_id == None
+        )
+    ).all()
+    for user_categories in users_categories:
+        db_session.delete(user_categories)
+
+
+def subscribe_to_subcategory():
+    categories = set(db_session.scalars(
+        select(Category).join(Users_Categories)
+    ).all())
+    for category in categories:
+        if category.children:
+            for user in category.users:
+                subcategories = [Users_Categories(telegram_id=user.telegram_id, category_id=children.id) for children in category.children if children not in user.categories]
+                db_session.add_all(subcategories)
+    db_session.commit()
+
+
+def upgrade():
     try:
-        users_categories = db_session.scalars(
-            select(Users_Categories).where(
-                Users_Categories.category_id != None # noqa
-            )
-        ).all()
-        delete_categories_insert_subcategories(users_categories)
+        delete_main_category()
+        subscribe_to_subcategory()
     except ProgrammingError:
         pass
     except InternalError:
         pass
-
-
-def delete_categories_insert_subcategories(users_categories):
-    for user_category in users_categories:
-        main_category_id = db_session.scalars(
-            select(Category.id).where(
-                Category.id == user_category.category_id, and_(
-                    Category.parent_id == None # noqa
-                )
-            )
-        ).first()
-        if not main_category_id:
-            continue
-        subcategories_id = db_session.scalars(
-            select(Category.id).where(
-                Category.parent_id == main_category_id
-            )
-        ).all()
-        main_category = db_session.scalars(
-                select(Users_Categories).where(
-                    Users_Categories.category_id == main_category_id
-                )
-        ).first()
-        db_session.delete(main_category)
-        for subcategory_id in subcategories_id:
-            subcategory_exists = db_session.scalars(
-                select(Users_Categories).where(
-                    Users_Categories.category_id == subcategory_id
-                )
-            ).first()
-            if not subcategory_exists:
-                db_session.execute(
-                    insert(Users_Categories).values(
-                        telegram_id=user_category.telegram_id,
-                        category_id=subcategory_id
-                    )
-                )
-    db_session.commit()
-
-def upgrade():
-    get_user_categories()
 
 
 def downgrade():

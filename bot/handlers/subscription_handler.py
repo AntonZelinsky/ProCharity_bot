@@ -1,20 +1,23 @@
 from telegram import (Update,
                       InlineKeyboardMarkup,
-                      InlineKeyboardButton,
                       ParseMode)
 from telegram.ext import (CallbackContext,
                           ConversationHandler,
-                          CallbackQueryHandler,)
+                          CallbackQueryHandler, )
 
 from telegram import InlineKeyboardButton
+
+from app.database import db_session
 from bot import common_comands
 from bot.constants import constants
 from bot.constants import command_constants
 from bot.constants import states
 from bot.decorators.logger import log_command
-from bot.user_db import UserDB
+from core.repositories.user_repository import UserRepository
+from core.services.user_service import UserService
 
-user_db = UserDB()
+user_repository = UserRepository(db_session)
+user_db = UserService(user_repository)
 
 
 @log_command(command=constants.LOG_COMMANDS_NAME['start_task_subscription'])
@@ -26,12 +29,14 @@ def start_task_subscription(update: Update, context: CallbackContext):
         if category['user_selected']
     ]
     answer = f'Отлично! Теперь я буду присылать тебе уведомления о ' \
-                 f'новых заданиях в ' \
-                 f'категориях: *{", ".join(user_categories)}*.\n\n' \
-                 f'А пока можешь посмотреть открытые задания.'
+             f'новых заданиях в ' \
+             f'категориях: *{", ".join(user_categories)}*.\n\n' \
+             f'А пока можешь посмотреть открытые задания.'
 
-    update.callback_query.edit_message_text(text=answer, parse_mode=ParseMode.MARKDOWN,
-                                                reply_markup=common_comands.get_menu_and_tasks_buttons())
+    update.callback_query.edit_message_text(
+        text=answer, parse_mode=ParseMode.MARKDOWN,
+        reply_markup=common_comands.get_menu_and_tasks_buttons()
+    )
     update.callback_query.answer()
     return states.MENU
 
@@ -63,7 +68,7 @@ def cancel_feedback(update: Update, context: CallbackContext):
     reason_canceling = update['callback_query']['data']
     telegram_id = update['callback_query']['message']['chat']['id']
     user_db.cancel_feedback_stat(telegram_id, reason_canceling)
- 
+
     update.callback_query.edit_message_text(
         text='Спасибо, я передал информацию команде ProCharity!',
         reply_markup=keyboard
@@ -77,18 +82,18 @@ subscription_conv = ConversationHandler(
     persistent=True,
     name='subscription_handler',
     entry_points=[
-         CallbackQueryHandler(start_task_subscription, pattern=command_constants.COMMAND__START_SUBSCRIPTION),
-         CallbackQueryHandler(stop_task_subscription, pattern=command_constants.COMMAND__STOP_SUBSCRIPTION),       
+        CallbackQueryHandler(start_task_subscription, pattern=command_constants.COMMAND__START_SUBSCRIPTION),
+        CallbackQueryHandler(stop_task_subscription, pattern=command_constants.COMMAND__STOP_SUBSCRIPTION),
     ],
     states={
         states.CANCEL_FEEDBACK: [
-                CallbackQueryHandler(cancel_feedback, pattern=command_constants.CANCEL_FEEDBACK__MANY_NOTIFICATION),
-                CallbackQueryHandler(cancel_feedback, pattern=command_constants.CANCEL_FEEDBACK__NO_TIME),
-                CallbackQueryHandler(cancel_feedback, pattern=command_constants.CANCEL_FEEDBACK__NO_RELEVANT_TASK),
-                CallbackQueryHandler(cancel_feedback, pattern=command_constants.CANCEL_FEEDBACK__BOT_IS_BAD),
-                CallbackQueryHandler(cancel_feedback, pattern=command_constants.CANCEL_FEEDBACK__FOND_IGNORE),
-                CallbackQueryHandler(cancel_feedback, pattern=command_constants.CANCEL_FEEDBACK__ANOTHER)
-            ],
+            CallbackQueryHandler(cancel_feedback, pattern=command_constants.CANCEL_FEEDBACK__MANY_NOTIFICATION),
+            CallbackQueryHandler(cancel_feedback, pattern=command_constants.CANCEL_FEEDBACK__NO_TIME),
+            CallbackQueryHandler(cancel_feedback, pattern=command_constants.CANCEL_FEEDBACK__NO_RELEVANT_TASK),
+            CallbackQueryHandler(cancel_feedback, pattern=command_constants.CANCEL_FEEDBACK__BOT_IS_BAD),
+            CallbackQueryHandler(cancel_feedback, pattern=command_constants.CANCEL_FEEDBACK__FOND_IGNORE),
+            CallbackQueryHandler(cancel_feedback, pattern=command_constants.CANCEL_FEEDBACK__ANOTHER)
+        ],
     },
     fallbacks=[
         common_comands.start_command_handler,

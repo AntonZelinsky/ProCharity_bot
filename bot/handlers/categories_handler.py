@@ -2,7 +2,6 @@ import re
 
 from telegram import (Update,
                       InlineKeyboardMarkup,
-                      InlineKeyboardButton,
                       ParseMode)
 from telegram.ext import (CallbackContext,
                           ConversationHandler,
@@ -10,21 +9,23 @@ from telegram.ext import (CallbackContext,
 
 from telegram import InlineKeyboardButton
 
-from app.models import Category, User
+from app.database import db_session
+from app.models import Category
 from bot import common_comands
 from bot import formatter
 from bot.constants import constants
 from bot.constants import command_constants
 from bot.constants import states
-from bot import user_db
 from bot.decorators.actions import send_typing_action
 from bot.decorators.logger import log_command
-from bot.user_db import UserDB
+from core.repositories.user_repository import UserRepository
+from core.services.user_service import UserService
 from bot.handlers.feedback_handler import feedback_conv
 
 from sqlalchemy.orm import load_only
 
-user_db = UserDB()
+user_repository = UserRepository(db_session)
+user_db = UserService(user_repository)
 
 PAGINATION = 3
 

@@ -7,16 +7,20 @@ from sqlalchemy.orm import load_only
 from sqlalchemy import select
 from email_validator import validate_email, EmailNotValidError
 from app.logger import bot_logger as logger
+from core.repositories.user_repository import UserRepository
 
 
-class UserDB:
+class UserService:
+    def __init__(self, user_repository: UserRepository) -> None:
+        self.user_repository = user_repository
+
     def add_user(self, telegram_user, external_id_hash):
         telegram_id = telegram_user.id
         username = telegram_user.username
         last_name = telegram_user.last_name
         first_name = telegram_user.first_name
         record_updated = False
-        user = User.query.filter_by(telegram_id=telegram_id).first()
+        user = self.user_repository.get_or_none(telegram_id)
 
         if not user:
             user = User(

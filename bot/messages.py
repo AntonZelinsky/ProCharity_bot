@@ -75,18 +75,27 @@ class TelegramNotification:
         message = job.context['message']
         chats = job.context['chats']
 
-        for user in chats:
+        for chats_set in self.__split_chats(chats, config.MAILING_BATCH_SIZE):
+            for user in chats_set:
+                self.__sending(message, user)
+        logger.info("MESSAGE SENT")
+
+    def __sending(self, message, user):
+        tries = 3
+        for i in range(tries):
             try:
                 bot.send_message(chat_id=user.telegram_id, text=message,
-                                 parse_mode=ParseMode.HTML, disable_web_page_preview=True)
+                                parse_mode=ParseMode.HTML, disable_web_page_preview=True)
                 logger.info(f"Send message to {user.telegram_id}")
             except error.BadRequest as ex:
-                logger.error(f'{str(ex.message)}, telegram_id: {user.telegram_id}')
+                if i < tries - 1:
+                    continue
+                else:
+                    logger.error(f'{str(ex.message)}, telegram_id: {user.telegram_id}')
             except Unauthorized as ex:
                 logger.error(f'{str(ex.message)}: {user.telegram_id}')
                 User.query.filter_by(telegram_id=user.telegram_id).update({'banned': True, 'has_mailing': False})
                 db_session.commit()
-        logger.info("MESSAGE SENT")
 
     @staticmethod
     def __split_chats(array, size):

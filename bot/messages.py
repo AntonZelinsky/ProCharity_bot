@@ -1,6 +1,8 @@
 from telegram import Bot, ParseMode, error
 from telegram.error import Unauthorized
 import datetime
+import time
+from dataclasses import dataclass
 
 from app import config
 from app.database import db_session
@@ -9,6 +11,12 @@ from app.models import User
 from bot.charity_bot import dispatcher
 
 bot = Bot(config.TELEGRAM_TOKEN)
+
+
+@dataclass
+class SendContext:
+    message: str
+    chats_list: list
 
 
 class TelegramNotification:
@@ -45,17 +53,17 @@ class TelegramNotification:
 
         chats = [user for user in chats_list]
 
-        for i, part in enumerate(self.__split_chats(chats, config.MAILING_BATCH_SIZE)):
-            context = {'message': message, 'chats': part}
+        for chats_count, chats_set in enumerate(self.__split_chats(chats, config.MAILING_BATCH_SIZE)):
+            context = SendContext(message=message, chats_list=chats_set)
 
-            dispatcher.job_queue.run_once(self.__send_message, i * 2, context=context,
-                                          name=f'Notification: {message[0:10]}_{i}')
+            dispatcher.job_queue.run_once(self.__send_message, chats_count * 2, context=context,
+                                          name=f'Notification: {message[0:10]}_{chats_count}')
 
         return True
 
     def send_new_tasks(self, message, send_to, send_time):
         for chats_count, chats_set in enumerate(self.__split_chats(send_to, config.MAILING_BATCH_SIZE)):
-            context = {'message': message, 'chats': chats_set}
+            context = SendContext(message=message, chats_list=chats_set)
 
             send_time = send_time + datetime.timedelta(seconds=chats_count+1)
 
@@ -72,8 +80,8 @@ class TelegramNotification:
         :return:
         """
         job = context.job
-        message = job.context['message']
-        chats = job.context['chats']
+        message = job.context.message
+        chats = job.context.chats_list
 
         for chats_set in self.__split_chats(chats, config.MAILING_BATCH_SIZE):
             for user in chats_set:
@@ -89,6 +97,9 @@ class TelegramNotification:
                 logger.info(f"Send message to {user.telegram_id}")
             except error.BadRequest as ex:
                 if i < tries - 1:
+                    logger.info(f'Message not send to: {user.telegram_id}')
+                    logger.info(f"Retry to send after {i}")
+                    time.sleep(i)
                     continue
                 else:
                     logger.error(f'{str(ex.message)}, telegram_id: {user.telegram_id}')
@@ -96,6 +107,7 @@ class TelegramNotification:
                 logger.error(f'{str(ex.message)}: {user.telegram_id}')
                 User.query.filter_by(telegram_id=user.telegram_id).update({'banned': True, 'has_mailing': False})
                 db_session.commit()
+            break
 
     @staticmethod
     def __split_chats(array, size):

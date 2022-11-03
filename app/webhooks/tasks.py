@@ -15,7 +15,7 @@ from app.logger import webhooks_logger as logger
 from app.webhooks.check_webhooks_token import check_webhooks_token
 
 from bot.formatter import display_task_notification
-from bot.messages import TelegramNotification, UserMessageContext, UserNotificationsContext
+from bot.messages import TelegramNotification, SendUserMessageContext, SendUserNotificationsContext
 
 
 class TaskBonusField(fields.Field):
@@ -119,26 +119,20 @@ class CreateTasks(MethodResource, Resource):
         logger.info(f"Tasks: Tasks passed to the preparing_tasks_for_send method - {[(task.id, task.title) for task in task_to_send]}")
         notification = TelegramNotification()
 
-        send_time = datetime.datetime.now(pytz.utc)
-
         for task in task_to_send:
             category_id = task.category_id
             users = Category.query.filter_by(id = category_id).first().users
             logger.info(f"Tasks: Users with a subscription to {category_id} category in DB - {[user.telegram_id for user in users]}")
-            users_list = []
+            context_list = []
             for user in users:
                 if user.has_mailing:
-                    users_list.append(user)
-            logger.info(f"Tasks: User's mailing list - {[user.telegram_id for user in users_list]}")
-            if users_list:
-                context_list = []
-                for user in users_list:
-                    user_message_context = UserMessageContext(message=display_task_notification(task), userid=user.telegram_id)
+                    user_message_context = SendUserMessageContext(message=display_task_notification(task), userid=user.telegram_id)
                     context_list.append(user_message_context)
+            logger.info(f"Tasks: User's mailing list - {[user_message_context.userid for user_message_context in context_list]}")
+            if context_list:
+                user_notification_context = SendUserNotificationsContext(context_list)
 
-                user_notification_context = UserNotificationsContext(context_list)
-
-                send_time = notification.send_message(user_notification_context, send_time=send_time)
+                send_time = notification.SendBatchMessages(user_notification_context)
 
                 logger.info(f"Tasks: submitted task: {task.id} {task.title}")
         time.sleep(10)

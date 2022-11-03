@@ -14,13 +14,13 @@ bot = Bot(config.TELEGRAM_TOKEN)
 
 
 @dataclass
-class UserMessageContext:
+class SendUserMessageContext :
     message: str
     userid: int
 
 
 @dataclass
-class UserNotificationsContext:
+class SendUserNotificationsContext:
     user_message_context: list
 
 
@@ -58,50 +58,39 @@ class TelegramNotification:
 
         context_list = []
         for user in chats_list:
-             user_message_context = UserMessageContext(message=message, userid=user.telegram_id)
+             user_message_context = SendUserMessageContext(message=message, userid=user.telegram_id)
              context_list.append(user_message_context)
 
-        user_notification_context = UserNotificationsContext(context_list)
+        user_notification_context = SendUserNotificationsContext(context_list)
 
-        self.send_message(user_notification_context)
+        self.SendBatchMessages(user_notification_context)
 
         return True
 
-    def send_message(self, user_notification_context, send_time):
-        """
-        Sends the message to all telegram users registered in the database.
+    def SendBatchMessages(self, user_notification_context):
+        for send_set in self.__split_chats(user_notification_context.user_message_context, config.MAILING_BATCH_SIZE):
 
-        :param context: A dict containing the sending parameters and the message body
-        :return:
-        """
-        for send_count, send_set in enumerate(self.__split_chats(user_notification_context.user_message_context, config.MAILING_BATCH_SIZE)):
-            send_time = send_time + datetime.timedelta(seconds=send_count+1)
-
-            dispatcher.job_queue.run_once(self.__sending, send_time, context=send_set,
-                                          name=f'Sending: {send_count}')
-        return send_time
-
-    def __sending(self, context):
-        job = context.job
-        for sending in job.context:
-            tries = 3
-            for i in range(tries):
-                try:
-                    bot.send_message(chat_id=sending.userid, text=sending.message,
-                                    parse_mode=ParseMode.HTML, disable_web_page_preview=True)
-                    logger.info(f"Sent message to {sending.userid}")
-                    return
-                except error.BadRequest as ex:
-                    if i < tries:
-                        logger.error(f'{str(ex.message)}, telegram_id: {sending.userid}')
-                        logger.info(f"Retry to send after {i}")
-                        time.sleep(i)
-                    else:
-                        logger.error(f'{str(ex.message)}, telegram_id: {sending.userid}')
-                except Unauthorized as ex:
-                    logger.error(f'{str(ex.message)}: {sending.userid}')
-                    User.query.filter_by(telegram_id=sending.userid).update({'banned': True, 'has_mailing': False})
-                    db_session.commit()
+            for user_message_context in send_set:
+                self.__send_message_context(user_message_context)
+            time.sleep(1)
+                
+    def __send_message_context(self, user_message_context):
+        tries = 3
+        for i in range(tries):
+            try:
+                bot.send_message(chat_id=user_message_context.userid, text=user_message_context.message,
+                                parse_mode=ParseMode.HTML, disable_web_page_preview=True)
+                logger.info(f"Sent message to {user_message_context.userid}")
+                return
+            except error.BadRequest as ex:
+                logger.error(f'{str(ex.message)}, telegram_id: {user_message_context.userid}')
+                if i < tries:
+                    logger.info(f"Retry to send after {i}")
+                    time.sleep(i)
+            except Unauthorized as ex:
+                logger.error(f'{str(ex.message)}: {user_message_context.userid}')
+                User.query.filter_by(telegram_id=user_message_context.userid).update({'banned': True, 'has_mailing': False})
+                db_session.commit()
 
     @staticmethod
     def __split_chats(array, size):

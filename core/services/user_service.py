@@ -12,7 +12,7 @@ from core.repositories.user_repository import UserRepository
 
 class UserService:
     def __init__(self, user_repository: UserRepository) -> None:
-        self.user_repository = user_repository
+        self.__user_repository = user_repository
 
     def add_user(self, telegram_user, external_id_hash):
         telegram_id = telegram_user.id
@@ -20,7 +20,7 @@ class UserService:
         last_name = telegram_user.last_name
         first_name = telegram_user.first_name
         record_updated = False
-        user = self.user_repository.get_or_none(telegram_id)
+        user = self.__user_repository.get_or_none(telegram_id)
 
         if not user:
             user = User(
@@ -55,7 +55,7 @@ class UserService:
                     logger.error(f"User DB - 'add_user' method: {str(ex)}")
                 return user
 
-        if user.banned == True:
+        if user.banned:
             user.banned = False
             record_updated = True
 

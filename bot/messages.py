@@ -14,9 +14,14 @@ bot = Bot(config.TELEGRAM_TOKEN)
 
 
 @dataclass
-class SendContext:
+class UserMessageContext:
     message: str
-    chats_list: list
+    userid: int
+
+
+@dataclass
+class UserNotificationsContext:
+    user_message_context: list
 
 
 class TelegramNotification:
@@ -51,63 +56,52 @@ class TelegramNotification:
         if self.has_mailing == 'all':
             chats_list = query
 
-        chats = [user for user in chats_list]
+        context_list = []
+        for user in chats_list:
+             user_message_context = UserMessageContext(message=message, userid=user.telegram_id)
+             context_list.append(user_message_context)
 
-        for chats_count, chats_set in enumerate(self.__split_chats(chats, config.MAILING_BATCH_SIZE)):
-            context = SendContext(message=message, chats_list=chats_set)
+        user_notification_context = UserNotificationsContext(context_list)
 
-            dispatcher.job_queue.run_once(self.__send_message, chats_count * 2, context=context,
-                                          name=f'Notification: {message[0:10]}_{chats_count}')
+        self.send_message(user_notification_context)
 
         return True
 
-    def send_new_tasks(self, message, send_to, send_time):
-        for chats_count, chats_set in enumerate(self.__split_chats(send_to, config.MAILING_BATCH_SIZE)):
-            context = SendContext(message=message, chats_list=chats_set)
-
-            send_time = send_time + datetime.timedelta(seconds=chats_count+1)
-
-            dispatcher.job_queue.run_once(self.__send_message, send_time, context=context,
-                                          name=f'Task: {message[0:10]}_{chats_count}')
-            
-        return send_time
-
-    def __send_message(self, context):
+    def send_message(self, user_notification_context, send_time):
         """
         Sends the message to all telegram users registered in the database.
 
         :param context: A dict containing the sending parameters and the message body
         :return:
         """
+        for send_count, send_set in enumerate(self.__split_chats(user_notification_context.user_message_context, config.MAILING_BATCH_SIZE)):
+            send_time = send_time + datetime.timedelta(seconds=send_count+1)
+
+            dispatcher.job_queue.run_once(self.__sending, send_time, context=send_set,
+                                          name=f'Sending: {send_count}')
+        return send_time
+
+    def __sending(self, context):
         job = context.job
-        message = job.context.message
-        chats = job.context.chats_list
-
-        for chats_set in self.__split_chats(chats, config.MAILING_BATCH_SIZE):
-            for user in chats_set:
-                self.__sending(message, user)
-        logger.info("MESSAGE SENT")
-
-    def __sending(self, message, user):
-        tries = 3
-        for i in range(tries):
-            try:
-                bot.send_message(chat_id=user.telegram_id, text=message,
-                                parse_mode=ParseMode.HTML, disable_web_page_preview=True)
-                logger.info(f"Send message to {user.telegram_id}")
-            except error.BadRequest as ex:
-                if i < tries - 1:
-                    logger.info(f'Message not send to: {user.telegram_id}')
-                    logger.info(f"Retry to send after {i}")
-                    time.sleep(i)
-                    continue
-                else:
-                    logger.error(f'{str(ex.message)}, telegram_id: {user.telegram_id}')
-            except Unauthorized as ex:
-                logger.error(f'{str(ex.message)}: {user.telegram_id}')
-                User.query.filter_by(telegram_id=user.telegram_id).update({'banned': True, 'has_mailing': False})
-                db_session.commit()
-            break
+        for sending in job.context:
+            tries = 3
+            for i in range(tries):
+                try:
+                    bot.send_message(chat_id=sending.userid, text=sending.message,
+                                    parse_mode=ParseMode.HTML, disable_web_page_preview=True)
+                    logger.info(f"Sent message to {sending.userid}")
+                    return
+                except error.BadRequest as ex:
+                    if i < tries:
+                        logger.error(f'{str(ex.message)}, telegram_id: {sending.userid}')
+                        logger.info(f"Retry to send after {i}")
+                        time.sleep(i)
+                    else:
+                        logger.error(f'{str(ex.message)}, telegram_id: {sending.userid}')
+                except Unauthorized as ex:
+                    logger.error(f'{str(ex.message)}: {sending.userid}')
+                    User.query.filter_by(telegram_id=sending.userid).update({'banned': True, 'has_mailing': False})
+                    db_session.commit()
 
     @staticmethod
     def __split_chats(array, size):

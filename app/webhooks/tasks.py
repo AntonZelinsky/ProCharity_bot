@@ -7,6 +7,7 @@ from sqlalchemy.orm import load_only
 from marshmallow import fields, Schema, ValidationError, EXCLUDE
 import datetime
 import pytz
+import time
 
 from app.database import db_session
 from app.models import Task, User, Category
@@ -14,7 +15,7 @@ from app.logger import webhooks_logger as logger
 from app.webhooks.check_webhooks_token import check_webhooks_token
 
 from bot.formatter import display_task_notification
-from bot.messages import TelegramNotification
+from bot.messages import TelegramNotification, UserMessageContext, UserNotificationsContext
 
 
 class TaskBonusField(fields.Field):
@@ -130,8 +131,17 @@ class CreateTasks(MethodResource, Resource):
                     users_list.append(user)
             logger.info(f"Tasks: User's mailing list - {[user.telegram_id for user in users_list]}")
             if users_list:
-                send_time = notification.send_new_tasks(message=display_task_notification(task), send_to=users_list, send_time=send_time)
+                context_list = []
+                for user in users_list:
+                    user_message_context = UserMessageContext(message=display_task_notification(task), userid=user.telegram_id)
+                    context_list.append(user_message_context)
+
+                user_notification_context = UserNotificationsContext(context_list)
+
+                send_time = notification.send_message(user_notification_context, send_time=send_time)
+
                 logger.info(f"Tasks: submitted task: {task.id} {task.title}")
+        time.sleep(10)
     
     def __add_tasks(self, tasks_to_add, task_to_send):
         task_ids = [task['id'] for task in tasks_to_add]

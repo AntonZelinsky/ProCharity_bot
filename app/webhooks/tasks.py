@@ -132,7 +132,7 @@ class CreateTasks(MethodResource, Resource):
             if context_list:
                 user_notification_context = SendUserNotificationsContext(context_list)
 
-                send_time = notification.SendBatchMessages(user_notification_context)
+                notification.SendBatchMessages(user_notification_context)
 
                 logger.info(f"Tasks: submitted task: {task.id} {task.title}")
         time.sleep(10)

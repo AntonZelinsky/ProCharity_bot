@@ -1,12 +1,13 @@
 from telegram import (Update,
                       InlineKeyboardMarkup,
-                      InlineKeyboardButton, replymarkup)
-from telegram.ext import (CommandHandler,
-                          ConversationHandler,
+                      InlineKeyboardButton)
+from telegram.ext import (ConversationHandler,
                           CallbackContext,
                           CallbackQueryHandler,
                           MessageHandler,
                           Filters)
+
+from app.database import db_session
 from bot import common_comands
 from bot.constants import states
 from bot.constants import command_constants
@@ -14,7 +15,8 @@ from bot.constants import constants
 from bot import email_client
 from bot.decorators.actions import send_typing_action
 from bot.decorators.logger import log_command
-from bot.user_db import UserDB
+from core.repositories.user_repository import UserRepository
+from core.services.user_service import UserService
 
 
 ASK_EMAIL_FLAG = 'ask_email_flag'
@@ -28,7 +30,8 @@ FEATURE_TYPE = 'feature'
 MSG_ID = 'msg_id'
 MSG_TEXT = 'msg_text'
 
-user_db = UserDB()
+user_repository = UserRepository(db_session)
+user_db = UserService(user_repository)
 
 
 @log_command(command=constants.LOG_COMMANDS_NAME['ask_new_category'])

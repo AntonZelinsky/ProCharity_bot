@@ -1,6 +1,5 @@
 from telegram import (Update,
                       InlineKeyboardMarkup,
-                      InlineKeyboardButton,
                       ParseMode)
 from telegram.ext import CallbackContext, CallbackQueryHandler, CommandHandler
 
@@ -10,8 +9,9 @@ from bot.constants import command_constants
 from bot.constants import constants
 from bot.decorators.actions import send_typing_action
 from bot.decorators.logger import log_command
-from bot.user_db import UserDB
-
+from core.repositories.user_repository import UserRepository
+from core.services.user_service import UserService
+from app.database import db_session
 
 MENU_BUTTONS = [
     [
@@ -47,7 +47,8 @@ MENU_BUTTONS = [
     ]
 ]
 
-user_db = UserDB()
+user_repository = UserRepository(db_session)
+user_db = UserService(user_repository)
 
 
 @send_typing_action

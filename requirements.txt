@@ -13,3 +13,7 @@ python-dotenv==0.18.0
 python-telegram-bot==13.7
 sqlalchemy-pagination==0.0.2
 GitPython==3.1.24
+SQLAlchemy==1.4.20
+marshmallow==3.12.1
+Werkzeug==2.0.1
+apispec==4.7.0

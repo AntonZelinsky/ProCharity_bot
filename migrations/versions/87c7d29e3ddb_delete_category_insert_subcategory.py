@@ -6,7 +6,6 @@ Create Date: 2022-10-22 13:27:10.144666
 
 """
 from sqlalchemy import select
-from sqlalchemy.exc import ProgrammingError, InternalError
 from app.database import db_session
 from app.models import Users_Categories, Category
 
@@ -26,6 +25,7 @@ def delete_main_category():
     ).all()
     for user_categories in users_categories:
         db_session.delete(user_categories)
+    db_session.commit()
 
 
 def subscribe_to_subcategory():
@@ -37,17 +37,11 @@ def subscribe_to_subcategory():
             for user in category.users:
                 subcategories = [Users_Categories(telegram_id=user.telegram_id, category_id=children.id) for children in category.children if children not in user.categories]
                 db_session.add_all(subcategories)
-    db_session.commit()
 
 
 def upgrade():
-    try:
-        delete_main_category()
-        subscribe_to_subcategory()
-    except ProgrammingError:
-        pass
-    except InternalError:
-        pass
+    subscribe_to_subcategory()
+    delete_main_category()
 
 
 def downgrade():

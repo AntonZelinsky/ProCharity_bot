@@ -120,6 +120,7 @@ class CreateTasks(MethodResource, Resource):
         logger.info(f"Tasks: Tasks passed to the preparing_tasks_for_send method - {[(task.id, task.title) for task in task_to_send]}")
         notification = TelegramNotification()
 
+        send_time = datetime.datetime.now(pytz.utc)
         for task in task_to_send:
             category_id = task.category_id
             users = Category.query.filter_by(id = category_id).first().users
@@ -132,7 +133,7 @@ class CreateTasks(MethodResource, Resource):
                     user_notification_context.user_message_context.append(user_message_context)
             logger.info(f"Tasks: User's mailing list - {[user_message_context.telegram_id for user_message_context in user_notification_context.user_message_context]}")
             if len(user_notification_context.user_message_context) != 0:
-                notification.send_batch_messages(user_notification_context)
+                send_time = notification.send_batch_messages(user_notification_context, send_time)
 
                 logger.info(f"Tasks: submitting task: {task.id} {task.title}")
         # Adds a 10 second delay before processing the next post

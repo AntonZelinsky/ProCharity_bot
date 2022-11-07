@@ -8,6 +8,7 @@ from marshmallow import fields, Schema, ValidationError, EXCLUDE
 import datetime
 import pytz
 import time
+from bot.charity_bot import dispatcher
 
 from app.database import db_session
 from app.models import Task, User, Category
@@ -123,18 +124,18 @@ class CreateTasks(MethodResource, Resource):
             category_id = task.category_id
             users = Category.query.filter_by(id = category_id).first().users
             logger.info(f"Tasks: Users with a subscription to {category_id} category in DB - {[user.telegram_id for user in users]}")
-            context_list = []
+            message=display_task_notification(task)
+            user_notification_context = SendUserNotificationsContext([])
             for user in users:
                 if user.has_mailing:
-                    user_message_context = SendUserMessageContext(message=display_task_notification(task), userid=user.telegram_id)
-                    context_list.append(user_message_context)
-            logger.info(f"Tasks: User's mailing list - {[user_message_context.userid for user_message_context in context_list]}")
-            if context_list:
-                user_notification_context = SendUserNotificationsContext(context_list)
+                    user_message_context = SendUserMessageContext(message=message, telegram_id=user.telegram_id)
+                    user_notification_context.user_message_context.append(user_message_context)
+            logger.info(f"Tasks: User's mailing list - {[user_message_context.telegram_id for user_message_context in user_notification_context.user_message_context]}")
+            if len(user_notification_context.user_message_context) != 0:
+                notification.send_batch_messages(user_notification_context)
 
-                notification.SendBatchMessages(user_notification_context)
-
-                logger.info(f"Tasks: submitted task: {task.id} {task.title}")
+                logger.info(f"Tasks: submitting task: {task.id} {task.title}")
+        # Adds a 10 second delay before processing the next post
         time.sleep(10)
     
     def __add_tasks(self, tasks_to_add, task_to_send):

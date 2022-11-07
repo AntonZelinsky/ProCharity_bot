@@ -3,6 +3,7 @@ from telegram.error import Unauthorized
 import datetime
 import time
 from dataclasses import dataclass
+from typing import List
 
 from app import config
 from app.database import db_session
@@ -16,12 +17,12 @@ bot = Bot(config.TELEGRAM_TOKEN)
 @dataclass
 class SendUserMessageContext :
     message: str
-    userid: int
+    telegram_id: int
 
 
 @dataclass
 class SendUserNotificationsContext:
-    user_message_context: list
+    user_message_context: List[SendUserMessageContext]
 
 
 class TelegramNotification:
@@ -56,18 +57,16 @@ class TelegramNotification:
         if self.has_mailing == 'all':
             chats_list = query
 
-        context_list = []
+        user_notification_context = SendUserNotificationsContext([])
         for user in chats_list:
-             user_message_context = SendUserMessageContext(message=message, userid=user.telegram_id)
-             context_list.append(user_message_context)
+             user_message_context = SendUserMessageContext(message=message, telegram_id=user.telegram_id)
+             user_notification_context.user_message_context.append(user_message_context)
 
-        user_notification_context = SendUserNotificationsContext(context_list)
-
-        self.SendBatchMessages(user_notification_context)
+        self.send_batch_messages(user_notification_context)
 
         return True
 
-    def SendBatchMessages(self, user_notification_context):
+    def send_batch_messages(self, user_notification_context):
         for send_set in self.__split_chats(user_notification_context.user_message_context, config.MAILING_BATCH_SIZE):
 
             for user_message_context in send_set:
@@ -78,18 +77,18 @@ class TelegramNotification:
         tries = 3
         for i in range(tries):
             try:
-                bot.send_message(chat_id=user_message_context.userid, text=user_message_context.message,
+                bot.send_message(chat_id=user_message_context.telegram_id, text=user_message_context.message,
                                 parse_mode=ParseMode.HTML, disable_web_page_preview=True)
-                logger.info(f"Sent message to {user_message_context.userid}")
+                logger.info(f"Sent message to {user_message_context.telegram_id}")
                 return
             except error.BadRequest as ex:
-                logger.error(f'{str(ex.message)}, telegram_id: {user_message_context.userid}')
+                logger.error(f'{str(ex.message)}, telegram_id: {user_message_context.telegram_id}')
                 if i < tries:
                     logger.info(f"Retry to send after {i}")
                     time.sleep(i)
             except Unauthorized as ex:
-                logger.error(f'{str(ex.message)}: {user_message_context.userid}')
-                User.query.filter_by(telegram_id=user_message_context.userid).update({'banned': True, 'has_mailing': False})
+                logger.error(f'{str(ex.message)}: {user_message_context.telegram_id}')
+                User.query.filter_by(telegram_id=user_message_context.telegram_id).update({'banned': True, 'has_mailing': False})
                 db_session.commit()
 
     @staticmethod

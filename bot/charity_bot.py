@@ -16,6 +16,7 @@ from telegram.ext import (Updater,
 from telegram.utils.request import Request
 
 from app.config import BOT_PERSISTENCE_FILE, HOST_NAME, WEBHOOK_URL, USE_WEBHOOK
+from app.database import db_session
 from app.logger import bot_logger
 from bot import common_comands
 from bot.constants import command_constants
@@ -25,13 +26,15 @@ from bot.decorators.logger import log_command
 from bot.handlers.categories_handler import categories_conv, change_user_categories
 from bot.handlers.feedback_handler import feedback_conv
 from bot.handlers.subscription_handler import subscription_conv
-from bot.user_db import UserDB
+from core.repositories.user_repository import UserRepository
+from core.services.user_service import UserService
 
 load_dotenv()
 
 logger = bot_logger
 
-user_db = UserDB()
+user_repository = UserRepository(db_session)
+user_db = UserService(user_repository)
 
 
 @log_command(command=constants.LOG_COMMANDS_NAME['about'])

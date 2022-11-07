@@ -133,11 +133,12 @@ class CreateTasks(MethodResource, Resource):
                     user_notification_context.user_message_context.append(user_message_context)
             logger.info(f"Tasks: User's mailing list - {[user_message_context.telegram_id for user_message_context in user_notification_context.user_message_context]}")
             if len(user_notification_context.user_message_context) != 0:
-                send_time = notification.send_batch_messages(user_notification_context, send_time)
+                dispatcher.job_queue.run_once(notification.send_batch_messages, send_time, context=user_notification_context,
+                                              name=f'Sending: {message[0:10]}')
 
                 logger.info(f"Tasks: submitting task: {task.id} {task.title}")
-        # Adds a 10 second delay before processing the next post
-        time.sleep(10)
+            # Adds a 10 second delay before processing the next task
+            send_time = send_time + datetime.timedelta(seconds=10)
     
     def __add_tasks(self, tasks_to_add, task_to_send):
         task_ids = [task['id'] for task in tasks_to_add]

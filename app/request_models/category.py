@@ -2,7 +2,7 @@ from typing import Optional
 from pydantic import Field, NonNegativeInt, StrictStr
 from flask_pydantic import validate
 
-from .request_base import RequestBase
+from app.request_models.request_base import RequestBase
 
 
 class CategoryCreateRequest(RequestBase):
@@ -11,7 +11,7 @@ class CategoryCreateRequest(RequestBase):
     parent_id: Optional[NonNegativeInt]
 
     @validate('parent_id')
-    def check_not_self_parent(cls, v, values):
-        if v and 'id' in values and v == values['id']:
+    def check_not_self_parent(cls, parent_id, values):
+        if parent_id and 'id' in values and parent_id == values['id']:
             raise ValueError('category cannot inherit from itself')
-        return v
+        return parent_id

@@ -17,3 +17,4 @@ SQLAlchemy==1.4.20
 marshmallow==3.12.1
 Werkzeug==2.0.1
 apispec==4.7.0
+Flask-Pydantic==0.11.0

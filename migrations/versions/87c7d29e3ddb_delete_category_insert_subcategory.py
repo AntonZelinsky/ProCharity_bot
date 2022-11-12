@@ -27,7 +27,7 @@ def upgrade():
         for user in category.users:
             subcategories = [Users_Categories(telegram_id=user.telegram_id, category_id=children.id) for children in category.children if children not in user.categories]
             db_session.add_all(subcategories)
-            category.users = []
+        category.users = []
     db_session.commit()
 
 

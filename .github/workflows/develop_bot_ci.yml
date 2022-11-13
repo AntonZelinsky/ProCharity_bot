@@ -34,7 +34,7 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Deploy with scp
-        run: scp -r docker-compose.test.yml ${{ secrets.USER_DEV }}@${{ secrets.HOST_DEV }}:/code
+        run: scp -v docker-compose.test.yml ${{ secrets.USER_DEV }}@${{ secrets.HOST_DEV }}:/code
 #      - name: Copy docker-compose to server
 #        uses: appleboy/scp-action@master
 #        with:

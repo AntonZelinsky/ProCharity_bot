@@ -62,8 +62,10 @@ class TelegramNotification:
         for user in chats_list:
             user_message_context = SendUserMessageContext(message=message, telegram_id=user.telegram_id)
             user_notification_context.user_message_context.append(user_message_context)
+        
+        seconds = 1
 
-        dispatcher.job_queue.run_once(self.send_batch_messages, 1, context=user_notification_context,
+        dispatcher.job_queue.run_once(self.send_batch_messages, seconds, context=user_notification_context,
                                       name=f'Sending: {message[0:10]}')
 
         return True

@@ -1,5 +1,10 @@
 from telegram import Bot, ParseMode, error
 from telegram.error import Unauthorized
+import datetime
+import time
+from dataclasses import dataclass
+from typing import List
+import pytz
 
 from app import config
 from app.database import db_session
@@ -8,6 +13,17 @@ from app.models import User
 from bot.charity_bot import dispatcher
 
 bot = Bot(config.TELEGRAM_TOKEN)
+
+
+@dataclass
+class SendUserMessageContext :
+    message: str
+    telegram_id: int
+
+
+@dataclass
+class SendUserNotificationsContext:
+    user_message_context: List[SendUserMessageContext]
 
 
 class TelegramNotification:
@@ -42,47 +58,44 @@ class TelegramNotification:
         if self.has_mailing == 'all':
             chats_list = query
 
-        chats = [user for user in chats_list]
+        user_notification_context = SendUserNotificationsContext([])
+        for user in chats_list:
+            user_message_context = SendUserMessageContext(message=message, telegram_id=user.telegram_id)
+            user_notification_context.user_message_context.append(user_message_context)
+        
+        seconds = 1
 
-        for i, part in enumerate(self.__split_chats(chats, config.NUMBER_USERS_TO_SEND)):
-            context = {'message': message, 'chats': part}
-
-            dispatcher.job_queue.run_once(self.__send_message, i * 2, context=context,
-                                          name=f'Notification: {message[0:10]}_{i}')
+        dispatcher.job_queue.run_once(self.send_batch_messages, seconds, context=user_notification_context,
+                                      name=f'Sending: {message[0:10]}')
 
         return True
 
-    def send_new_tasks(self, message, send_to):
+    def send_batch_messages(self, user_notification_context):
+        job = user_notification_context.job
+        user_message_context = job.context.user_message_context
+        for send_set in self.__split_chats(user_message_context, config.MAILING_BATCH_SIZE):
 
-        for i, part in enumerate(self.__split_chats(send_to, config.NUMBER_USERS_TO_SEND)):
-            context = {'message': message, 'chats': part}
-
-            dispatcher.job_queue.run_once(self.__send_message, i, context=context,
-                                          name=f'Task: {0:10}_{i}')
-
-    def __send_message(self, context):
-        """
-        Sends the message to all telegram users registered in the database.
-
-        :param context: A dict containing the sending parameters and the message body
-        :return:
-        """
-        job = context.job
-        message = job.context['message']
-        chats = job.context['chats']
-
-        for user in chats:
+            for user_message_context in send_set:
+                self.__send_message_context(user_message_context)
+            time.sleep(1)
+                
+    def __send_message_context(self, user_message_context):
+        tries = 3
+        for i in range(tries):
             try:
-                bot.send_message(chat_id=user.telegram_id, text=message,
-                                 parse_mode=ParseMode.HTML, disable_web_page_preview=True)
-                logger.info(f"Send message to {user.telegram_id}")
+                bot.send_message(chat_id=user_message_context.telegram_id, text=user_message_context.message,
+                                parse_mode=ParseMode.HTML, disable_web_page_preview=True)
+                logger.info(f"Sent message to {user_message_context.telegram_id}")
+                return
             except error.BadRequest as ex:
-                logger.error(f'{str(ex.message)}, telegram_id: {user.telegram_id}')
+                logger.error(f'{str(ex.message)}, telegram_id: {user_message_context.telegram_id}')
+                if i < tries:
+                    logger.info(f"Retry to send after {i}")
+                    time.sleep(i)
             except Unauthorized as ex:
-                logger.error(f'{str(ex.message)}: {user.telegram_id}')
-                User.query.filter_by(telegram_id=user.telegram_id).update({'banned': True, 'has_mailing': False})
+                logger.error(f'{str(ex.message)}: {user_message_context.telegram_id}')
+                User.query.filter_by(telegram_id=user_message_context.telegram_id).update({'banned': True, 'has_mailing': False})
                 db_session.commit()
-        logger.info("MESSAGE SENT")
 
     @staticmethod
     def __split_chats(array, size):

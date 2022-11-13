@@ -5,14 +5,18 @@ from flask_restful import Resource
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import load_only
 from marshmallow import fields, Schema, ValidationError, EXCLUDE
+import datetime
+import pytz
+import time
+from bot.charity_bot import dispatcher
 
 from app.database import db_session
-from app.models import Task, User
+from app.models import Task, User, Category
 from app.logger import webhooks_logger as logger
 from app.webhooks.check_webhooks_token import check_webhooks_token
 
 from bot.formatter import display_task_notification
-from bot.messages import TelegramNotification
+from bot.messages import TelegramNotification, SendUserMessageContext, SendUserNotificationsContext
 
 
 class TaskBonusField(fields.Field):
@@ -100,7 +104,7 @@ class CreateTasks(MethodResource, Resource):
             return make_response(jsonify(message=f'Bad request'), 400)
         logger.info(f"Tasks: Tasks to send - {task_to_send}")
 
-        self.send_task(task_to_send)
+        self.preparing_tasks_for_send(task_to_send)
 
         logger.info('Tasks: New tasks received')
         logger.info('——————————————————————————————————————————————————————')
@@ -108,22 +112,33 @@ class CreateTasks(MethodResource, Resource):
                                      unarchived_tasks=unarchived_tasks, updated_tasks=updated_tasks)
                                      , 200)
 
-    def send_task(self, task_to_send):
-        logger.info(f"Tasks: Tasks passed to the send_task method - {[(task.id, task.title) for task in task_to_send]}")
-        if task_to_send:
-            users = User.query.options(load_only('telegram_id')).filter_by(has_mailing=True).all()
-            logger.info(f"Tasks: Users with an enabled subscription in DB - {[user.telegram_id for user in users]}")
-            notification = TelegramNotification()
+    def preparing_tasks_for_send(self, task_to_send):
+        if not task_to_send:
+            logger.info("Tasks: No tasks to send")
+            return
+        
+        logger.info(f"Tasks: Tasks passed to the preparing_tasks_for_send method - {[(task.id, task.title) for task in task_to_send]}")
+        notification = TelegramNotification()
 
-            for task in task_to_send:
-                chats_list = []
-                for user in users:
-                    if task.category_id in [cat.id for cat in user.categories]:
-                        chats_list.append(user)
-                logger.info(f"Tasks: User's mailing list - {[user.telegram_id for user in chats_list]}")
-                if chats_list:
-                    notification.send_new_tasks(message=display_task_notification(task), send_to=chats_list)
-                    logger.info(f"Tasks: submitted task: {task.id} {task.title}")
+        send_time = datetime.datetime.now(pytz.utc)
+        for task in task_to_send:
+            category_id = task.category_id
+            users = Category.query.filter_by(id = category_id).first().users
+            logger.info(f"Tasks: Users with a subscription to {category_id} category in DB - {[user.telegram_id for user in users]}")
+            message=display_task_notification(task)
+            user_notification_context = SendUserNotificationsContext([])
+            for user in users:
+                if user.has_mailing:
+                    user_message_context = SendUserMessageContext(message=message, telegram_id=user.telegram_id)
+                    user_notification_context.user_message_context.append(user_message_context)
+            logger.info(f"Tasks: User's mailing list - {[user_message_context.telegram_id for user_message_context in user_notification_context.user_message_context]}")
+            if len(user_notification_context.user_message_context) != 0:
+                dispatcher.job_queue.run_once(notification.send_batch_messages, send_time, context=user_notification_context,
+                                              name=f'Sending: {message[0:10]}')
+
+                logger.info(f"Tasks: submitting task: {task.id} {task.title}")
+            # Adds a 10 second delay before processing the next task
+            send_time = send_time + datetime.timedelta(seconds=10)
     
     def __add_tasks(self, tasks_to_add, task_to_send):
         task_ids = [task['id'] for task in tasks_to_add]

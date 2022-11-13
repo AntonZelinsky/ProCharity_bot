@@ -40,7 +40,7 @@ jobs:
           chmod 700 ~/.ssh
           echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
           chmod 644 ~/.ssh/known_hosts
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
       - name: Deploy with scp
         run: scp -v docker-compose.test.yml ${{ secrets.USER_DEV }}@${{ secrets.HOST_DEV }}:/code

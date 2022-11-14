@@ -33,17 +33,6 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-#      - name: Create SSH key
-#        # (SSH_KNOWN_HOSTS=ssh-keyscan -H сервер, SSH_PRIVATE_KEY - ключ с ПК, которому разрешен вход)
-#        run: |
-#          mkdir -p ~/.ssh
-#          chmod 700 ~/.ssh
-#          echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
-#          chmod 644 ~/.ssh/known_hosts
-#          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_ed25519
-#          chmod 600 ~/.ssh/id_ed25519
-##      - name: Deploy with scp
-##        run: scp -v docker-compose.test.yml ${{ secrets.USER_DEV }}@${{ secrets.PASSPHRASE }}@${{ secrets.HOST_DEV }}:/code
       - name: Copy docker-compose to server
         uses: appleboy/scp-action@master
         with:

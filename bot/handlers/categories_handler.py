@@ -142,7 +142,6 @@ def choose_category(update: Update, context: CallbackContext, parent_category_id
     selected_categories_list = [category for category in categories if category['user_selected']]
 
     if parent_category_id:
-        context.user_data[states.SUBSCRIPTION_FLAG] = user_db.set_user_unsubscribed(update.effective_user.id)
         context.user_data[states.CATEGORIES_SELECTED] = user_db.check_user_category(update.effective_user.id)
         buttons += [
             [

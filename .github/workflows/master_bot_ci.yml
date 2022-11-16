@@ -34,7 +34,7 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Copy docker-compose to server
-        uses: appleboy/scp-action@master
+        uses: appleboy/scp-action@0.1.2
         with:
           host: ${{ secrets.HOST_PROD }}
           username: ${{ secrets.USER_DEV }}

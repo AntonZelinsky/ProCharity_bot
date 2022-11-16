@@ -14,9 +14,10 @@ pip install -r requirements.txt
 ```
 ### Переименовать файл .env.dev в .env и указать в нем недостающую информацию (используемую базу данных и токен бота):
 ```
-DATABASE_URL=postgres://{user}:{password}@{hostname}:{port}/{database-name}
+DATABASE_URL=postgresql://{user}:{password}@{hostname}:{port}/{database-name}
 TOKEN=<ваш токен>
 ```
+В проекте нельзя использовать базу данных SQLite. Рекомендуется PostgreSQL.
 ### Создать базу и применить миграции:
 ```
 alembic upgrade head
@@ -33,7 +34,7 @@ python run.py
 <http://127.0.0.1:5000/api/doc/swagger-ui/>
 
 ### Формат POST запроса для добавления категорий:
-<http://127.0.0.1:5000/api/webhook/categories/>
+<http://127.0.0.1:5000/api/v1/categories/>
 ```json
 [
    {
@@ -47,7 +48,7 @@ python run.py
 ]
 ```
 ### Формат POST запроса для добавления заданий:
-<http://127.0.0.1:5000/api/webhook/tasks/>
+<http://127.0.0.1:5000/api/v1/tasks/>
 
 ```json
 [

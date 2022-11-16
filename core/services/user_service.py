@@ -7,16 +7,20 @@ from sqlalchemy.orm import load_only
 from sqlalchemy import select
 from email_validator import validate_email, EmailNotValidError
 from app.logger import bot_logger as logger
+from core.repositories.user_repository import UserRepository
 
 
-class UserDB:
+class UserService:
+    def __init__(self, user_repository: UserRepository) -> None:
+        self.__user_repository = user_repository
+
     def add_user(self, telegram_user, external_id_hash):
         telegram_id = telegram_user.id
         username = telegram_user.username
         last_name = telegram_user.last_name
         first_name = telegram_user.first_name
         record_updated = False
-        user = User.query.filter_by(telegram_id=telegram_id).first()
+        user = self.__user_repository.get_or_none(telegram_id)
 
         if not user:
             user = User(
@@ -51,7 +55,7 @@ class UserDB:
                     logger.error(f"User DB - 'add_user' method: {str(ex)}")
                 return user
 
-        if user.banned == True:
+        if user.banned:
             user.banned = False
             record_updated = True
 
@@ -91,10 +95,8 @@ class UserDB:
         user_categories = [category.id for category in User.query.filter_by(telegram_id=telegram_id).first().categories]
         all_categories = Category.query.options(load_only('id')).filter_by(archive=False)
         for category in all_categories:
-            category_view_model = {}
-            category_view_model['category_id'] = category.id
-            category_view_model['name'] = category.name
-            if category.id in user_categories:
+            category_view_model = {'category_id': category.id, 'name': category.name, 'parent_id': category.parent_id}
+            if category.id in user_categories and category.parent_id:
                 category_view_model['user_selected'] = True
             else:
                 category_view_model['user_selected'] = False

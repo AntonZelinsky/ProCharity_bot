@@ -1,3 +1,4 @@
+from email.policy import default
 from sqlalchemy import (Column,
                         ForeignKey,
                         Integer,
@@ -93,6 +94,12 @@ class Category(Base):
     archive = Column(Boolean())
     users = relationship('User', secondary='users_categories', backref=backref('categories'))
     tasks = relationship('Task', backref=backref('categories'))
+    parent_id = Column(Integer, ForeignKey('categories.id'))
+    children = relationship('Category',
+                            uselist=True,
+                            backref=backref('parent', remote_side=[id]),
+                            lazy='subquery',
+                            join_depth=1)
 
     def __repr__(self):
         return f'<Category {self.name}>'
@@ -103,7 +110,7 @@ class Statistics(Base):
     id = Column(Integer, primary_key=True)
     telegram_id = Column(BigInteger)
     command = Column(String(100))
-    added_date = Column(TIMESTAMP, server_default=func.current_timestamp(), nullable=False)
+    added_date = Column(TIMESTAMP, default=func.current_timestamp(), nullable=False)
 
     def __repr__(self):
         return f'<Command {self.command}>'

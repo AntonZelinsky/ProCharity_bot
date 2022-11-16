@@ -33,15 +33,6 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Copy docker-compose to server
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.HOST_PROD }}
-          username: ${{ secrets.USER_DEV }}
-          key: ${{ secrets.SSH_KEY_PROD }}
-          passphrase: ${{ secrets.PASSPHRASE_PROD }}
-          source: 'docker-compose.prod.yml'
-          target: '/code'
       - name: set lower case owner name
         run: |
           echo "OWNER_LC=${OWNER,,}" >>${GITHUB_ENV}
@@ -66,12 +57,22 @@ jobs:
     runs-on: ubuntu-latest
     needs: build_and_push_to_ghcr
     steps:
+      - name: Copy docker-compose to server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOST_PROD }}
+          username: ${{ secrets.USER_DEV }}
+          key: ${{ secrets.SSH_KEY_PROD }}
+          passphrase: ${{ secrets.PASSPHRASE_PROD }}
+          source: 'docker-compose.prod.yml'
+          target: '/code'
       - name: executing remote ssh commands to deploy
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST_PROD }}
           username: ${{ secrets.USER_DEV }}
           key: ${{ secrets.SSH_KEY_PROD }}
+          passphrase: ${{ secrets.PASSPHRASE_PROD }}
           script: |
             cd /code
             touch .env

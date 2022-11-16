@@ -2,8 +2,8 @@ version: '3.3'
 
 services:
     back:
-        # image: "ghcr.io/procharity/procharity_bot_back_prod"
-        image: "anzeky/procharity_bot_back_prod"
+        image: "ghcr.io/procharity/procharity_bot_back_prod"
+#        image: "anzeky/procharity_bot_back_prod"
         restart: "always"
         depends_on:
             - db
@@ -19,8 +19,8 @@ services:
             - /code/data:/back/bot_persistence_file/
 
     front:
-        # image: "ghcr.io/procharity/procharity_bot_front_prod"
-        image: "anzeky/procharity_bot_front_prod"
+        image: "ghcr.io/procharity/procharity_bot_front_prod"
+#        image: "anzeky/procharity_bot_front_prod"
         restart: "always"
         depends_on:
             - back

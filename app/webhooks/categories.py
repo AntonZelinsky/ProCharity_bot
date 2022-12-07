@@ -1,4 +1,4 @@
-from flask import request, jsonify, make_response, Response
+from flask import request, jsonify, make_response
 from http import HTTPStatus
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import load_only
@@ -7,7 +7,6 @@ from flask_apispec.views import MethodResource
 from flask_apispec import doc
 from pydantic import parse_obj_as, ValidationError
 from werkzeug.exceptions import HTTPException
-
 
 from app.database import db_session
 from app.logger import webhooks_logger as logger

@@ -6,7 +6,7 @@ from flask_restful import Resource
 from flask_apispec.views import MethodResource
 from flask_apispec import doc
 from pydantic import parse_obj_as, ValidationError
-from werkzeug.exceptions import HTTPException
+from werkzeug.exceptions import BadRequest, HTTPException
 
 from app.database import db_session
 from app.logger import webhooks_logger as logger
@@ -100,11 +100,10 @@ class CreateCategories(MethodResource, Resource):
 def request_to_context(context, request):
     if not request.json:
         logger.error(f'{context}: Json contains no data')
-        raise HTTPException(f'Json contains no data, {HTTPStatus.BAD_REQUEST}')
+        raise BadRequest('Json contains no data')
     try:
         request_data = parse_obj_as(list[context], obj=request.json)
         return request_data
     except ValidationError as error:
-        logger.error(error)
-        raise HTTPException(f'ValidationError: {error}, {HTTPStatus.BAD_REQUEST}') from error
- 
+        logger.error(f'{error}')
+        raise BadRequest(error)

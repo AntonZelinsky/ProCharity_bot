@@ -1,17 +1,15 @@
 from flask import request, jsonify, make_response
-from http import HTTPStatus
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import load_only
 from flask_restful import Resource
 from flask_apispec.views import MethodResource
 from flask_apispec import doc
-from pydantic import parse_obj_as, ValidationError
-from werkzeug.exceptions import BadRequest, HTTPException
 
 from app.database import db_session
 from app.logger import webhooks_logger as logger
 from app.models import Category
 from app.request_models.category import CategoryCreateRequest
+from app.webhooks.check_request import request_to_context
 from app.webhooks.check_webhooks_token import check_webhooks_token
 
 
@@ -28,10 +26,10 @@ class CreateCategories(MethodResource, Resource):
     def post(self):
         categories = request_to_context(CategoryCreateRequest, request)
 
-        categories_dict = {int(category.id): category for category in categories}
+        categories_dict = {category.id: category for category in categories}
         categories_db = Category.query.options(load_only('archive')).all()
 
-        category_id_json = [int(member.id) for member in categories]
+        category_id_json = [member.id for member in categories]
         category_id_db = [member.id for member in categories_db]
 
         category_id_db_not_archive = [member.id for member in categories_db if member.archive == False]
@@ -42,7 +40,7 @@ class CreateCategories(MethodResource, Resource):
         category_for_archive = list(set(category_id_db_not_archive) - set(category_id_json))
 
         for category in categories:
-            if int(category.id) in category_for_adding_db:
+            if category.id in category_for_adding_db:
                 c = Category(
                     id=category.id,
                     name=category.name,
@@ -95,15 +93,3 @@ class CreateCategories(MethodResource, Resource):
         category.name = category_from_dict['name']
         category.parent_id = category_from_dict['parent_id']
         category.archive = False
-
-
-def request_to_context(context, request):
-    if not request.json:
-        logger.error(f'{context}: Json contains no data')
-        raise BadRequest('Json contains no data')
-    try:
-        request_data = parse_obj_as(list[context], obj=request.json)
-        return request_data
-    except ValidationError as error:
-        logger.error(f'{error}')
-        raise BadRequest(error)

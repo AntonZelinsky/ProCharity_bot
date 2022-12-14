@@ -24,7 +24,13 @@ class ExternalUserRegistration(MethodResource, Resource):
              'in': 'header',
              'type': 'string',
              'required': True
-         }})
+             }
+         },
+         responses={200: {'description': 'Пользователь успешно зарегистрирован.'},
+                    400: {'description': 'Ошибка при регистрации.'},
+
+                    }
+         )
     @use_kwargs(
         {'id': fields.Int(required=True),
          'id_hash': fields.Str(description='md5 hash of external_id', required=True),
@@ -52,6 +58,9 @@ class ExternalUserRegistration(MethodResource, Resource):
             )
             db_session.add(user)
 
+        specializations_user = user.specializations
+        categories_user = specializations_user.split(",")
+
         try:
             db_session.commit()
         except SQLAlchemyError as ex:
@@ -60,4 +69,5 @@ class ExternalUserRegistration(MethodResource, Resource):
             return make_response(jsonify(message=f'Bad request: {str(ex)}'), 400)
 
         logger.info(f'External users registration: The external user "{external_id}" successful registered.')
-        return make_response(jsonify(message='successful'), 200)
+        return make_response(jsonify(message="Пользователь успешно зарегистрирован", 
+                                     categories=categories_user), 200)

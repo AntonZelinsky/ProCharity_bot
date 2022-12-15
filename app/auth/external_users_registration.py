@@ -4,7 +4,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import load_only
 
 from app.database import db_session
-from app.models import ExternalSiteUser
+from app.models import ExternalSiteUser, Category
 from flask import jsonify, make_response
 from flask_apispec import doc, use_kwargs
 from flask_apispec.views import MethodResource
@@ -58,8 +58,12 @@ class ExternalUserRegistration(MethodResource, Resource):
             )
             db_session.add(user)
 
-        specializations_user = user.specializations
-        categories_user = specializations_user.split(",")
+        user_specializations = [int(x) for x in user.specializations.split(',')]
+        specializations = Category.query.filter(Category.id.in_(user_specializations)).all()
+        categories = []
+
+        for specialization in specializations:
+            user.categories.append(specialization.name)
 
         try:
             db_session.commit()
@@ -70,4 +74,4 @@ class ExternalUserRegistration(MethodResource, Resource):
 
         logger.info(f'External users registration: The external user "{external_id}" successful registered.')
         return make_response(jsonify(message="Пользователь успешно зарегистрирован", 
-                                     categories=categories_user), 200)
+                                     categories=categories), 200)

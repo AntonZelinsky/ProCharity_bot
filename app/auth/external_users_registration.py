@@ -4,7 +4,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import load_only
 
 from app.database import db_session
-from app.models import ExternalSiteUser
+from app.models import ExternalSiteUser, Category
 from flask import jsonify, make_response
 from flask_apispec import doc, use_kwargs
 from flask_apispec.views import MethodResource
@@ -24,7 +24,13 @@ class ExternalUserRegistration(MethodResource, Resource):
              'in': 'header',
              'type': 'string',
              'required': True
-         }})
+             }
+         },
+         responses={200: {'description': 'Пользователь успешно зарегистрирован.'},
+                    400: {'description': 'Ошибка при регистрации.'},
+
+                    }
+         )
     @use_kwargs(
         {'id': fields.Int(required=True),
          'id_hash': fields.Str(description='md5 hash of external_id', required=True),
@@ -52,6 +58,13 @@ class ExternalUserRegistration(MethodResource, Resource):
             )
             db_session.add(user)
 
+        user_specializations = [int(x) for x in user.specializations.split(',')]
+        specializations = Category.query.filter(Category.id.in_(user_specializations)).all()
+        categories = []
+
+        for specialization in specializations:
+            user.categories.append(specialization.name)
+
         try:
             db_session.commit()
         except SQLAlchemyError as ex:
@@ -60,4 +73,5 @@ class ExternalUserRegistration(MethodResource, Resource):
             return make_response(jsonify(message=f'Bad request: {str(ex)}'), 400)
 
         logger.info(f'External users registration: The external user "{external_id}" successful registered.')
-        return make_response(jsonify(message='successful'), 200)
+        return make_response(jsonify(message="Пользователь успешно зарегистрирован", 
+                                     categories=categories), 200)

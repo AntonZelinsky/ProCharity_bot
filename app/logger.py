@@ -7,11 +7,9 @@ import pytz
 
 from app import config
 
-utcmoment_naive = datetime.utcnow()
-utcmoment = utcmoment_naive.replace(tzinfo=pytz.utc)
-MINSK_TIME = utcmoment.astimezone(pytz.timezone('Europe/Minsk')).strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+logging.Formatter.converter = lambda *args: datetime.now(tz=pytz.timezone('Europe/Minsk')).timetuple()
 
-FORMATTER = f'{MINSK_TIME}\t%(levelname)s\t%(filename)s:%(lineno)d\t%(message)s'
+FORMATTER = f'%(asctime)s\t%(levelname)s\t%(filename)s:%(lineno)d\t%(message)s'
 
 
 def create_log_directory(directory):

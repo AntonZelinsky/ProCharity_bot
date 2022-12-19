@@ -11,7 +11,16 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 # -----------------------
 # Basic project settings
 PROJECT_NAME = 'ProCharity bot'
-SQL_ALCHEMY_DATABASE_URL = os.getenv('DATABASE_URL')
+
+POSTGRES_HOST = os.getenv('POSTGRES_HOST')
+POSTGRES_PORT = os.getenv('POSTGRES_PORT')
+POSTGRES_DB = os.getenv('POSTGRES_DB')
+POSTGRES_USER = os.getenv('POSTGRES_USER')
+POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
+
+SQL_ALCHEMY_DATABASE_URL = \
+    f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
+
 HOST_NAME = os.getenv('HOST_NAME')
 
 PASSWORD_POLICY = {

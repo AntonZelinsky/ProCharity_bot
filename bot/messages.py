@@ -11,6 +11,7 @@ from app.database import db_session
 from app.logger import bot_logger as logger
 from app.models import User
 from bot.charity_bot import dispatcher
+from core.services.mailing_type import MailingType
 
 bot = Bot(config.TELEGRAM_TOKEN)
 
@@ -31,8 +32,8 @@ class TelegramNotification:
     This class describes the functionality for working with notifications in Telegram.
     """
 
-    def __init__(self, has_mailing: str = 'subscribed') -> None:
-        self.has_mailing = has_mailing
+    def __init__(self, sub_status: str = 'subscribed') -> None:
+        self.sub_status = sub_status
 
     # TODO refactoring https://github.com/python-telegram-bot/python-telegram-bot/wiki/Avoiding-flood-limits
     def send_notification(self, message):
@@ -43,19 +44,20 @@ class TelegramNotification:
         :param telegram_chats: Users query
         :return:
         """
-        if self.has_mailing not in ('all', 'subscribed', 'unsubscribed'):
+        values = [member.value for member in MailingType]
+        if self.sub_status not in values:
             return False
 
         chats_list = []
         query = db_session.query(User.telegram_id).filter(User.banned.is_(False))
 
-        if self.has_mailing == 'subscribed':
+        if self.sub_status == MailingType.SUBSCRIBED.value:
             chats_list = query.filter(User.has_mailing.is_(True))
 
-        if self.has_mailing == 'unsubscribed':
+        if self.sub_status == MailingType.UNSUBSCRIBED.value:
             chats_list = query.filter(User.has_mailing.is_(False))
 
-        if self.has_mailing == 'all':
+        if self.sub_status == MailingType.ALL.value:
             chats_list = query
 
         user_notification_context = SendUserNotificationsContext([])

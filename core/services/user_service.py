@@ -1,3 +1,4 @@
+from flask import request, jsonify, make_response
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.models import ReasonCanceling, User, Category, Task, Users_Categories, ExternalSiteUser
@@ -135,7 +136,10 @@ class UserService:
             db_session.commit()
         except SQLAlchemyError as ex:
             logger.error(f"User DB - 'change_subscription' method: {str(ex)}")
+            db_session.rollback()
+            return user.has_mailing
 
+        logger.info("Subscription: Status successfully changed.")
         return user.has_mailing
 
     def change_user_category(self, telegram_id, category_id):

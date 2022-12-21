@@ -5,7 +5,6 @@ from app.request_models.request_base import RequestBase
 
 
 class CategoryCreateRequest(RequestBase):
-    id: NonNegativeInt
     name: StrictStr = Field(min_length=2, max_length=100)
     parent_id: Optional[NonNegativeInt] = None
 

@@ -72,7 +72,7 @@ class CreateTasks(MethodResource, Resource):
             logger.error(f'Tasks: database commit error "{str(ex)}"')
             db_session.rollback()
             return make_response(jsonify(message='Bad request'), 400)
-        logger.info(f"Tasks: Tasks to send - {task_to_send}")
+        logger.info(f'Tasks: Tasks to send - {task_to_send}')
 
         self.preparing_tasks_for_send(task_to_send)
 
@@ -88,23 +88,31 @@ class CreateTasks(MethodResource, Resource):
             logger.info('Tasks: No tasks to send')
             return
 
-        logger.info(f'Tasks: Tasks passed to the preparing_tasks_for_send method - {[(task.id, task.title) for task in task_to_send]}')
+        logger.info(
+            f'Tasks: Tasks passed to the preparing_tasks_for_send method - {[(task.id, task.title) for task in task_to_send]}'
+        )
         notification = TelegramNotification()
 
         send_time = datetime.datetime.now(pytz.utc)
         for task in task_to_send:
             category_id = task.category_id
             users = Category.query.filter_by(id=category_id).first().users
-            logger.info(f'Tasks: Users with a subscription to {category_id} category in DB - {[user.telegram_id for user in users]}')
+            logger.info(
+                f'Tasks: Users with a subscription to {category_id} category in DB - {[user.telegram_id for user in users]}'
+            )
             message = display_task_notification(task)
             user_notification_context = SendUserNotificationsContext([])
             for user in users:
                 if user.has_mailing:
                     user_message_context = SendUserMessageContext(message=message, telegram_id=user.telegram_id)
                     user_notification_context.user_message_context.append(user_message_context)
-            logger.info(f"Tasks: User's mailing list - {[user_message_context.telegram_id for user_message_context in user_notification_context.user_message_context]}")
+            logger.info(
+                f"Tasks: User's mailing list - {[user_message_context.telegram_id for user_message_context in user_notification_context.user_message_context]}"
+            )
             if len(user_notification_context.user_message_context) != 0:
-                dispatcher.job_queue.run_once(notification.send_batch_messages, send_time, context=user_notification_context,
+                dispatcher.job_queue.run_once(notification.send_batch_messages,
+                                              send_time,
+                                              context=user_notification_context,
                                               name=f'Sending: {message[0:10]}')
 
                 logger.info(f'Tasks: submitting task: {task.id} {task.title}')
@@ -123,7 +131,8 @@ class CreateTasks(MethodResource, Resource):
                 bonus=task.bonus,
                 location=task.location,
                 link=task.link,
-                description=task.description)
+                description=task.description
+                )
             new_task.archive = False
             db_session.add(new_task)
             task_to_send.append(new_task)
@@ -170,12 +179,12 @@ class CreateTasks(MethodResource, Resource):
         return updated_task_ids
 
     def __update_task_fields(self, task, task_from_dict):
-        task.title = task_from_dict['title']
-        task.name_organization = task_from_dict['name_organization']
-        task.category_id = task_from_dict['category_id']
-        task.bonus = task_from_dict['bonus']
-        task.location = task_from_dict['location']
-        task.link = task_from_dict['link']
-        task.description = task_from_dict['description']
-        task.deadline = task_from_dict['deadline']
+        task.title = task_from_dict.title
+        task.name_organization = task_from_dict.name_organization
+        task.category_id = task_from_dict.category_id
+        task.bonus = task_from_dict.bonus
+        task.location = task_from_dict.location
+        task.link = task_from_dict.link
+        task.description = task_from_dict.description
+        task.deadline = task_from_dict.deadline
         task.archive = False

@@ -11,5 +11,5 @@ class CategoryCreateRequest(RequestBase):
     @root_validator(skip_on_failure=True)
     def check_not_self_parent(cls, values):
         if values['parent_id'] and values['parent_id'] == values['id']:
-            raise ValueError('category cannot inherit from itself')
+            raise ValueError('Category cannot inherit from itself.')
         return values

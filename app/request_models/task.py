@@ -21,6 +21,6 @@ class TaskCreateRequest(RequestBase):
     @validator('deadline', pre=True)
     def validate_deadline(cls, deadline):
         deadline = datetime.strptime(deadline, '%d.%m.%Y')
-        if date.today() <= deadline.date():
-            raise ValueError('deadline has already passed')
+        if date.today() > deadline.date():
+            raise ValueError('Deadline is expired.')
         return deadline

@@ -15,6 +15,7 @@ from app.webhooks.check_webhooks_token import check_webhooks_token
 
 class CreateCategories(MethodResource, Resource):
     method_decorators = {'post': [check_webhooks_token]}
+
     @doc(description='Сreates Categories in the database',
          tags=['Create categories'],
          params={'token': {

@@ -39,11 +39,7 @@ def upgrade():
             child_id = child.id
             for user in parent_category.users:
                 user_id = user.telegram_id
-                if (
-                    user_id in users_child_category_dict
-                ) and (
-                    child_id in users_child_category_dict[user_id]
-                ):
+                if user_id in users_child_category_dict and child_id in users_child_category_dict[user_id]:
                         continue
                 subcategory = Users_Categories(telegram_id=user_id, category_id=child_id)
                 db_session.add(subcategory)

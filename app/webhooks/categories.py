@@ -1,9 +1,9 @@
 from flask import request, jsonify, make_response
+from flask_apispec import doc
+from flask_apispec.views import MethodResource
+from flask_restful import Resource
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import load_only
-from flask_restful import Resource
-from flask_apispec.views import MethodResource
-from flask_apispec import doc
 
 from app.database import db_session
 from app.logger import webhooks_logger as logger
@@ -33,7 +33,7 @@ class CreateCategories(MethodResource, Resource):
         category_id_json = [member.id for member in categories]
         category_id_db = [member.id for member in categories_db]
 
-        category_id_db_not_archive = [member.id for member in categories_db if member.archive == False]
+        category_id_db_not_archive = [member.id for member in categories_db if member.archive is False]
         category_id_db_archive = list(set(category_id_db) - set(category_id_db_not_archive))
 
         category_for_unarchive = list(set(category_id_db_archive) & set(category_id_json))
@@ -71,9 +71,9 @@ class CreateCategories(MethodResource, Resource):
         except SQLAlchemyError as ex:
             logger.error(f'Categories: Database commit error "{str(ex)}"')
             db_session.rollback()
-            return make_response(jsonify(message=f"Bad request: {str(ex)}"), 400)
+            return make_response(jsonify(message=f'Bad request: {str(ex)}'), 400)
 
-        logger.info("Categories: New categories successfully added.")
+        logger.info('Categories: New categories successfully added.')
         return make_response(jsonify(result='ok'), 200)
 
     def __hash__(self, category):
@@ -91,6 +91,6 @@ class CreateCategories(MethodResource, Resource):
                 self.__update_category_fields(category, category_from_dict)
 
     def __update_category_fields(self, category, category_from_dict):
-        category.name = category_from_dict['name']
-        category.parent_id = category_from_dict['parent_id']
+        category.name = category_from_dict.name
+        category.parent_id = category_from_dict.parent_id
         category.archive = False

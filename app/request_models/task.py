@@ -11,7 +11,7 @@ class TaskCreateRequest(RequestBase):
     deadline: date
     category_id: NonNegativeInt
     bonus: NonNegativeInt = 5
-    location: StrictStr = Field(min_length=2, max_length=100)
+    location: Optional[StrictStr] = Field(max_length=100)
     link: HttpUrl
     description: Optional[StrictStr] = None
 
@@ -20,7 +20,4 @@ class TaskCreateRequest(RequestBase):
 
     @validator('deadline', pre=True)
     def validate_deadline(cls, deadline):
-        deadline = datetime.strptime(deadline, '%d.%m.%Y')
-        if date.today() > deadline.date():
-            raise ValueError('Deadline is expired.')
-        return deadline
+        return datetime.strptime(deadline, '%d.%m.%Y')

@@ -50,6 +50,7 @@ class CategoryRepository(AbstractRepository):
         return make_response(jsonify(result='ok'), 200)
 
     def update(self, category: Category) -> Category:
-        self.session.refresh(category)
+        self.session.add(category)
         self.session.commit()
+        self.session.refresh(category)
         return category

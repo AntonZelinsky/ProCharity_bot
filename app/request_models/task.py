@@ -6,12 +6,12 @@ from app.request_models.request_base import RequestBase
 
 
 class TaskCreateRequest(RequestBase):
-    title: StrictStr = Field(min_length=2, max_length=256)
-    name_organization: StrictStr = Field(min_length=2, max_length=100)
+    title: StrictStr = Field(min_length=2)
+    name_organization: StrictStr = Field(min_length=2, max_length=256)
     deadline: date
     category_id: NonNegativeInt
     bonus: NonNegativeInt = 5
-    location: Optional[StrictStr] = Field(max_length=100)
+    location: Optional[StrictStr] = Field(max_length=256)
     link: HttpUrl
     description: Optional[StrictStr] = None
 

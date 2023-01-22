@@ -11,8 +11,8 @@ on:
 env:
   REGISTRY: ghcr.io
   DEPLOY_PATH: /code
-  IMAGE_NAME_BACK: procharity_back
-  IMAGE_NAME_FRONT: procharity_front_prod
+  IMAGE_NAME_BACK: procharity_bot_back
+  IMAGE_NAME_FRONT: procharity_bot_front
 
 
 jobs:

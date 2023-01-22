@@ -61,14 +61,14 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: ./
-          file: ./Dockerfile
+          file: ./Dockerfile_prod
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.OWNER_LC }}/${{ env.IMAGE_NAME_BACK }}:prod
       - name: Push Front to ghcr.io
         uses: docker/build-push-action@v2
         with:
           context: ./front
-          file: ./front/Dockerfile
+          file: ./front/Dockerfile_prod
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.OWNER_LC }}/${{ env.IMAGE_NAME_FRONT }}:prod
 

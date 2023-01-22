@@ -10,7 +10,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  DEPLOY_PATH: /code
+  DEPLOY_PATH: /PROCHARITY
   IMAGE_NAME_BACK: procharity_bot_back
   IMAGE_NAME_FRONT: procharity_bot_front
 
@@ -84,7 +84,7 @@ jobs:
           key: ${{ secrets.SSH_KEY_PROD }}
           passphrase: ${{ secrets.PASSPHRASE_PROD }}
           script: |
-            cd /code
+            cd ${{ env.DEPLOY_PATH }}
             touch .env
 
             echo POSTGRES_HOST=${{ secrets.POSTGRES_HOST }} > .env

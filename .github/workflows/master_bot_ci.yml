@@ -10,7 +10,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  DEPLOY_PATH: /PROCHARITY
+  DEPLOY_PATH: /code
   IMAGE_NAME_BACK: procharity_bot_back
   IMAGE_NAME_FRONT: procharity_bot_front
 

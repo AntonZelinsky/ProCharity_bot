@@ -18,17 +18,33 @@ depends_on = None
 
 
 def upgrade():
-    categories = set(
-        db_session.execute(
-            select(Category).join(Users_Categories).where(Category.children is not None)
-        ).scalars()
-    )
+    users_child_category = db_session.execute(select(
+        Users_Categories.telegram_id, Users_Categories.category_id
+    ).join(Category).where(
+        Category.parent_id.is_not(None)
+    )).all()
 
-    for category in categories:
-        for user in category.users:
-            subcategories = [Users_Categories(telegram_id=user.telegram_id, category_id=children.id) for children in category.children if children not in user.categories]
-            db_session.add_all(subcategories)
-        category.users = []
+    users_child_category_dict = {}
+    for user_tg_id, user_category in users_child_category:
+        users_child_category_dict.setdefault(user_tg_id, set()).add(user_category)
+
+    parent_categories = set(db_session.execute(select(Category).join(
+        Users_Categories
+    ).where(
+        Category.parent_id.is_(None)
+    )).scalars())
+
+    for parent_category in parent_categories:
+        for child in parent_category.children:
+            child_id = child.id
+            for user in parent_category.users:
+                user_id = user.telegram_id
+                if user_id in users_child_category_dict and child_id in users_child_category_dict[user_id]:
+                    continue
+                subcategory = Users_Categories(telegram_id=user_id, category_id=child_id)
+                db_session.add(subcategory)
+        parent_category.users = []
+
     db_session.commit()
 
 

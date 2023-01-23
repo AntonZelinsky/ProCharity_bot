@@ -2,7 +2,7 @@ version: '3.3'
 
 services:
     back:
-        image: "ghcr.io/procharity/procharity_bot_back"
+        image: "ghcr.io/procharity/procharity_bot_back:test"
         restart: "always"
         depends_on:
             - db
@@ -18,7 +18,7 @@ services:
             - /code/data:/back/bot_persistence_file/
 
     front:
-        image: "ghcr.io/procharity/procharity_bot_front"
+        image: "ghcr.io/procharity/procharity_bot_front:test"
         restart: "always"
         depends_on:
             - back

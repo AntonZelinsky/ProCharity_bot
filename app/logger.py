@@ -1,10 +1,15 @@
 import logging
 import os
+from datetime import datetime
 from logging.handlers import TimedRotatingFileHandler
+
+import pytz
+
 from app import config
 
+logging.Formatter.converter = lambda *args: datetime.now(tz=pytz.timezone('Europe/Minsk')).timetuple()
 
-FORMATTER = u'%(asctime)s\t%(levelname)s\t%(filename)s:%(lineno)d\t%(message)s'
+FORMATTER = f'%(asctime)s\t%(levelname)s\t%(filename)s:%(lineno)d\t%(message)s'
 
 
 def create_log_directory(directory):

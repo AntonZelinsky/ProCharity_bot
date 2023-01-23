@@ -43,15 +43,15 @@ jobs:
           script: |
             sudo mkdir -p ${{ env.DEPLOY_PATH }}
             sudo chmod 777 ${{ env.DEPLOY_PATH }}
-      - name: Copy docker-compose to server
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.HOST_PROD }}
-          username: ${{ secrets.USER_DEV }}
-          key: ${{ secrets.SSH_KEY_PROD }}
-          passphrase: ${{ secrets.PASSPHRASE_PROD }}
-          source: 'docker-compose.prod.yml'
-          target: ${{ env.DEPLOY_PATH }}
+#      - name: Copy docker-compose to server
+#        uses: appleboy/scp-action@master
+#        with:
+#          host: ${{ secrets.HOST_PROD }}
+#          username: ${{ secrets.USER_DEV }}
+#          key: ${{ secrets.SSH_KEY_PROD }}
+#          passphrase: ${{ secrets.PASSPHRASE_PROD }}
+#          source: 'docker-compose.prod.yml'
+#          target: ${{ env.DEPLOY_PATH }}
       - name: set lower case owner name
         run: |
           echo "OWNER_LC=${OWNER,,}" >>${GITHUB_ENV}

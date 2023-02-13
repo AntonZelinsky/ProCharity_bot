@@ -12,9 +12,8 @@ source venv/bin/activate
 
 pip install -r requirements.txt
 ```
-### Переименовать файл .env.dev в .env и указать в нем недостающую информацию (используемую базу данных и токен бота):
+### Переименовать файл .env.dev в .env и указать в нем недостающую информацию (токен бота):
 ```
-DATABASE_URL=postgresql://{user}:{password}@{hostname}:{port}/{database-name}
 TOKEN=<ваш токен>
 ```
 В проекте нельзя использовать базу данных SQLite. Рекомендуется PostgreSQL.
@@ -22,6 +21,19 @@ TOKEN=<ваш токен>
 ```
 alembic upgrade head
 ```
+
+Если миграции не применились подряд, можно запустить их по очереди:
+1. сначала все миграции подряд до 52647dd43d55 включительно:
+```
+alembic upgrade 52647dd43d55
+```
+2. затем 87c7d29e3ddb
+```
+alembic upgrade 87c7d29e3ddb
+```
+3. И дальше остальные, если они есть
+
+
 В случае изменения базы создать миграции:
 ```
 alembic revision --autogenerate -m "<описание миграции>"

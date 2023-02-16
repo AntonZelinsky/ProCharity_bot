@@ -145,3 +145,5 @@ requests.http
 data/
 bot_persistence_data
 logs/
+
+.DS_Store

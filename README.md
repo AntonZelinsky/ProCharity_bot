@@ -12,16 +12,28 @@ source venv/bin/activate
 
 pip install -r requirements.txt
 ```
-### Переименовать файл .env.dev в .env и указать в нем недостающую информацию (используемую базу данных и токен бота):
+
+### Переименовать файл .env.dev в .env и указать в нем недостающую информацию (токен бота и токен для вебхуков):
 ```
-DATABASE_URL=postgresql://{user}:{password}@{hostname}:{port}/{database-name}
 TOKEN=<ваш токен>
 ```
+```
+TOKEN_FOR_WEBHOOKS=<ваш токен>
+```
+
 В проекте нельзя использовать базу данных SQLite. Рекомендуется PostgreSQL.
+
+
 ### Создать базу и применить миграции:
 ```
 alembic upgrade head
 ```
+
+Если миграции не применились подряд, можно запустить их по очереди:
+```
+alembic upgrade <номер миграции>
+```
+
 В случае изменения базы создать миграции:
 ```
 alembic revision --autogenerate -m "<описание миграции>"

@@ -25,7 +25,7 @@ services:
         environment:
             - POSTGRES_USER=procharity
             - POSTGRES_PASSWORD=procharity
-            - POSTGRES_DB=procharity_local_test_db
+            - POSTGRES_DB=procharity_local
         expose:
             - "5432"
         ports:

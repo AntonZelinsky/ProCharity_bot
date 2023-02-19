@@ -1,11 +1,10 @@
 name: Master Branch Procharity Bot
 
 on:
-#  pull_request:
-  push:
+  pull_request:
     branches:
       - master
-#    types: [closed]
+    types: [closed]
 
   workflow_dispatch:
 
@@ -82,7 +81,7 @@ jobs:
         with:
           host: ${{ secrets.HOST_PROD }}
           username: ${{ secrets.USER_DEV }}
-          key: ${{ secrets.SSH_KEY_PROD_PROD }}
+          key: ${{ secrets.SSH_KEY_PROD }}
           passphrase: ${{ secrets.PASSPHRASE_PROD }}
           script: |
             cd ${{ env.DEPLOY_PATH }}

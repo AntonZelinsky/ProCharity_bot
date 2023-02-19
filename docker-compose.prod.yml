@@ -14,8 +14,8 @@ services:
         env_file:
             -   .env
         volumes:
-            - /PROCHARITY/logs:/back/logs
-            - /PROCHARITY/data:/back/bot_persistence_file/
+            - /code/logs:/back/logs
+            - /code/data:/back/bot_persistence_file/
 
     front:
         image: "ghcr.io/procharity/procharity_bot_front:prod"
@@ -28,8 +28,9 @@ services:
             - "80:80"
             - "443:443"
         volumes:
-            -   /etc/nginx/ssl:/etc/nginx/ssl
-            -   /PROCHARITY/nginx_logs:/var/log/nginx
+            - /etc/nginx/ssl:/etc/nginx/ssl
+            - /code/nginx:/etc/nginx/conf.d/
+            - /code/nginx_logs:/var/log/nginx
     db:
         image: postgres:12-alpine
         restart: "always"

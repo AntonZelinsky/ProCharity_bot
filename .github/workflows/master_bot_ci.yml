@@ -1,9 +1,6 @@
 name: Master Branch Procharity Bot
 
 on:
-  push:
-    branches:
-      - "fix/fix_ci_cd"
   pull_request:
     branches:
       - master

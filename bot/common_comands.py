@@ -64,6 +64,10 @@ def start(update: Update, context: CallbackContext) -> int:
     button = [
         [
             InlineKeyboardButton(text='Начнем', callback_data=callback_data)
+        ],
+        [
+            InlineKeyboardButton(text='Связать аккаунт с ботом',
+                                 url='https://procharity.ru/')
         ]
     ]
     keyboard = InlineKeyboardMarkup(button)

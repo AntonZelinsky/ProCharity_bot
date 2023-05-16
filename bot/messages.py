@@ -1,10 +1,8 @@
 from telegram import Bot, ParseMode, error
 from telegram.error import Unauthorized
-import datetime
 import time
 from dataclasses import dataclass
 from typing import List
-import pytz
 
 from app import config
 from app.database import db_session
@@ -107,3 +105,44 @@ class TelegramNotification:
             array = array[size:]
         arrs.append(array)
         return arrs
+
+
+class TelegramMessage:
+    """
+    This class describes the functionality for
+    working with message to user in Telegram.
+    """
+
+    def __init__(self, telegram_id: int) -> None:
+        self.telegram_id = telegram_id
+
+    def send_message(self, message) -> bool:
+        """
+           Send telegram message to user.
+
+        :param message: Message to send
+        :return:
+        """
+
+        if not db_session.query(
+            User
+        ).filter(User.telegram_id == self.telegram_id):
+            logger.error(
+                f'User with telegram id "{self.telegram_id}" does not exist'
+            )
+            return False
+        try:
+            bot.send_message(
+                chat_id=self.telegram_id, text=message,
+                parse_mode=ParseMode.HTML, disable_web_page_preview=True)
+            logger.info(f'Sent message to {self.telegram_id}')
+            return True
+        except error.BadRequest as ex:
+            logger.error(f'{str(ex.message)}, telegram_id: {self.telegram_id}')
+        except Unauthorized as ex:
+            logger.error(f'{str(ex.message)}: {self.telegram_id}')
+            User.query.filter_by(
+                telegram_id=self.telegram_id
+                ).update({'banned': True, 'has_mailing': False})
+            db_session.commit()
+        return False

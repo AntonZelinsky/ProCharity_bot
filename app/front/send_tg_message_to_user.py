@@ -43,7 +43,7 @@ class SendTelegramMessage(Resource, MethodResource):
                     'Sending notification to user with this telegram id'
                   ),
                  'in': 'query',
-                 'type': 'intger',
+                 'type': 'integer',
                  'required': True
              },
              'Authorization': config.PARAM_HEADER_AUTH,

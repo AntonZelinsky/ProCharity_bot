@@ -3,16 +3,15 @@ import datetime
 from flask import jsonify, make_response
 from flask_apispec import doc, use_kwargs
 from flask_apispec.views import MethodResource
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import get_jwt_identity, jwt_required
 from flask_restful import Resource
-from marshmallow import fields, Schema
+from marshmallow import Schema, fields
 from sqlalchemy.exc import SQLAlchemyError
 
 from app import config
 from app.database import db_session
 from app.logger import app_logger as logger
 from app.models import Notification
-
 from bot.messages import TelegramMessage
 
 

@@ -17,7 +17,6 @@ from bot.messages import TelegramMessage
 
 class TelegramMessageSchema(Schema):
     message = fields.String(required=True)
-    telegram_id = fields.Integer(required=True)
 
 
 class SendTelegramMessage(Resource, MethodResource):
@@ -41,7 +40,7 @@ class SendTelegramMessage(Resource, MethodResource):
                  'description': (
                     'Sending notification to user with this telegram id'
                   ),
-                 'in': 'query',
+                 'in': 'path',
                  'type': 'integer',
                  'required': True
              },
@@ -50,9 +49,8 @@ class SendTelegramMessage(Resource, MethodResource):
          )
     @use_kwargs(TelegramMessageSchema)
     @jwt_required()
-    def post(self, **kwargs):
+    def post(self, telegram_id, **kwargs):
         message = kwargs.get('message').replace('&nbsp;', '')
-        telegram_id = kwargs.get('telegram_id')
 
         if not message or not telegram_id:
             logger.info(

@@ -61,12 +61,16 @@ def start(update: Update, context: CallbackContext) -> int:
     callback_data = (command_constants.COMMAND__GREETING_REGISTERED_USER
                      if user.categories
                      else command_constants.COMMAND__GREETING)
-    button = [
+    buttons = [
         [
             InlineKeyboardButton(text='Начнем', callback_data=callback_data)
+        ],
+        [
+            InlineKeyboardButton(text='Связать аккаунт с ботом',
+                                 url='https://procharity.ru/')
         ]
     ]
-    keyboard = InlineKeyboardMarkup(button)
+    keyboard = InlineKeyboardMarkup(buttons)
     context.bot.send_message(
         chat_id=update.effective_chat.id,
         text='Привет! 👋 \n\n'

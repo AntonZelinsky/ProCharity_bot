@@ -12,7 +12,7 @@ from . import download_log_files
 
 front_api.add_resource(analytics.Analytics, '/api/v1/analytics/')
 front_api.add_resource(send_tg_notification.SendTelegramNotification,
-                       '/api/v1/send_telegram_notification/')
+                       '/api/v1/send_telegram_notification/<string:has_mailing>')
 front_api.add_resource(users.UsersList, '/api/v1/users/')
 front_api.add_resource(users.UserItem, '/api/v1/users/<int:telegram_id>/')
 front_api.add_resource(download_log_files.DownloadLogs, '/api/v1/download_logs/')

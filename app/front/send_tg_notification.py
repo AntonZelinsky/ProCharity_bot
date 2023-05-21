@@ -19,7 +19,6 @@ from bot.messages import TelegramNotification
 
 class TelegramNotificationSchema(Schema):
     message = fields.String(required=True)
-    has_mailing = fields.String(required=True)
 
 
 class SendTelegramNotification(Resource, MethodResource):
@@ -41,11 +40,12 @@ class SendTelegramNotification(Resource, MethodResource):
                  'required': True
              },
              'has_mailing': {
-                 'description': ('Sending notifications to users by the type of permission to mailing.'
+                 'description': ('Sending notifications to users by the type '
+                                 'of permission to mailing.'
                                  'subscribed - user has enabled a mailing.'
                                  'unsubscribed - user has disabled a mailing.'
                                  'all - send to all users'),
-                 'in': 'query',
+                 'in': 'path',
                  'type': 'string',
                  'required': True
              },
@@ -54,9 +54,8 @@ class SendTelegramNotification(Resource, MethodResource):
          )
     @use_kwargs(TelegramNotificationSchema)
     @jwt_required()
-    def post(self, **kwargs):
+    def post(self, has_mailing, **kwargs):
         message = kwargs.get('message').replace('&nbsp;', '')
-        has_mailing = kwargs.get('has_mailing')
 
         if not message or not has_mailing:
             logger.info("Messages: The <message> and  <has_mailing> parameters have not been passed")

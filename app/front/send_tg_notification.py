@@ -51,8 +51,8 @@ class SendTelegramNotification(Resource, MethodResource):
                  'type': 'string',
                  'required': True
              },
-             'Authorization': config.PARAM_HEADER_AUTH,
              # Only if request requires authorization
+             'Authorization': config.PARAM_HEADER_AUTH,
          }
          )
     @use_kwargs(TelegramNotificationSchema)

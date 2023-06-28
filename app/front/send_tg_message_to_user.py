@@ -10,6 +10,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app import config
 from app.database import db_session
+from app.error_handlers import InvalidAPIUsage
 from app.logger import app_logger as logger
 from app.models import Notification
 from bot.messages import TelegramMessage
@@ -52,16 +53,14 @@ class SendTelegramMessage(Resource, MethodResource):
     def post(self, telegram_id, **kwargs):
         message = kwargs.get('message').replace('&nbsp;', '')
 
-        if not message or not telegram_id:
+        if not message:
             logger.info(
-                'Messages: The <message> and  <telegram_id> '
-                'parameters have not been passed'
+                'Messages: The <message> parameter have not been passed'
                 )
             return make_response(
                 jsonify(
                     result=(
-                        'Необходимо указать параметры '
-                        '<message> и <telegram_id>.'
+                        'Необходимо указать параметр <message>.'
                     )
                 ), 400
                 )
@@ -72,22 +71,15 @@ class SendTelegramMessage(Resource, MethodResource):
         try:
             db_session.commit()
             mesg = TelegramMessage(telegram_id)
-
-            if not mesg.send_message(message=message.message):
-                logger.info(
-                    'Messages: Passed invalid <telegram_id> parameter. '
-                    f'Passed: {telegram_id}'
-                )
-                return make_response(
-                    jsonify(
-                        result=('Неверно указан параметр <telegram_id>. '
-                                'Сообщение не отправлено.')), 400
-                )
-
+            mesg.send_message(message=message.message)
             message.was_sent = True
             message.sent_date = datetime.datetime.now()
             db_session.commit()
-
+        except InvalidAPIUsage as ex:
+            return make_response(
+                jsonify(
+                    result=ex.message), ex.status_code
+            )
         except SQLAlchemyError as ex:
             logger.error(f'Messages: Database commit error "{str(ex)}"')
             db_session.rollback()

@@ -70,15 +70,14 @@ class SendTelegramMessage(Resource, MethodResource):
         db_session.add(message)
         try:
             db_session.commit()
-            mesg = TelegramMessage(telegram_id)
-            mesg.send_message(message=message.message)
+            mes = TelegramMessage(telegram_id)
+            mes.send_message(message=message.message)
             message.was_sent = True
             message.sent_date = datetime.datetime.now()
             db_session.commit()
         except InvalidAPIUsage as ex:
             return make_response(
-                jsonify(
-                    result=ex.message), ex.status_code
+                jsonify(result=ex.message), ex.status_code
             )
         except SQLAlchemyError as ex:
             logger.error(f'Messages: Database commit error "{str(ex)}"')

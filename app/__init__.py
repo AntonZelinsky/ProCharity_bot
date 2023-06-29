@@ -9,6 +9,7 @@ from telegram import Update
 from app import config
 from app.config import TELEGRAM_TOKEN
 
+
 jwt = JWTManager()
 mail = Mail()
 cors = CORS()
@@ -26,12 +27,14 @@ def create_app():
     from app.webhooks import swagger_webhooks
 
     from app.auth import auth_bp
+    from app.error_handlers import invalid_api_usage, InvalidAPIUsage
     from app.front import front_bp
     from app.webhooks import webhooks_bp
 
     app.register_blueprint(webhooks_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(front_bp)
+    app.register_error_handler(InvalidAPIUsage, invalid_api_usage)
 
     jwt.init_app(app)
     mail.init_app(app)

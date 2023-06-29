@@ -13,7 +13,7 @@ from . import download_log_files
 
 front_api.add_resource(analytics.Analytics, '/api/v1/analytics/')
 front_api.add_resource(send_tg_notification.SendTelegramNotification,
-                       '/api/v1/send_telegram_notification/')
+                       '/api/v1/messages/')
 front_api.add_resource(send_tg_message_to_user.SendTelegramMessage,
                        '/api/v1/messages/<int:telegram_id>/')
 front_api.add_resource(users.UsersList, '/api/v1/users/')

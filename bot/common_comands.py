@@ -61,18 +61,23 @@ def start(update: Update, context: CallbackContext) -> int:
     callback_data = (command_constants.COMMAND__GREETING_REGISTERED_USER
                      if user.categories
                      else command_constants.COMMAND__GREETING)
-    button = [
+    buttons = [
         [
             InlineKeyboardButton(text='Начнем', callback_data=callback_data)
+        ],
+        [
+            InlineKeyboardButton(text='Связать аккаунт с ботом',
+                                 url='https://procharity.ru/')
         ]
     ]
-    keyboard = InlineKeyboardMarkup(button)
+    keyboard = InlineKeyboardMarkup(buttons)
     context.bot.send_message(
         chat_id=update.effective_chat.id,
         text='Привет! 👋 \n\n'
              f'Я бот платформы интеллектуального волонтерства <a href="https://procharity.ru/">ProCharity</a>. '
              'Буду держать тебя в курсе новых задач и помогу '
-             'оперативно связаться с командой поддержки.',
+             'оперативно связаться с командой поддержки.\n\n'
+             f'Ваш телеграм id – {update.effective_user.id}',
         reply_markup=keyboard,
         parse_mode=ParseMode.HTML, disable_web_page_preview=True
     )

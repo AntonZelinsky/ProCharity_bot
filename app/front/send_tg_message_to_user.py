@@ -76,6 +76,7 @@ class SendTelegramMessage(Resource, MethodResource):
             message.sent_date = datetime.datetime.now()
             db_session.commit()
         except InvalidAPIUsage as ex:
+            db_session.rollback()
             return make_response(
                 jsonify(result=ex.message), ex.status_code
             )

@@ -1,9 +1,11 @@
+import os
 from telegram import (Update,
                       InlineKeyboardMarkup,
                       ParseMode)
 from telegram.ext import CallbackContext, CallbackQueryHandler, CommandHandler
-
 from telegram import InlineKeyboardButton
+
+from dotenv import load_dotenv
 from bot.constants import states
 from bot.constants import command_constants
 from bot.constants import constants
@@ -12,6 +14,8 @@ from bot.decorators.logger import log_command
 from core.repositories.user_repository import UserRepository
 from core.services.user_service import UserService
 from app.database import db_session
+
+load_dotenv()
 
 MENU_BUTTONS = [
     [
@@ -62,13 +66,11 @@ def start(update: Update, context: CallbackContext) -> int:
                      if user.categories
                      else command_constants.COMMAND__GREETING)
     buttons = [
-        [
-            InlineKeyboardButton(text='Начнем', callback_data=callback_data)
-        ],
-        [
-            InlineKeyboardButton(text='Связать аккаунт с ботом',
-                                 url='https://procharity.ru/')
-        ]
+        [InlineKeyboardButton(text='Начнем', callback_data=callback_data)],
+        [InlineKeyboardButton(
+            text='Связать аккаунт с ботом',
+            url=f'{os.getenv("URL_PROCHARITY")}/auth/bot_procharity.php?user_id={user.external_id}&telegram_id={user.telegram_id}'
+        )]
     ]
     keyboard = InlineKeyboardMarkup(buttons)
     context.bot.send_message(
@@ -76,7 +78,8 @@ def start(update: Update, context: CallbackContext) -> int:
         text='Привет! 👋 \n\n'
              f'Я бот платформы интеллектуального волонтерства <a href="https://procharity.ru/">ProCharity</a>. '
              'Буду держать тебя в курсе новых задач и помогу '
-             'оперативно связаться с командой поддержки.',
+             'оперативно связаться с командой поддержки.\n\n'
+             f'Ваш телеграм id – {update.effective_user.id}',
         reply_markup=keyboard,
         parse_mode=ParseMode.HTML, disable_web_page_preview=True
     )

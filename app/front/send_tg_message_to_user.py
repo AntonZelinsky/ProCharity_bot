@@ -3,16 +3,15 @@ import datetime
 from flask import jsonify, make_response
 from flask_apispec import doc, use_kwargs
 from flask_apispec.views import MethodResource
-from flask_jwt_extended import get_jwt_identity, jwt_required
 from flask_restful import Resource
 from marshmallow import Schema, fields
 from sqlalchemy.exc import SQLAlchemyError
 
-from app import config
 from app.database import db_session
 from app.error_handlers import InvalidAPIUsage
 from app.logger import app_logger as logger
 from app.models import Notification
+from app.webhooks.check_webhooks_token import check_webhooks_token
 from bot.messages import TelegramMessage
 
 
@@ -21,6 +20,7 @@ class TelegramMessageSchema(Schema):
 
 
 class SendTelegramMessage(Resource, MethodResource):
+    method_decorators = {'post': [check_webhooks_token]}
 
     @doc(description='Sends message to the telegram user.'
                      'Requires "message" and "telegram_id" parameters.',
@@ -45,11 +45,14 @@ class SendTelegramMessage(Resource, MethodResource):
                  'type': 'integer',
                  'required': True
              },
-             'Authorization': config.PARAM_HEADER_AUTH,
-         }
-         )
+             'token': {
+                 'description': 'webhooks token',
+                 'in': 'header',
+                 'type': 'string',
+                 'required': True
+             }
+         })
     @use_kwargs(TelegramMessageSchema)
-    @jwt_required()
     def post(self, telegram_id, **kwargs):
         message = kwargs.get('message').replace('&nbsp;', '')
 
@@ -65,8 +68,7 @@ class SendTelegramMessage(Resource, MethodResource):
                 ), 400
                 )
 
-        authorized_user = get_jwt_identity()
-        message = Notification(message=message, sent_by=authorized_user)
+        message = Notification(message=message)
         db_session.add(message)
         try:
             db_session.commit()

@@ -34,8 +34,7 @@ class SendTelegramMessage(Resource, MethodResource):
              'message': {
                  'description': 'Message to user. Max len 4096',
                  'in': 'query',
-                 'type': 'string',
-                 'required': True
+                 'type': 'string'
              },
              'telegram_id': {
                  'description': (

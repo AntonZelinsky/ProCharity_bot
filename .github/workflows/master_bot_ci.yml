@@ -100,6 +100,7 @@ jobs:
             echo MAIL_USE_TLS=${{ secrets.MAIL_USE_TLS }} >> .env
             echo MAIL_USERNAME=${{ secrets.MAIL_USERNAME }} >> .env
             echo MAIL_DEFAULT_SENDER=${{ secrets.MAIL_DEFAULT_SENDER }} >> .env
+            echo URL_PROCHARITY=${{ secrets.URL_PROCHARITY }} >> .env
             echo EMAIL_PROCHARRITY=${{ secrets.EMAIL_PROCHARRITY }} >> .env
             echo HOST_NAME=${{ secrets.HOST_NAME_PROD }} >> .env
             echo ACCESS_TOKEN_FOR_PROCHARITY=${{ secrets.ACCESS_TOKEN_FOR_PROCHARITY_PROD }} >> .env

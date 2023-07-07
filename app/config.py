@@ -29,6 +29,8 @@ PASSWORD_POLICY = {
     'lowercase': 1,
     'max_length': 32,
 }
+
+URL_PROCHARITY = os.getenv('URL_PROCHARITY')
 # procharity send email settings
 PROCHARRITY_TEMPLATE = 'email_templates/send_question.html'
 

@@ -1,11 +1,10 @@
-import os
 from telegram import (Update,
                       InlineKeyboardMarkup,
                       ParseMode)
 from telegram.ext import CallbackContext, CallbackQueryHandler, CommandHandler
 from telegram import InlineKeyboardButton
 
-from dotenv import load_dotenv
+from app import config
 from bot.constants import states
 from bot.constants import command_constants
 from bot.constants import constants
@@ -15,7 +14,6 @@ from core.repositories.user_repository import UserRepository
 from core.services.user_service import UserService
 from app.database import db_session
 
-load_dotenv()
 
 MENU_BUTTONS = [
     [
@@ -69,7 +67,7 @@ def start(update: Update, context: CallbackContext) -> int:
         [InlineKeyboardButton(text='Начнем', callback_data=callback_data)],
         [InlineKeyboardButton(
             text='Связать аккаунт с ботом',
-            url=f'{os.getenv("URL_PROCHARITY")}/auth/bot_procharity.php?user_id={user.external_id}&telegram_id={user.telegram_id}'
+            url=f'{config.URL_PROCHARITY}/auth/bot_procharity.php?user_id={user.external_id}&telegram_id={user.telegram_id}'
         )]
     ]
     keyboard = InlineKeyboardMarkup(buttons)

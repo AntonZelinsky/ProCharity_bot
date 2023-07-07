@@ -122,7 +122,7 @@ class Notification(Base):
     message = Column(String(4096), nullable=False)
     was_sent = Column(Boolean, default=False)
     sent_date = Column(TIMESTAMP)
-    sent_by = Column(String(48), nullable=False)
+    sent_by = Column(String(48), nullable=True)
 
     def __repr__(self):
         return f'<Notification {self.message[0:10]}>'
